@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+      <AvailableItemName Include="FASM">
+        <Targets>_FASM</Targets>
+      </AvailableItemName>
+  </ItemGroup>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+      $(ComputeLinkInputsTargets);
+      ComputeFASMOutput;
+    </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+      $(ComputeLibInputsTargets);
+      ComputeFASMOutput;
+    </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <UsingTask
+    TaskName="FASM"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+          
+  <Target Name="_WriteFASMTlogs"
+          Condition="'@(FASM)' != '' and '@(SelectedFiles)' == ''">
+    <ItemGroup>
+      <FASM Remove="@(FASM)" Condition="'%(FASM.ExcludedFromBuild)' == 'true' or '%(FASM.ObjectFileName)' == ''" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(FASM)' != ''">
+      <_FASMReadTlog Include="^%(FASM.FullPath);%(FASM.AdditionalDependencies)" />
+      <_FASMWriteTlog Include="^%(FASM.FullPath);$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '%(FASM.ObjectFileName)'))" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      Condition="'@(_FASMReadTlog)' != ''"
+      File="$(TLogLocation)FASM.read.1u.tlog"
+      Lines="@(_FASMReadTlog->MetaData('Identity')->ToUpperInvariant());"
+      Overwrite="true"
+      Encoding="Unicode"/>
+    <WriteLinesToFile
+      Condition="'@(_FASMWriteTlog)' != ''"
+      File="$(TLogLocation)FASM.write.1u.tlog"
+      Lines="@(_FASMWriteTlog->MetaData('Identity')->ToUpperInvariant());"
+      Overwrite="true"
+      Encoding="Unicode"/>
+
+    <ItemGroup>
+      <_FASMReadTlog Remove="@(_FASMReadTlog)" />
+      <_FASMWriteTlog Remove="@(_FASMWriteTlog)" />
+    </ItemGroup>
+  </Target>
+    
+  <Target
+    Name="_FASM"
+    BeforeTargets="$(FASMBeforeTargets)"
+    AfterTargets="$(FASMAfterTargets)"
+    Condition="'@(FASM)' != ''"
+    Outputs="%(FASM.ObjectFileName)"
+    Inputs="%(FASM.Identity);%(FASM.AdditionalDependencies);$(MSBuildProjectFile)"
+    DependsOnTargets="_WriteFASMTlogs;_SelectedFiles">
+    <ItemGroup Condition="'@(SelectedFiles)' != ''">
+      <FASM Remove="@(FASM)" Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(FASM.ExecutionDescription)" />
+    <FASM
+      Condition="'@(FASM)' != '' and '%(FASM.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(FASM.CommandLineTemplate)"
+      ObjectFileName="%(FASM.ObjectFileName)"
+      AdditionalOptions="%(FASM.AdditionalOptions)"
+      Inputs="%(FASM.Identity)" />
+  </Target>
+  <Target
+    Name="ComputeFASMOutput"
+    Condition="'@(FASM)' != ''">
+    <ItemGroup>
+      <Link Include="@(FASM->Metadata('ObjectFileName')->Distinct()->ClearMetadata())" Condition="'%(FASM.ExcludedFromBuild)' != 'true'"/>
+      <Lib Include="@(FASM->Metadata('ObjectFileName')->Distinct()->ClearMetadata())" Condition="'%(FASM.ExcludedFromBuild)' != 'true'"/>
+    </ItemGroup>
+  </Target>
+  <Target
+    Name="ComputeFASMObj"
+    Condition="'@(FASM)' != ''"
+    BeforeTargets="GetResolvedLinkObjs">
+    <ItemGroup>
+      <Obj Include="@(FASM->Metadata('ObjectFileName')->Distinct()->ClearMetadata())" Condition="'%(FASM.ExcludedFromBuild)' != 'true'"/>
+    </ItemGroup>
+  </Target>
+</Project>
