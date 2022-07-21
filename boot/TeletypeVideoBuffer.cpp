@@ -2,17 +2,22 @@
 #include "IO.hpp"
 namespace TeletypeVideoBuffer
 {	
+	short currentPos{};
 	unsigned short positionFromCoords(unsigned char x, unsigned char y)
 	{
 		return y * TeletypeVideoBuffer::width + x;
 	}
-	void setCursorPosition(unsigned short positon)
+	void setCursorPosition(short position)
 	{
+		currentPos = position;
+		if (currentPos < 0)
+			currentPos = 0;
+		else if (currentPos >= 2000)
+			currentPos = 2000;
 		outb(0x0F, 0x3D4);
-		outb(static_cast<unsigned char>(positon & 0xFF), 0x3D5);
+		outb(static_cast<unsigned char>(currentPos & 0xFF), 0x3D5);
 		outb(0x0E, 0x3D4);
-		outb(static_cast<unsigned char>((positon >> 8) & 0xFF), 0x3D5);
-		currentPos = positon;
+		outb(static_cast<unsigned char>((currentPos >> 8) & 0xFF), 0x3D5);
 	}
 	void clear(unsigned long long color)
 	{
@@ -25,17 +30,16 @@ namespace TeletypeVideoBuffer
 	}
 	void puts(const char* string, unsigned char color)
 	{
-		const char* str = string;
-		unsigned short index = currentPos;
+		short index = currentPos;
 		while (*string)
 		{
 			switch (*string)
 			{
 			case 10:
-				index += TeletypeVideoBuffer::width;
+				index += width;
 				break;
 			case 13:
-				index -= index % TeletypeVideoBuffer::width;
+				index -= index % width;
 				break;
 			default:
 				*reinterpret_cast<unsigned char*>(videoBufferAddress + index * 2) = *string;
@@ -43,9 +47,9 @@ namespace TeletypeVideoBuffer
 				++index;
 				break;
 			}
-			string++;
+			++string;
 		}
-		TeletypeVideoBuffer::setCursorPosition(index);
+		setCursorPosition(index);
 	}
 	void putc(char c, unsigned char color)
 	{
@@ -60,7 +64,7 @@ namespace TeletypeVideoBuffer
 			++size;
 		return size;
 	}
-	void printf(const char* fmt, ...)
+	/*void printf(const char* fmt, ...)
 	{
 		int* argp = reinterpret_cast<int*>(&fmt);
 		State state = State::STATE_NORMAL;
@@ -238,5 +242,5 @@ namespace TeletypeVideoBuffer
 		while (--pos >= 0)
 			putc(buffer[pos]);
 		return argp;
-	}
+	}*/
 }

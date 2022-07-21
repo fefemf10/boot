@@ -1,12 +1,14 @@
 format MS64 COFF
-section '.text$b' code readable executable
-extrn _idt
+
 extrn isr1_handler
 public loadIDT
 public isr1
+
+section '.text$b' code readable executable
+
 idtDescriptor:
 	dw 4095
-	dq _idt
+	dq 0x7e00
 
 macro pushall
 {
@@ -40,3 +42,4 @@ loadIDT:
 	lidt [idtDescriptor]
 	sti
 	ret
+

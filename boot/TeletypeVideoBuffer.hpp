@@ -34,12 +34,13 @@ enum Color : unsigned char
 	B_YELLOW = 0xE0,
 	B_WHITE = 0xF0,
 };
+
 namespace TeletypeVideoBuffer
 {
 	constexpr unsigned char width = 80;
 	constexpr unsigned char height = 50;
 	constexpr unsigned int videoBufferAddress = 0xB8000;
-	static unsigned int currentPos = 0;
+	extern short currentPos;
 	const char hexChars[] = {"0123456789ABCDEF"};
 	enum class State
 	{
@@ -56,13 +57,13 @@ namespace TeletypeVideoBuffer
 	};
 	static char hexToStringOutput[128]{};
 	unsigned short positionFromCoords(unsigned char x, unsigned char y);
-	void setCursorPosition(unsigned short positon);
+	void setCursorPosition(short position);
 	void clear(unsigned long long color = B_BLACK | F_WHITE);
 	void puts(const char* string, unsigned char color = B_BLACK | F_WHITE);
 	void putc(char c, unsigned char color = B_BLACK | F_WHITE);
 	unsigned int strlen(const char* str);
-	void printf(const char* fmt, ...);
-	int* printf_number(int* argp, State length, bool sign, int radix);
+	/*void printf(const char* fmt, ...);
+	int* printf_number(int* argp, State length, bool sign, int radix);*/
 	template<typename T>
 	const char* hexToString(T value)
 	{
