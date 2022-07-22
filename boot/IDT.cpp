@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include "stdtype.hpp"
 #include "IO.hpp"
 #include "TeletypeVideoBuffer.hpp"
 
@@ -154,28 +154,28 @@ static bool numLock = false;
 static unsigned char lastScancode{};
 struct IDT64
 {
-	uint16_t offset_low;
-	uint16_t selector;
-	uint8_t ist;
-	uint8_t type_attr;
-	uint16_t offset_mid;
-	uint32_t offset_high;
-	uint32_t zero;
+	u16 offset_low;
+	u16 selector;
+	u8 ist;
+	u8 type_attr;
+	u16 offset_mid;
+	u32 offset_high;
+	u32 zero;
 };
 extern "C" IDT64 _idt[256];
-extern "C" uint64_t isr1;
+extern "C" u64 isr1;
 extern "C" void loadIDT();
 
 void initializeIDT()
 {
-	for (uint64_t i = 0x21; i < 0x22; i++)//0x21 keyboard
+	for (u64 i = 0x21; i < 0x22; i++)//0x21 keyboard
 	{
-		_idt[i].offset_low = (uint16_t)(((uint64_t)&isr1 & 0x000000000000ffff));
+		_idt[i].offset_low = (u16)(((u64)&isr1 & 0x000000000000ffff));
 		_idt[i].selector = 0x08;
 		_idt[i].ist = 0x0;
 		_idt[i].type_attr = 0x8e;
-		_idt[i].offset_mid = (uint16_t)(((uint64_t)&isr1 & 0x00000000ffff0000) >> 16u);
-		_idt[i].offset_high = (uint32_t)(((uint64_t)&isr1 & 0xffffffff00000000) >> 32u);
+		_idt[i].offset_mid = (u16)(((u64)&isr1 & 0x00000000ffff0000) >> 16u);
+		_idt[i].offset_high = (u32)(((u64)&isr1 & 0xffffffff00000000) >> 32u);
 		_idt[i].zero = 0;
 	}
 	unsigned char a1, a2;

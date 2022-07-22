@@ -1,5 +1,6 @@
 #include "TeletypeVideoBuffer.hpp"
 #include "IO.hpp"
+#include "varg.hpp"
 namespace TeletypeVideoBuffer
 {	
 	short currentPos{};
@@ -19,11 +20,11 @@ namespace TeletypeVideoBuffer
 		outb(0x0E, 0x3D4);
 		outb(static_cast<unsigned char>((currentPos >> 8) & 0xFF), 0x3D5);
 	}
-	void clear(unsigned long long color)
+	void clear(u64 color)
 	{
-		const unsigned long long value{ color << 8 | color << 24 | color << 40 | color << 56 };
-		unsigned long long* video_buffer = reinterpret_cast<unsigned long long*>(videoBufferAddress);
-		for (unsigned long long* i = video_buffer; i < reinterpret_cast<unsigned long long*>(videoBufferAddress + 4000u); i++)
+		const u64 value{ color << 8 | color << 24 | color << 40 | color << 56 };
+		u64* video_buffer = reinterpret_cast<u64*>(videoBufferAddress);
+		for (u64* i = video_buffer; i < reinterpret_cast<u64*>(videoBufferAddress + 4000u); i++)
 		{
 			*i = value;
 		}
@@ -64,14 +65,42 @@ namespace TeletypeVideoBuffer
 			++size;
 		return size;
 	}
-	/*void printf(const char* fmt, ...)
+	void printf_unsigned(unsigned long long number, int radix)
 	{
-		int* argp = reinterpret_cast<int*>(&fmt);
+		char buffer[32];
+		int pos = 0;
+
+		// convert number to ASCII
+		do
+		{
+			unsigned long long rem = number % radix;
+			number /= radix;
+			buffer[pos++] = hexChars[rem];
+		} while (number > 0);
+
+		// print number in reverse order
+		while (--pos >= 0)
+			putc(buffer[pos]);
+	}
+
+	void printf_signed(long long number, int radix)
+	{
+		if (number < 0)
+		{
+			putc('-');
+			printf_unsigned(-number, radix);
+		}
+		else printf_unsigned(number, radix);
+	}
+	void printf(const char* fmt, ...)
+	{
+		varg args;
+		varg_start(args, fmt);
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
 		int radix = 10;
 		bool sign{};
-		argp++;
+		bool number{};
 		while (*fmt)
 		{
 			switch (state)
@@ -94,9 +123,12 @@ namespace TeletypeVideoBuffer
 					length = State::LENGTH_SHORT;
 					state = State::STATE_LENGTH_SHORT;
 					break;
-				case 'i':
+				case 'l':
 					length = State::LENGTH_INT;
 					state = State::STATE_LENGTH_INT;
+					break;
+				default:
+					goto State_STATE_SPEC;
 					break;
 				}
 				break;
@@ -121,126 +153,79 @@ namespace TeletypeVideoBuffer
 				switch (*fmt)
 				{
 				case 'c':
-					putc(static_cast<char>(*argp));
-					++argp;
+					putc((char)varg_arg<i32>(args));
 					break;
 				case 's':
-					if (length == State::LENGTH_INT || length == State::LENGTH_LONG_LONG)
-					{
-						puts(*reinterpret_cast<char**>(argp));
-						argp+=2;
-					}
-					else
-					{
-						puts(*reinterpret_cast<char**>(argp));
-						++argp;
-					}
+					puts(varg_arg<const i8*>(args));
 					break;
 				case '%':
 					putc('%');
 					break;
 				case 'i':
+				case 'd':
 					radix = 10;
 					sign = true;
-					argp = printf_number(argp, length, sign, radix);
+					number = true;
 					break;
 				case 'u':
 					radix = 10;
 					sign = false;
-					argp = printf_number(argp, length, sign, radix);
+					number = true;
 					break;
 				case 'X':
 				case 'x':
 				case 'p':
 					radix = 16;
 					sign = false;
+					number = true;
 					break;
 				case 'o':
 					radix = 8;
 					sign = false;
+					number = true;
 					break;
 				default: break;
 				}
+				if (number)
+				{
+					if (sign)
+					{
+						switch (length)
+						{
+						case State::LENGTH_SHORT_SHORT:
+						case State::LENGTH_SHORT:
+						case State::LENGTH_DEFAULT:
+						case State::LENGTH_INT:
+							printf_signed(varg_arg<i32>(args), radix);
+							break;
+						case State::LENGTH_LONG_LONG:
+							printf_signed(varg_arg<i64>(args), radix);
+						}
+					}
+					else
+					{
+						switch (length)
+						{
+						case State::LENGTH_SHORT_SHORT:
+						case State::LENGTH_SHORT:
+						case State::LENGTH_DEFAULT:
+						case State::LENGTH_INT:
+							printf_unsigned(varg_arg<u32>(args), radix);
+							break;
+						case State::LENGTH_LONG_LONG:
+							printf_unsigned(varg_arg<u64>(args), radix);
+						}
+					}
+				}
 				state = State::STATE_NORMAL;
-				state = State::LENGTH_DEFAULT;
+				length = State::LENGTH_DEFAULT;
 				radix = 10;
 				sign = false;
+				number = false;
 				break;
 			}
 			++fmt;
 		}
+		varg_end(args);
 	}
-	int* printf_number(int* argp, State length, bool sign, int radix)
-	{
-		char buffer[32]{};
-		unsigned long long number;
-		int number_sign = 1;
-		int pos = 0;
-		switch (length)
-		{
-		case TeletypeVideoBuffer::State::LENGTH_DEFAULT:
-		case TeletypeVideoBuffer::State::LENGTH_SHORT_SHORT:
-		case TeletypeVideoBuffer::State::LENGTH_SHORT:
-			if (sign)
-			{
-				int n = *argp;
-				if (n < 0)
-				{
-					n = -n;
-					number_sign = -1;
-				}
-				number = static_cast<unsigned long long>(n);
-			}
-			else
-			{
-				number = *reinterpret_cast<unsigned int*>(argp);
-			}
-			++argp;
-			break;
-		case TeletypeVideoBuffer::State::LENGTH_INT:
-			if (sign)
-			{
-				int n = *argp;
-				if (n < 0)
-				{
-					n = -n;
-					number_sign = -1;
-				}
-				number = static_cast<unsigned long long>(n);
-			}
-			else
-			{
-				number = *reinterpret_cast<unsigned int*>(argp);
-			}
-			argp += 2;
-			break;
-		case TeletypeVideoBuffer::State::LENGTH_LONG_LONG:
-			if (sign)
-			{
-				long long n = *reinterpret_cast<long long*>(argp);
-				if (n < 0)
-				{
-					n = -n;
-					number_sign = -1;
-				}
-				number = static_cast<unsigned long long>(n);
-			}
-			else
-			{
-				number = *reinterpret_cast<unsigned long long*>(argp);
-			}
-			argp += 4;
-			break;
-		}
-		do
-		{
-			unsigned int rem = number % radix;
-			buffer[pos++] = hexChars[rem];
-		} while (number > 0);
-		if (sign && number_sign < 0)
-			buffer[pos++] = '-';
-		while (--pos >= 0)
-			putc(buffer[pos]);
-		return argp;
-	}*/
 }

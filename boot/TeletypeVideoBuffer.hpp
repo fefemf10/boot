@@ -1,5 +1,6 @@
 #pragma once
-enum Color : unsigned char
+#include "stdtype.hpp"
+enum Color : u8
 {
 	F_BLACK = 0x00,
 	F_BLUE = 0x01,
@@ -37,11 +38,11 @@ enum Color : unsigned char
 
 namespace TeletypeVideoBuffer
 {
-	constexpr unsigned char width = 80;
-	constexpr unsigned char height = 50;
-	constexpr unsigned int videoBufferAddress = 0xB8000;
-	extern short currentPos;
-	const char hexChars[] = {"0123456789ABCDEF"};
+	constexpr u8 width = 80;
+	constexpr u8 height = 50;
+	constexpr u32 videoBufferAddress = 0xB8000;
+	extern i16 currentPos;
+	const u8 hexChars[] = {"0123456789ABCDEF"};
 	enum class State
 	{
 		STATE_NORMAL,
@@ -56,25 +57,25 @@ namespace TeletypeVideoBuffer
 		LENGTH_LONG_LONG,
 	};
 	static char hexToStringOutput[128]{};
-	unsigned short positionFromCoords(unsigned char x, unsigned char y);
+	u16 positionFromCoords(u8 x, u8 y);
 	void setCursorPosition(short position);
-	void clear(unsigned long long color = B_BLACK | F_WHITE);
-	void puts(const char* string, unsigned char color = B_BLACK | F_WHITE);
-	void putc(char c, unsigned char color = B_BLACK | F_WHITE);
-	unsigned int strlen(const char* str);
-	/*void printf(const char* fmt, ...);
-	int* printf_number(int* argp, State length, bool sign, int radix);*/
+	void clear(u64 color = B_BLACK | F_WHITE);
+	void puts(const char* string, u8 color = B_BLACK | F_WHITE);
+	void putc(char c, u8 color = B_BLACK | F_WHITE);
+	u32 strlen(const char* str);
+	void printf(const char* fmt, ...);
+	int* printf_number(int* argp, State length, bool sign, int radix);
 	template<typename T>
 	const char* hexToString(T value)
 	{
 		T* valuePtr = &value;
-		unsigned char* ptr;
-		unsigned char temp;
-		unsigned char size = (sizeof(T)) * 2 - 1;
-		unsigned char i;
+		u8* ptr;
+		u8 temp;
+		u8 size = (sizeof(T)) * 2 - 1;
+		u8 i;
 		for (i = 0; i < size; ++i)
 		{
-			ptr = reinterpret_cast<unsigned char*>(valuePtr) + i;
+			ptr = reinterpret_cast<u8*>(valuePtr) + i;
 			temp = (*ptr & 0xF0) >> 4;
 			hexToStringOutput[size - (i * 2 + 1)] = temp + (temp > 9 ? 55 : 48);
 			temp = (*ptr & 0x0F);
