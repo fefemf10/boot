@@ -245,7 +245,6 @@ del $(ProjectDir)$(Platform)\$(Configuration)\bootloader.obj</Command>
   <ItemGroup>
     <ClInclude Include="stdtype.hpp" />
     <ClInclude Include="TeletypeVideoBuffer.hpp" />
-    <ClInclude Include="varg.hpp" />
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

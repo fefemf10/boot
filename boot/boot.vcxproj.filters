@@ -32,9 +32,6 @@
     <ClInclude Include="TeletypeVideoBuffer.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="varg.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="stdtype.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

@@ -1,6 +1,6 @@
 #include "TeletypeVideoBuffer.hpp"
+#include <cstdarg>
 #include "IO.hpp"
-#include "varg.hpp"
 namespace TeletypeVideoBuffer
 {	
 	short currentPos{};
@@ -94,8 +94,8 @@ namespace TeletypeVideoBuffer
 	}
 	void printf(const char* fmt, ...)
 	{
-		varg args;
-		varg_start(args, fmt);
+		va_list args;
+		va_start(args, fmt);
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
 		int radix = 10;
@@ -153,10 +153,10 @@ namespace TeletypeVideoBuffer
 				switch (*fmt)
 				{
 				case 'c':
-					putc((char)varg_arg<i32>(args));
+					putc((char)va_arg(args, i32));
 					break;
 				case 's':
-					puts(varg_arg<const i8*>(args));
+					puts(va_arg(args, const i8*));
 					break;
 				case '%':
 					putc('%');
@@ -196,10 +196,12 @@ namespace TeletypeVideoBuffer
 						case State::LENGTH_SHORT:
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
-							printf_signed(varg_arg<i32>(args), radix);
+							i32 a;
+							printf_signed(va_arg(args, i32), radix);
 							break;
 						case State::LENGTH_LONG_LONG:
-							printf_signed(varg_arg<i64>(args), radix);
+							i64 b;
+							printf_signed(va_arg(args, i64), radix);
 						}
 					}
 					else
@@ -210,10 +212,12 @@ namespace TeletypeVideoBuffer
 						case State::LENGTH_SHORT:
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
-							printf_unsigned(varg_arg<u32>(args), radix);
+							u32 a;
+							printf_unsigned(va_arg(args, u32), radix);
 							break;
 						case State::LENGTH_LONG_LONG:
-							printf_unsigned(varg_arg<u64>(args), radix);
+							u64 b;
+							printf_unsigned(va_arg(args, u64), radix);
 						}
 					}
 				}
@@ -226,6 +230,6 @@ namespace TeletypeVideoBuffer
 			}
 			++fmt;
 		}
-		varg_end(args);
+		va_end(args);
 	}
 }

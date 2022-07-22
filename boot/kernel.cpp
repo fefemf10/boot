@@ -5,5 +5,5 @@ extern "C" void kernel_start()
 {
 	initializeIDT();
 	TeletypeVideoBuffer::clear();
-	TeletypeVideoBuffer::printf("Test %% %s %c", "abc", 'z');
+	TeletypeVideoBuffer::printf("Test %% %i %c %s", 0, 'z', "asd");
 }
