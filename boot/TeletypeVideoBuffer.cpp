@@ -4,11 +4,11 @@
 namespace TeletypeVideoBuffer
 {	
 	short currentPos{};
-	unsigned short positionFromCoords(unsigned char x, unsigned char y)
+	u16 positionFromCoords(u8 x, u8 y)
 	{
 		return y * TeletypeVideoBuffer::width + x;
 	}
-	void setCursorPosition(short position)
+	void setCursorPosition(i16 position)
 	{
 		currentPos = position;
 		if (currentPos < 0)
@@ -16,9 +16,9 @@ namespace TeletypeVideoBuffer
 		else if (currentPos >= 2000)
 			currentPos = 2000;
 		outb(0x0F, 0x3D4);
-		outb(static_cast<unsigned char>(currentPos & 0xFF), 0x3D5);
+		outb(static_cast<u8>(currentPos & 0xFF), 0x3D5);
 		outb(0x0E, 0x3D4);
-		outb(static_cast<unsigned char>((currentPos >> 8) & 0xFF), 0x3D5);
+		outb(static_cast<u8>((currentPos >> 8) & 0xFF), 0x3D5);
 	}
 	void clear(u64 color)
 	{
@@ -29,7 +29,7 @@ namespace TeletypeVideoBuffer
 			*i = value;
 		}
 	}
-	void puts(const char* string, unsigned char color)
+	void puts(const char* string, u8 color)
 	{
 		short index = currentPos;
 		while (*string)
@@ -43,8 +43,8 @@ namespace TeletypeVideoBuffer
 				index -= index % width;
 				break;
 			default:
-				*reinterpret_cast<unsigned char*>(videoBufferAddress + index * 2) = *string;
-				*reinterpret_cast<unsigned char*>(videoBufferAddress + index * 2 + 1) = color;
+				*reinterpret_cast<u8*>(videoBufferAddress + index * 2) = *string;
+				*reinterpret_cast<u8*>(videoBufferAddress + index * 2 + 1) = color;
 				++index;
 				break;
 			}
@@ -52,28 +52,28 @@ namespace TeletypeVideoBuffer
 		}
 		setCursorPosition(index);
 	}
-	void putc(char c, unsigned char color)
+	void putc(char c, u8 color)
 	{
 		*reinterpret_cast<unsigned char*>(videoBufferAddress + currentPos * 2) = c;
 		*reinterpret_cast<unsigned char*>(videoBufferAddress + currentPos * 2 + 1) = color;
 		setCursorPosition(currentPos + 1);
 	}
-	unsigned int strlen(const char* str)
+	u32 strlen(const char* str)
 	{
 		unsigned int size{};
 		while (*str)
 			++size;
 		return size;
 	}
-	void printf_unsigned(unsigned long long number, int radix)
+	void printf_unsigned(u64 number, i32 radix)
 	{
-		char buffer[32];
-		int pos = 0;
+		i8 buffer[32];
+		i32 pos = 0;
 
 		// convert number to ASCII
 		do
 		{
-			unsigned long long rem = number % radix;
+			u64 rem = number % radix;
 			number /= radix;
 			buffer[pos++] = hexChars[rem];
 		} while (number > 0);
@@ -82,8 +82,7 @@ namespace TeletypeVideoBuffer
 		while (--pos >= 0)
 			putc(buffer[pos]);
 	}
-
-	void printf_signed(long long number, int radix)
+	void printf_signed(i64 number, i32 radix)
 	{
 		if (number < 0)
 		{
@@ -98,7 +97,7 @@ namespace TeletypeVideoBuffer
 		va_start(args, fmt);
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
-		int radix = 10;
+		i32 radix = 10;
 		bool sign{};
 		bool number{};
 		while (*fmt)
@@ -153,7 +152,7 @@ namespace TeletypeVideoBuffer
 				switch (*fmt)
 				{
 				case 'c':
-					putc((char)va_arg(args, i32));
+					putc(va_arg(args, i32));
 					break;
 				case 's':
 					puts(va_arg(args, const i8*));
@@ -196,11 +195,9 @@ namespace TeletypeVideoBuffer
 						case State::LENGTH_SHORT:
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
-							i32 a;
 							printf_signed(va_arg(args, i32), radix);
 							break;
 						case State::LENGTH_LONG_LONG:
-							i64 b;
 							printf_signed(va_arg(args, i64), radix);
 						}
 					}
@@ -212,11 +209,9 @@ namespace TeletypeVideoBuffer
 						case State::LENGTH_SHORT:
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
-							u32 a;
 							printf_unsigned(va_arg(args, u32), radix);
 							break;
 						case State::LENGTH_LONG_LONG:
-							u64 b;
 							printf_unsigned(va_arg(args, u64), radix);
 						}
 					}

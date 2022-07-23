@@ -58,13 +58,14 @@ namespace TeletypeVideoBuffer
 	};
 	static char hexToStringOutput[128]{};
 	u16 positionFromCoords(u8 x, u8 y);
-	void setCursorPosition(short position);
+	void setCursorPosition(i16 position);
 	void clear(u64 color = B_BLACK | F_WHITE);
 	void puts(const char* string, u8 color = B_BLACK | F_WHITE);
 	void putc(char c, u8 color = B_BLACK | F_WHITE);
 	u32 strlen(const char* str);
 	void printf(const char* fmt, ...);
-	int* printf_number(int* argp, State length, bool sign, int radix);
+	void printf_unsigned(u64 number, i32 radix);
+	void printf_signed(i64 number, i32 radix);
 	template<typename T>
 	const char* hexToString(T value)
 	{
