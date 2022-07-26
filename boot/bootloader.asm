@@ -9,7 +9,7 @@ ATA1_P equ 0x0170
 ATA1_C equ 0x0376
 LBABIT equ 0xE0
 SECONDARYBIT equ 0x100
-COUNTSECTORS equ 0x13
+COUNTSECTORS equ 0x80
 
 xor ax, ax  ; set up segments
 mov ds, ax
@@ -87,7 +87,8 @@ rep insw
 
 
 ;mov bx, word IDT
-;mov ax, word 0x0213 ; int 13/ah=0x02 BIOS read disk sectors into memory, number of sectors we want to read
+;mov ah, 0x02
+;mov al, COUNTSECTORS; int 13/ah=0x02 BIOS read disk sectors into memory, number of sectors we want to read
 ;mov dh, 0x00 ; head 0, disk 0x?=?
 ;mov cx, word 0x0002; cylinder 0 ;start reading at CL sector (sector 2 in this case, right ater out bootsector)
 ;int 0x13

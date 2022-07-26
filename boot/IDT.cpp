@@ -161,8 +161,39 @@ static bool numLock = false;
 static unsigned char lastScancode{};
 
 extern "C" IDT64 _idt[256];
-extern "C" u64 isr32;
-extern "C" u64 isr[32];
+extern "C" u64 isr33;
+extern "C" u64 isr0;
+extern "C" u64 isr1;
+extern "C" u64 isr2;
+extern "C" u64 isr3;
+extern "C" u64 isr4;
+extern "C" u64 isr5;
+extern "C" u64 isr6;
+extern "C" u64 isr7;
+extern "C" u64 isr8;
+extern "C" u64 isr9;
+extern "C" u64 isr10;
+extern "C" u64 isr11;
+extern "C" u64 isr12;
+extern "C" u64 isr13;
+extern "C" u64 isr14;
+extern "C" u64 isr15;
+extern "C" u64 isr16;
+extern "C" u64 isr17;
+extern "C" u64 isr18;
+extern "C" u64 isr19;
+extern "C" u64 isr20;
+extern "C" u64 isr21;
+extern "C" u64 isr22;
+extern "C" u64 isr23;
+extern "C" u64 isr24;
+extern "C" u64 isr25;
+extern "C" u64 isr26;
+extern "C" u64 isr27;
+extern "C" u64 isr28;
+extern "C" u64 isr29;
+extern "C" u64 isr30;
+extern "C" u64 isr31;
 extern "C" void loadIDT();
 
 void setMaskIRQ(u8 lineIRQ)
@@ -199,25 +230,57 @@ void clearMaskIRQ(u8 lineIRQ)
 	outb(value, port);
 }
 
-void initializeIDT()
+void setIDT(size_t index, u64& address)
 {
+	_idt[index].setOffset(&address);
+	_idt[index].selector = 0x08;
+	_idt[index].typeAttr = 0x80 | Gate::TRAP;
+}
+
+void initializeIDT()
+{/*
 	for (size_t i = 0; i < 32; i++)
 	{
-		_idt[i].setOffset(reinterpret_cast<u64*>(reinterpret_cast<u8*>(isr[i]) + 0x7e00));
+		_idt[i].setOffset(reinterpret_cast<u64*>(isr[i] + 0x8e00+2+16));
 		_idt[i].selector = 0x08;
 		_idt[i].typeAttr = 0x80 | Gate::TRAP;
-	}
-	
-	int a = 5;
-	while (true)
-	{
-		_idt[a].ist = 0x5;
-	}
-	_idt[0x21].setOffset(&isr32);
+	}*/
+	setIDT(0, isr0);
+	setIDT(1, isr1);
+	setIDT(2, isr2);
+	setIDT(3, isr3);
+	setIDT(4, isr4);
+	setIDT(5, isr5);
+	setIDT(6, isr6);
+	setIDT(7, isr7);
+	setIDT(8, isr8);
+	setIDT(9, isr9);
+	setIDT(10, isr10);
+	setIDT(11, isr11);
+	setIDT(12, isr12);
+	setIDT(13, isr13);
+	setIDT(14, isr14);
+	setIDT(15, isr15);
+	setIDT(16, isr16);
+	setIDT(17, isr17);
+	setIDT(18, isr18);
+	setIDT(19, isr19);
+	setIDT(20, isr20);
+	setIDT(21, isr21);
+	setIDT(22, isr22);
+	setIDT(23, isr23);
+	setIDT(24, isr24);
+	setIDT(25, isr25);
+	setIDT(26, isr26);
+	setIDT(27, isr27);
+	setIDT(28, isr28);
+	setIDT(29, isr29);
+	setIDT(30, isr30);
+	setIDT(31, isr31);
+	_idt[0x21].setOffset(&isr33);
 	_idt[0x21].selector = 0x08;
 	_idt[0x21].typeAttr = 0x80 | Gate::INTERRUPT;
 
-	
 	u8 mask1 = inb(PIC1_D);
 	u8 mask2 = inb(PIC2_D);
 	//ICW1
@@ -227,17 +290,18 @@ void initializeIDT()
 	outb(0x20, PIC1_D);//0x20 + 1 = 0x21 keyboard in IDT
 	outb(0x28, PIC2_D);
 	//ICW3
-	outb(0x04, PIC1_D);
-	outb(0x02, PIC2_D);
-	//ICW4
+	outb(0x00, PIC1_D);
+	outb(0x00, PIC2_D);
+	//ICW4;
 	outb(ICW_8086, PIC1_D);
 	outb(ICW_8086, PIC2_D);
 	//mask interrupt
 	outb(mask1, PIC1_D);
 	outb(mask2, PIC2_D);
 
-	outb(0xFF, PIC1_D);//disable all
-	outb(0xFF, PIC1_D);//disable all
+	outb(0xFF, PIC1_D);
+	outb(0xFF, PIC2_D);
+
 	clearMaskIRQ(1);//enable IRQ from keyboard
 	loadIDT();
 }
@@ -389,18 +453,18 @@ void standartKeyboard(unsigned char scancode, unsigned char c)
 	lastScancode = scancode;
 }
 
-extern "C" void isr32_handler()
+extern "C" void isr33_handler()
 {
 	unsigned char status;
 	unsigned char keycode;
-	outb(0x20, 0x20);//PIC1 обработали прерывание EOI
-	outb(0x20, 0xa0);//PIC2 обработали прерывание EOI
+	
 	status = inb(KEYBOARD_PORT::STATUS_PORT);
 	if (status & 0x01)
 	{
 		keycode = inb(KEYBOARD_PORT::DATA_PORT);
 		standartKeyboard(keycode, scancodes[keycode]);
 	}
+	outb(0x20, PIC1_C);//PIC1 обработали прерывание EOI
 }
 
 void IDT64::setOffset(u64* offset)

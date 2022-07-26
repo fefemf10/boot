@@ -4,6 +4,7 @@ public outw
 public inb
 public inw
 public reboot
+public iowait
 
 section '.text$mn' code readable executable
 inb:
@@ -29,3 +30,9 @@ outw:
 reboot:
 	int 0x18
 	hlt
+
+iowait:
+	mov al, 0
+	mov dx, 0x80
+	out dx, al 
+	ret

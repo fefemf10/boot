@@ -1,6 +1,6 @@
 format MS64 COFF
-
-extrn isr32_handler
+section '.text$b' code readable executable
+extrn isr33_handler
 extrn isr0_handler
 extrn isr1_handler
 extrn isr2_handler
@@ -35,10 +35,40 @@ extrn isr30_handler
 extrn isr31_handler
 
 public loadIDT
-public isr32
-public isr
+public isr33
+public isr0
+public isr1
+public isr2
+public isr3
+public isr4
+public isr5
+public isr6
+public isr7
+public isr8
+public isr9
+public isr10
+public isr11
+public isr12
+public isr13
+public isr14
+public isr15
+public isr16
+public isr17
+public isr18
+public isr19
+public isr20
+public isr21
+public isr22
+public isr23
+public isr24
+public isr25
+public isr26
+public isr27
+public isr28
+public isr29
+public isr30
+public isr31
 
-section '.text$b' code readable executable
 
 idtDescriptor:
 	dw 4095
@@ -65,44 +95,10 @@ macro popall
 	pop rcx
 	pop rax
 }
-isr:
-dq isr0 - $
-dq isr1 - $
-dq isr2 - $
-dq isr3 - $
-dq isr4 - $
-dq isr5 - $
-dq isr6 - $
-dq isr7 - $
-dq isr8 - $
-dq isr9 - $
-dq isr10 - $
-dq isr11 - $
-dq isr12 - $
-dq isr13 - $
-dq isr14 - $
-dq isr15 - $
-dq isr16 - $
-dq isr17 - $
-dq isr18 - $
-dq isr19 - $
-dq isr20 - $
-dq isr21 - $
-dq isr22 - $
-dq isr23 - $
-dq isr24 - $
-dq isr25 - $
-dq isr26 - $
-dq isr27 - $
-dq isr28 - $
-dq isr29 - $
-dq isr30 - $
-dq isr31 - $
 
-isr32:
+isr33:
 	pushall
-	cld
-	call isr32_handler
+	call isr33_handler
 	popall
 	iretq
 
@@ -111,195 +107,194 @@ isr0:
 	cld
 	call isr0_handler
 	popall
-	iret
+	iretq
 isr1:
 	pushall
 	cld
 	call isr1_handler
 	popall
-	iret
+	iretq
 isr2:
 	pushall
 	cld
 	call isr2_handler
 	popall
-	iret
+	iretq
 isr3:
 	pushall
 	cld
 	call isr3_handler
 	popall
-	iret
+	iretq
 isr4:
 	pushall
 	cld
 	call isr4_handler
 	popall
-	iret
+	iretq
 isr5:
 	pushall
 	cld
 	call isr5_handler
 	popall
-	iret
+	iretq
 isr6:
 	pushall
 	cld
 	call isr6_handler
 	popall
-	iret
+	iretq
 isr7:
 	pushall
 	cld
 	call isr7_handler
 	popall
-	iret
+	iretq
 isr8:
 	pushall
 	cld
 	call isr8_handler
 	popall
-	iret
+	iretq
 isr9:
 	pushall
 	cld
 	call isr9_handler
 	popall
-	iret
+	iretq
 isr10:
 	pushall
 	cld
 	call isr10_handler
 	popall
-	iret
+	iretq
 isr11:
 	pushall
 	cld
 	call isr11_handler
 	popall
-	iret
+	iretq
 isr12:
 	pushall
 	cld
 	call isr12_handler
 	popall
-	iret
+	iretq
 isr13:
 	pushall
 	cld
 	call isr13_handler
 	popall
-	iret
+	iretq
 isr14:
 	pushall
 	cld
 	call isr14_handler
 	popall
-	iret
+	iretq
 isr15:
 	pushall
 	cld
 	call isr15_handler
 	popall
-	iret
+	iretq
 isr16:
 	pushall
 	cld
 	call isr16_handler
 	popall
-	iret
+	iretq
 isr17:
 	pushall
 	cld
 	call isr17_handler
 	popall
-	iret
+	iretq
 isr18:
 	pushall
 	cld
 	call isr18_handler
 	popall
-	iret
+	iretq
 isr19:
 	pushall
 	cld
 	call isr19_handler
 	popall
-	iret
+	iretq
 isr20:
 	pushall
 	cld
 	call isr20_handler
 	popall
-	iret
+	iretq
 isr21:
 	pushall
 	cld
 	call isr21_handler
 	popall
-	iret
+	iretq
 isr22:
 	pushall
 	cld
 	call isr22_handler
 	popall
-	iret
+	iretq
 isr23:
 	pushall
 	cld
 	call isr23_handler
 	popall
-	iret
+	iretq
 isr24:
 	pushall
 	cld
 	call isr24_handler
 	popall
-	iret
+	iretq
 isr25:
 	pushall
 	cld
 	call isr25_handler
 	popall
-	iret
+	iretq
 isr26:
 	pushall
 	cld
 	call isr26_handler
 	popall
-	iret
+	iretq
 isr27:
 	pushall
 	cld
 	call isr27_handler
 	popall
-	iret
+	iretq
 isr28:
 	pushall
 	cld
 	call isr28_handler
 	popall
-	iret
+	iretq
 isr29:
 	pushall
 	cld
 	call isr29_handler
 	popall
-	iret
+	iretq
 isr30:
 	pushall
 	cld
 	call isr30_handler
 	popall
-	iret
+	iretq
 isr31:
 	pushall
 	cld
 	call isr31_handler
 	popall
-	iret
+	iretq
 loadIDT:
 	lidt [idtDescriptor]
 	sti
 	ret
-
