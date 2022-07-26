@@ -1,22 +1,29 @@
 #pragma once
-#include "stdtype.hpp"
+#include "IDT.hpp"
 #include "IO.hpp"
 #include "TeletypeVideoBuffer.hpp"
 
-
-enum PIC : unsigned char
+enum Gate : u8
+{
+	INTERRUPT = 0xE,
+	TRAP = 0xF
+};
+enum PIC : u8
 {
 	PIC1_C = 0x20,
 	PIC1_D = 0x21,
 	PIC2_C = 0xA0,
 	PIC2_D = 0xA1,
+	ICW4 = 0x01,
+	ICW1 = 0x10,
+	ICW_8086 = 0x01
 };
-enum KEYBOARD_PORT : unsigned char
+enum KEYBOARD_PORT : u8
 {
 	DATA_PORT = 0x60,
 	STATUS_PORT = 0x64
 };
-enum KEYBOARD_KEYS : unsigned char
+enum KEYBOARD_KEYS : u8
 {
 	ERROR,
 	K_ESC,
@@ -152,54 +159,86 @@ static bool rightCtrlPressed = false;
 static bool capsLock = false;
 static bool numLock = false;
 static unsigned char lastScancode{};
-struct IDT64
-{
-	u16 offset_low;
-	u16 selector;
-	u8 ist;
-	u8 type_attr;
-	u16 offset_mid;
-	u32 offset_high;
-	u32 zero;
-};
+
 extern "C" IDT64 _idt[256];
-extern "C" u64 isr1;
+extern "C" u64 isr32;
+extern "C" u64 isr[32];
 extern "C" void loadIDT();
+
+void setMaskIRQ(u8 lineIRQ)
+{
+	u16 port;
+	u8 value;
+	if (lineIRQ < 8)
+	{
+		port = PIC1_D;
+	}
+	else
+	{
+		port = PIC2_D;
+		lineIRQ -= 8;
+	}
+	value = inb(port) | (1 << lineIRQ);
+	outb(value, port);
+}
+
+void clearMaskIRQ(u8 lineIRQ)
+{
+	u16 port;
+	u8 value;
+	if (lineIRQ < 8)
+	{
+		port = PIC1_D;
+	}
+	else
+	{
+		port = PIC2_D;
+		lineIRQ -= 8;
+	}
+	value = inb(port) & ~(1 << lineIRQ);
+	outb(value, port);
+}
 
 void initializeIDT()
 {
-	for (u64 i = 0x21; i < 0x22; i++)//0x21 keyboard
+	for (size_t i = 0; i < 32; i++)
 	{
-		_idt[i].offset_low = (u16)(((u64)&isr1 & 0x000000000000ffff));
+		_idt[i].setOffset(reinterpret_cast<u64*>(reinterpret_cast<u8*>(isr[i]) + 0x7e00));
 		_idt[i].selector = 0x08;
-		_idt[i].ist = 0x0;
-		_idt[i].type_attr = 0x8e;
-		_idt[i].offset_mid = (u16)(((u64)&isr1 & 0x00000000ffff0000) >> 16u);
-		_idt[i].offset_high = (u32)(((u64)&isr1 & 0xffffffff00000000) >> 32u);
-		_idt[i].zero = 0;
+		_idt[i].typeAttr = 0x80 | Gate::TRAP;
 	}
-	unsigned char a1, a2;
+	
+	int a = 5;
+	while (true)
+	{
+		_idt[a].ist = 0x5;
+	}
+	_idt[0x21].setOffset(&isr32);
+	_idt[0x21].selector = 0x08;
+	_idt[0x21].typeAttr = 0x80 | Gate::INTERRUPT;
 
-	a1 = inb(PIC1_D);
-	a2 = inb(PIC2_D);
+	
+	u8 mask1 = inb(PIC1_D);
+	u8 mask2 = inb(PIC2_D);
 	//ICW1
-	outb(0x11, PIC1_C);
-	outb(0x11, PIC2_C);
+	outb(ICW1 | ICW4, PIC1_C);
+	outb(ICW1 | ICW4, PIC2_C);
 	//ICW2
 	outb(0x20, PIC1_D);//0x20 + 1 = 0x21 keyboard in IDT
 	outb(0x28, PIC2_D);
 	//ICW3
-	outb(0x00, PIC1_D);
-	outb(0x00, PIC2_D);
+	outb(0x04, PIC1_D);
+	outb(0x02, PIC2_D);
 	//ICW4
-	outb(0x01, PIC1_D);
-	outb(0x01, PIC2_D);
-	//mask interrupts
-	outb(a1, PIC1_D);
-	outb(a2, PIC2_D);
+	outb(ICW_8086, PIC1_D);
+	outb(ICW_8086, PIC2_D);
+	//mask interrupt
+	outb(mask1, PIC1_D);
+	outb(mask2, PIC2_D);
 
-	outb(0xfd, PIC1_D);
-	outb(0xff, PIC2_D);
+	outb(0xFF, PIC1_D);//disable all
+	outb(0xFF, PIC1_D);//disable all
+	clearMaskIRQ(1);//enable IRQ from keyboard
 	loadIDT();
 }
 
@@ -247,7 +286,7 @@ void standartKeyboard(unsigned char scancode, unsigned char c)
 			}
 			else
 			{
-				switch ((leftShiftPressed | rightShiftPressed) ^ capsLock && !additional)
+				switch (((leftShiftPressed | rightShiftPressed) ^ capsLock) && !additional)
 				{
 				case true:
 					TeletypeVideoBuffer::putc(c - 32);
@@ -350,7 +389,7 @@ void standartKeyboard(unsigned char scancode, unsigned char c)
 	lastScancode = scancode;
 }
 
-extern "C" void isr1_handler()
+extern "C" void isr32_handler()
 {
 	unsigned char status;
 	unsigned char keycode;
@@ -362,4 +401,20 @@ extern "C" void isr1_handler()
 		keycode = inb(KEYBOARD_PORT::DATA_PORT);
 		standartKeyboard(keycode, scancodes[keycode]);
 	}
+}
+
+void IDT64::setOffset(u64* offset)
+{
+	offsetLow = static_cast<u16>(reinterpret_cast<u64>(offset) & 0x000000000000ffff);
+	offsetMid = static_cast<u16>((reinterpret_cast<u64>(offset) & 0x00000000ffff0000) >> 16u);
+	offsetHigh = static_cast<u32>((reinterpret_cast<u64>(offset) & 0xffffffff00000000) >> 32u);
+}
+
+u64* IDT64::getOffset()
+{
+	u64 offset{};
+	offset |= static_cast<u64>(offsetLow);
+	offset |= static_cast<u64>(offsetMid) << 16u;
+	offset |= static_cast<u64>(offsetHigh) << 32u;
+	return reinterpret_cast<u64*>(offset);
 }

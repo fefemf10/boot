@@ -1,9 +1,10 @@
 #include "TeletypeVideoBuffer.hpp"
 #include <cstdarg>
 #include "IO.hpp"
+
 namespace TeletypeVideoBuffer
-{	
-	short currentPos{};
+{
+	i16 currentPos{};
 	u16 positionFromCoords(u8 x, u8 y)
 	{
 		return y * TeletypeVideoBuffer::width + x;

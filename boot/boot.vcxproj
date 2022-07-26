@@ -87,6 +87,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.bin</TargetExt>
+    <LibraryWPath />
+    <LibraryPath>$(VC_LibraryPath_x64)</LibraryPath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(VC_IncludePath)</IncludePath>
+    <ExternalIncludePath>$(VC_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -183,7 +188,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -191,7 +196,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MaxSpeed</Optimization>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
@@ -208,7 +213,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <EntryPointSymbol>kernel_start</EntryPointSymbol>
       <SectionAlignment>16</SectionAlignment>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <AdditionalOptions>/nocoffgrpinfo /kernel %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies />
       <RandomizedBaseAddress>
@@ -224,15 +229,14 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
     </Lib>
     <PostBuildEvent>
       <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)$(TargetName)$(TargetExt)
-objcopy -O binary $(ProjectDir)$(Platform)\$(Configuration)\bootloader.obj  $(ProjectDir)$(Platform)\$(Configuration)\bootloader.obj
 type $(OutDir)boot.bin &gt; $(OutDir)os.bin
 align $(OutDir)os.bin 10485760
 qemu-system-x86_64 -drive format=raw,file="$(OutDir)os.bin",if=ide,index=0,media=disk
-del $(OutDir)$(TargetName)$(TargetExt)
-del $(ProjectDir)$(Platform)\$(Configuration)\bootloader.obj</Command>
+del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="exceptionHandlers.cpp" />
     <ClCompile Include="IDT.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -243,6 +247,7 @@ del $(ProjectDir)$(Platform)\$(Configuration)\bootloader.obj</Command>
     <ClCompile Include="TeletypeVideoBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IDT.hpp" />
     <ClInclude Include="stdtype.hpp" />
     <ClInclude Include="TeletypeVideoBuffer.hpp" />
   </ItemGroup>
