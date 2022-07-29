@@ -88,7 +88,7 @@
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.bin</TargetExt>
     <LibraryWPath />
-    <LibraryPath>$(VC_LibraryPath_x64)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(VC_IncludePath)</IncludePath>
     <ExternalIncludePath>$(VC_IncludePath)</ExternalIncludePath>
@@ -201,8 +201,9 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
       <StructMemberAlignment>Default</StructMemberAlignment>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
@@ -218,11 +219,14 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <AdditionalDependencies />
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
-      <FixedBaseAddress>
-      </FixedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
       <ShowProgress>NotSet</ShowProgress>
       <FunctionOrder>
       </FunctionOrder>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <BaseAddress>0x100000</BaseAddress>
+      <LargeAddressAware>
+      </LargeAddressAware>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
@@ -236,20 +240,22 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="exceptionHandlers.cpp" />
-    <ClCompile Include="IDT.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    <ClCompile Include="cpuio.ixx" />
+    <ClCompile Include="disk.ixx" />
+    <ClCompile Include="GDT.ixx" />
+    <ClCompile Include="IDT.ixx" />
+    <ClCompile Include="IRQ.ixx" />
+    <ClCompile Include="ISR.ixx" />
+    <ClCompile Include="kernel.ixx" />
+    <ClCompile Include="kernell.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="IO.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="kernel.cpp" />
-    <ClCompile Include="TeletypeVideoBuffer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="IDT.hpp" />
-    <ClInclude Include="stdtype.hpp" />
-    <ClInclude Include="TeletypeVideoBuffer.hpp" />
+    <ClCompile Include="keyboard.ixx" />
+    <ClCompile Include="pci.ixx" />
+    <ClCompile Include="PIC.ixx" />
+    <ClCompile Include="teletype.ixx" />
+    <ClCompile Include="types.ixx" />
+    <ClCompile Include="vec.ixx" />
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -259,12 +265,9 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </DeploymentContent>
     </FASM>
-    <FASM Include="IDTasm.asm">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </FASM>
-    <FASM Include="IOasm.asm">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </FASM>
+    <FASM Include="IOasm.asm" />
+    <FASM Include="IRQasm.asm" />
+    <FASM Include="ISRasm.asm" />
     <FASM Include="secondloader.asm" />
   </ItemGroup>
   <ItemGroup>

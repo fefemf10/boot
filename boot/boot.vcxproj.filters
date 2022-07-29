@@ -15,44 +15,63 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="kernel.cpp">
+    <ClCompile Include="kernell.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="IDT.cpp">
+    <ClCompile Include="vec.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="IO.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClCompile>
-    <ClCompile Include="TeletypeVideoBuffer.cpp">
+    <ClCompile Include="disk.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="exceptionHandlers.cpp">
+    <ClCompile Include="types.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="TeletypeVideoBuffer.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="stdtype.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="IDT.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
+    <ClCompile Include="cpuio.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="teletype.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="GDT.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboard.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="IDT.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="pci.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="ISR.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="IRQ.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="PIC.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
-    <FASM Include="IDTasm.asm">
+    <FASM Include="secondloader.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
+    <FASM Include="ISRasm.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
+    <FASM Include="IRQasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
     <FASM Include="IOasm.asm">
-      <Filter>Исходные файлы</Filter>
-    </FASM>
-    <FASM Include="secondloader.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
   </ItemGroup>
