@@ -16,5 +16,6 @@ export namespace cpuio
 	extern "C" void outw(u16 data, u16 port);
 	extern "C" void outdw(u32 data, u16 port);
 	extern "C" void reboot();
+	extern "C" void jmping();
 	extern "C" void iowait();
 }

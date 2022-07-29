@@ -235,7 +235,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)$(TargetName)$(TargetExt)
 type $(OutDir)boot.bin &gt; $(OutDir)os.bin
 align $(OutDir)os.bin 10485760
-qemu-system-x86_64 -drive format=raw,file="$(OutDir)os.bin",if=ide,index=0,media=disk
+qemu-system-x86_64 -display sdl -drive format=raw,file="$(OutDir)os.bin",if=ide,index=0,media=disk
 del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

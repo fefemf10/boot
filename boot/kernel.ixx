@@ -23,17 +23,14 @@ import cpuio;
 //	teletype::printf("headerType: %hx\n", header.headerType & 0xFF);
 //	teletype::printf("builtInSeltTest: %hx\n", header.builtInSeltTest & 0xFF);*/
 //}
-extern "C" void kernel_start(const cpuio::regs& regs)
+extern "C" void kernel_start()
 {
-	//teletype::putregs(regs);
 	IDT::initialize();
 	ISR::initialize();
 	IRQ::initialize();
-	int a = 5;
-	int b = 0;
-	int c = a / b;
-	teletype::printf("%l", c);
-	//teletype::clear();
+	teletype::clear();
+	teletype::puts("KLOWN");
+	cpuio::jmping();
 	/*pci::checkAllBuses();
 	teletype::printf("%d", pci::countHeaders);
 	for (u8 i = 0; i < pci::countHeaders; i++)

@@ -86,7 +86,6 @@ namespace ISR
 	}
 	export void initialize()
 	{
-
 		IDT::set(0, isr0);
 		IDT::set(1, isr1);
 		IDT::set(2, isr2);

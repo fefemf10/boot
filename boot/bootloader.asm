@@ -2,15 +2,6 @@ format MS64 COFF
 org 0x7c00
 use16
 SECONDLOADER equ 0x7e00
-KERNEL equ 0x7e00
-IDT equ 0x7e00
-ATA0_P equ 0x01F0
-ATA0_C equ 0x03F6
-ATA1_P equ 0x0170
-ATA1_C equ 0x0376
-LBABIT equ 0xE0
-SECONDARYBIT equ 0x100
-COUNTSECTORS equ 0x80
 
 xor ax, ax  ; set up segments
 mov ds, ax
@@ -21,109 +12,12 @@ mov ss, ax   ; setup stack
 mov sp, 0x7C00
 cld
 cli
-
-;mov al, dl
-;or al, 0xE0
-;mov dx, ATA0_P + 6
-;out dx, al
-;
-;mov dx, ATA0_P + 2
-;mov al, 0; sectorcount high byte 
-;out dx, al
-;
-;mov dx, ATA0_P + 3
-;mov al, 0; lba4
-;out dx, al
-;
-;mov dx, ATA0_P + 4
-;mov al, 0; lba5
-;out dx, al
-;
-;mov dx, ATA0_P + 5
-;mov al, 0; lba6
-;out dx, al
-;
-;mov dx, ATA0_P + 2
-;mov al, COUNTSECTORS; sectorcount low byte 
-;out dx, al
-;
-;mov dx, ATA0_P + 3
-;mov al, 1; lba1
-;out dx, al
-;
-;mov dx, ATA0_P + 4
-;mov al, 0; lba2
-;out dx, al
-;
-;mov dx, ATA0_P + 5
-;mov al, 0; lba3
-;out dx, al
-;
-;mov dx, ATA0_P + 7
-;mov al, 0x24; read sectors ext
-;out dx, al
-;
-;mov cx, 4
-;
-;.lp1:
-;	in al, dx
-;	test al, 0x80 ;BSY bit?
-;	jne .retry
-;	test al, 0x08 ;DRQ bit?
-;	jne .data_ready
-;.retry:
-;	dec cx
-;	jg .lp1
-;
-;.pior_l:
-;	in al, dx
-;	test al, 0x80; BSY
-;	jne .pior_l
-;	test al, 0x21; ERR or DF
-;	jne .fail
-;
-;.data_ready:
-;mov ax, 0x100; 256 word
-;mov bx, COUNTSECTORS
-;mul bx
-;mov cx, ax
-;mov di, word IDT
-;mov dx, ATA0_P; data i/o
-;xor ax, ax
-;mov es, ax
-;rep insw
-;mov dx, ATA0_P + 7
-;in al, dx
-;in al, dx
-;in al, dx
-;in al, dx
-
+push dx
 mov si, readPacketSECONDLOADER
 mov ah, 0x42
-mov dl, 0x80
 int 0x13
 
 jmp enterProtectedMode
-use16
-.fail:
-	mov dx, ATA0_P + 1
-	in al, dx
-	mov dl, al
-	mov si, strr
-	call print
-	jmp $
-
-print:
-   lodsb
-   or al, al  ;zero=end of str
-   jz done    ;get out
-   mov ah, 0x0E
-   mov bh, 0
-   int 0x10
-   jmp print
-done:
-   ret
-strr db "stop", 0
 
 include 'gdt.inc'
 
@@ -168,6 +62,7 @@ startProtectedMode:
 	jmp codeseg:startLongMode
 use64
 startLongMode:
+	pop dx
 	jmp SECONDLOADER
 readPacketSECONDLOADER:
 	db 0x10

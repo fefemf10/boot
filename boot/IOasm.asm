@@ -6,6 +6,7 @@ public inb
 public inw
 public indw
 public reboot
+public jmping
 public iowait
 public loadIDTR
 
@@ -43,6 +44,9 @@ outdw:
 reboot:
 	int 0x18
 	hlt
+
+jmping:
+	jmp $
 
 iowait:
 	mov al, 0
