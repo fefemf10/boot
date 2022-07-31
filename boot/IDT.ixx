@@ -2,6 +2,7 @@ export module IDT;
 import types;
 import teletype;
 import PIC;
+import cpuio;
 export namespace IDT
 {
 	enum Gate : u8
@@ -15,6 +16,7 @@ export namespace IDT
 		u16 size;
 		u64 offset;
 	};
+#pragma pack(1)
 	struct IDT
 	{
 		u16 offsetLow;
@@ -46,13 +48,14 @@ export namespace IDT
 	{
 		idt[index].setOffset(function);
 		idt[index].selector = 0x08;
-		idt[index].typeAttr = 0x80 | (index < 32 ? Gate::TRAP : Gate::INTERRUPT);
+		idt[index].typeAttr = 0x80 | Gate::INTERRUPT;
 	}
 	void initialize()
 	{
 		idtr.size = 4095;
 		idtr.offset = reinterpret_cast<u64>(idt);
+		
+		//teletype::putc('B', teletype::B_BLACK | teletype::F_WHITE);
 		PIC::initialize();
-		loadIDTR(&idtr);
 	}
 }

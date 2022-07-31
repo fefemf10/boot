@@ -44,7 +44,7 @@ macro popall
 	pop r13
 	pop r14
 	pop r15
-	popfq
+	;popfq
 	;pop cr0
 	;pop cr2
 	;pop cr3
@@ -84,162 +84,200 @@ public isr29
 public isr30
 public isr31
 isr0:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 0
 	jmp isrCommon
 isr1:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 1
 	jmp isrCommon
 isr2:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 2
 	jmp isrCommon
 isr3:
-	
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 3
 	jmp isrCommon
 isr4:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 4
 	jmp isrCommon
 isr5:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 5
 	jmp isrCommon
 isr6:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 6
 	jmp isrCommon
 isr7:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 7
 	jmp isrCommon
 isr8:
-	cli
-	pushq 0
+	pop rax
+	push rbp
+	mov rbp, rsp
+	pushq rax
 	pushq 8
 	jmp isrCommon
 isr9:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 9
 	jmp isrCommon
 isr10:
-	cli
-	pushq 0
+	pop rax
+	push rbp
+	mov rbp, rsp
+	pushq rax
 	pushq 10
 	jmp isrCommon
 isr11:
-	cli
-	pushq 0
+	pop rax
+	push rbp
+	mov rbp, rsp
+	pushq rax
 	pushq 11
 	jmp isrCommon
 isr12:
-	cli
-	pushq 0
+	pop rax
+	push rbp
+	mov rbp, rsp
+	pushq rax
 	pushq 12
 	jmp isrCommon
 isr13:
-	cli
-	pushq 0
+	pop rax
+	push rbp
+	mov rbp, rsp
+	pushq rax
 	pushq 13
 	jmp isrCommon
 isr14:
-	cli
-	pushq 0
+	pop rax
+	push rbp
+	mov rbp, rsp
+	pushq rax
 	pushq 14
 	jmp isrCommon
 isr15:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 15
 	jmp isrCommon
 isr16:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 16
 	jmp isrCommon
 isr17:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 17
 	jmp isrCommon
 isr18:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 18
 	jmp isrCommon
 isr19:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 19
 	jmp isrCommon
 isr20:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 20
 	jmp isrCommon
 isr21:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 21
 	jmp isrCommon
 isr22:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 22
 	jmp isrCommon
 isr23:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 23
 	jmp isrCommon
 isr24:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 24
 	jmp isrCommon
 isr25:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 25
 	jmp isrCommon
 isr26:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 26
 	jmp isrCommon
 isr27:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 27
 	jmp isrCommon
 isr28:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 28
 	jmp isrCommon
 isr29:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 29
 	jmp isrCommon
 isr30:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 30
 	jmp isrCommon
 isr31:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 31
 	jmp isrCommon
@@ -247,5 +285,8 @@ isrCommon:
 	pushall
 	lea rcx, [rsp]
 	call isrHandler
-	add rsp, 144
+	popall
+	add rsp, 16
+	mov rsp, rbp
+	pop rbp
 	iretq

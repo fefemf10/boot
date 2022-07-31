@@ -4,7 +4,7 @@ import IDT;
 import cpuio;
 import teletype;
 import PIC;
-namespace ISR
+export namespace ISR
 {
 	extern "C" void isr0();
 	extern "C" void isr1();
@@ -75,16 +75,15 @@ namespace ISR
 	};
 	extern "C" void isrHandler(const cpuio::regs& regs)
 	{
+		teletype::clear();
 		teletype::putregs(regs);
-		teletype::puth(regs.interruptCode);
-		teletype::puth(errors);
-		teletype::puth(errors[0]);
+		//teletype::puth(regs.interruptCode);
+		//teletype::puth(errors);
+		//teletype::puth(errors[0]);
 		//teletype::puts(errors[regs.interruptCode]);
-		PIC::eio();
-		while (true);
-		
+		cpuio::jmping();
 	}
-	export void initialize()
+	void initialize()
 	{
 		IDT::set(0, isr0);
 		IDT::set(1, isr1);

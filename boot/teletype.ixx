@@ -1,7 +1,7 @@
 export module teletype;
+import <cstdarg>;
 import types;
 import cpuio;
-import <cstdarg>;
 export namespace teletype
 {
 	enum Color : u8
@@ -42,7 +42,7 @@ export namespace teletype
 	constexpr u8 width = 80;
 	constexpr u8 height = 25;
 	constexpr u32 videoBufferAddress = 0xB8000;
-	extern i16 currentPos{};
+	extern i16 currentPos = 0;
 	const u8 hexChars[] = { "0123456789ABCDEF" };
 	enum class State
 	{
@@ -61,7 +61,7 @@ export namespace teletype
 	char hexToStringOutput[512]{};
 	u16 positionFromCoords(u8 x, u8 y)
 	{
-		return y * width + x;
+		return static_cast<u16>(y * width + x);
 	}
 	void setCursorPosition(i16 position)
 	{
@@ -83,6 +83,7 @@ export namespace teletype
 		{
 			*i = value;
 		}
+		setCursorPosition(0);
 	}
 	void puts(const char* string, u8 color);
 	void printf(const char* fmt, ...);
@@ -133,8 +134,8 @@ export namespace teletype
 				index -= index % width;
 				break;
 			default:
-				*reinterpret_cast<u8*>(videoBufferAddress + index * 2) = *string;
-				*reinterpret_cast<u8*>(videoBufferAddress + index * 2 + 1) = color;
+				*reinterpret_cast<i8*>(videoBufferAddress + index * 2) = *string;
+				*reinterpret_cast<i8*>(videoBufferAddress + index * 2 + 1) = color;
 				++index;
 				break;
 			}
@@ -142,10 +143,10 @@ export namespace teletype
 		}
 		setCursorPosition(index);
 	}
-	void putc(char c, u8 color = B_BLACK | F_WHITE)
+	void putc(u8 c, u8 color = B_BLACK | F_WHITE)
 	{
-		*reinterpret_cast<unsigned char*>(videoBufferAddress + currentPos * 2) = c;
-		*reinterpret_cast<unsigned char*>(videoBufferAddress + currentPos * 2 + 1) = color;
+		*reinterpret_cast<u8*>(videoBufferAddress + currentPos * 2) = c;
+		*reinterpret_cast<u8*>(videoBufferAddress + currentPos * 2 + 1) = color;
 		setCursorPosition(currentPos + 1);
 	}
 	u32 strlen(const char* str)
@@ -158,7 +159,7 @@ export namespace teletype
 	void printf_unsigned(u64 number, i32 radix, i8 width)
 	{
 		i8 buffer[32]{};
-		i32 pos = 0;
+		i8 pos = 0;
 
 		// convert number to ASCII
 		do
@@ -271,7 +272,7 @@ export namespace teletype
 				switch (*fmt)
 				{
 				case 'c':
-					putc(va_arg(args, i32));
+					putc(static_cast<u8>(va_arg(args, i32)));
 					break;
 				case 's':
 					puts(va_arg(args, const i8*));
@@ -318,6 +319,7 @@ export namespace teletype
 							break;
 						case State::LENGTH_LONG_LONG:
 							printf_signed(va_arg(args, i64), radix, width);
+							break;
 						}
 					}
 					else
@@ -332,6 +334,7 @@ export namespace teletype
 							break;
 						case State::LENGTH_LONG_LONG:
 							printf_unsigned(va_arg(args, u64), radix, width);
+							break;
 						}
 					}
 				}

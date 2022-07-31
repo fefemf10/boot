@@ -74,104 +74,107 @@ public irq13
 public irq14
 public irq15
 irq0:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 32
-	pushall
 	jmp irqCommon
 irq1:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 33
-	pushall
 	jmp irqCommon
 irq2:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 34
-	pushall
 	jmp irqCommon
 irq3:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 35
-	pushall
 	jmp irqCommon
 irq4:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 36
-	pushall
 	jmp irqCommon
 irq5:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 37
-	pushall
 	jmp irqCommon
 irq6:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 38
-	pushall
 	jmp irqCommon
 irq7:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 39
-	pushall
 	jmp irqCommon
 irq8:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 40
-	pushall
 	jmp irqCommon
 irq9:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 41
-	pushall
 	jmp irqCommon
 irq10:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 42
-	pushall
 	jmp irqCommon
 irq11:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 43
-	pushall
 	jmp irqCommon
 irq12:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 44
-	pushall
 	jmp irqCommon
 irq13:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 45
-	pushall
 	jmp irqCommon
 irq14:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 46
-	pushall
 	jmp irqCommon
 irq15:
-	cli
+	push rbp
+	mov rbp, rsp
 	pushq 0
 	pushq 47
-	pushall
 	jmp irqCommon
 irqCommon:
 	pushall
 	lea rcx, [rsp]
 	call irqHandler
-	add rsp, 144
+	popall
+	add rsp, 16
+	mov rsp, rbp
+	pop rbp
 	iretq

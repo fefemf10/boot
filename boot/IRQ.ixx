@@ -5,7 +5,7 @@ import cpuio;
 import teletype;
 import keyboard;
 import PIC;
-namespace IRQ
+export namespace IRQ
 {
 	extern "C" void irq0();
 	extern "C" void irq1();
@@ -25,8 +25,7 @@ namespace IRQ
 	extern "C" void irq15();
 	extern "C" void irqHandler(const cpuio::regs& regs)
 	{
-		teletype::puth(regs);
-		if (regs.interruptCode == 1)
+		if (regs.interruptCode - 0x20 == 1)// - 0x20 offset ISR
 		{
 			unsigned char status;
 			unsigned char keycode;
@@ -40,11 +39,11 @@ namespace IRQ
 		}
 		PIC::eio();
 	}
-	export void initialize()
+	void initialize()
 	{
-		//IDT::set(32, irq0);
-		//IDT::set(33, irq1);// PIC::setMask(1, 0);
-		/*IDT::set(34, irq2);
+		IDT::set(32, irq0);
+		IDT::set(33, irq1); PIC::setMask(1, 0);
+		IDT::set(34, irq2);
 		IDT::set(35, irq3);
 		IDT::set(36, irq4);
 		IDT::set(37, irq5);
@@ -57,6 +56,6 @@ namespace IRQ
 		IDT::set(44, irq12);
 		IDT::set(45, irq13);
 		IDT::set(46, irq14);
-		IDT::set(47, irq15);*/
+		IDT::set(47, irq15);
 	}
 }

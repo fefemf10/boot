@@ -12,7 +12,6 @@ mov ss, ax   ; setup stack
 mov sp, 0x7C00
 cld
 cli
-push dx
 mov si, readPacketSECONDLOADER
 mov ah, 0x42
 int 0x13
@@ -26,8 +25,15 @@ enterProtectedMode:
 	in al, 0x92
 	or al, 0x02
 	out 0x92, al
-
+	
 	cli
+
+	; Disable NMI
+	in al, 0x70
+	or al, 0x80
+	out 0x70, al
+	in al, 0x71
+
 	lgdt [gdt_descriptor]
 	mov eax, cr0
 	or eax, 0x1
@@ -62,7 +68,6 @@ startProtectedMode:
 	jmp codeseg:startLongMode
 use64
 startLongMode:
-	pop dx
 	jmp SECONDLOADER
 readPacketSECONDLOADER:
 	db 0x10

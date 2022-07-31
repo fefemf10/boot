@@ -204,6 +204,8 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <StructMemberAlignment>Default</StructMemberAlignment>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
@@ -219,7 +221,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <AdditionalDependencies />
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
-      <FixedBaseAddress>true</FixedBaseAddress>
+      <FixedBaseAddress>false</FixedBaseAddress>
       <ShowProgress>NotSet</ShowProgress>
       <FunctionOrder>
       </FunctionOrder>
@@ -247,9 +249,6 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="IRQ.ixx" />
     <ClCompile Include="ISR.ixx" />
     <ClCompile Include="kernel.ixx" />
-    <ClCompile Include="kernell.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="keyboard.ixx" />
     <ClCompile Include="pci.ixx" />
     <ClCompile Include="PIC.ixx" />

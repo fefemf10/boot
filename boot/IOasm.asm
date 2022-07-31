@@ -55,7 +55,6 @@ iowait:
 	ret
 
 loadIDTR:
-	
 	lidt [rcx]
 	sti
 	ret

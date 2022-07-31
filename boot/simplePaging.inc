@@ -27,17 +27,17 @@ setupIndentityPaging:
 
 	; Enable PAE
 	mov eax, cr4
-	or eax, 32
+	or eax, (1 shl 5)
 	mov cr4, eax
 
 	; Set long mode enable
 	mov ecx, 0xC0000080 ; Set the C-register to 0xC0000000, which is the EFER MSR
 	rdmsr
-	or eax, 256
+	or eax, (1 shl 8)
 	wrmsr
 
 	; Enable paging and protected mode, if it isn't already active
 	mov eax, cr0
-	or eax, 0x80000000
+	or eax, (1 shl 31)
 	mov cr0, eax
 	ret

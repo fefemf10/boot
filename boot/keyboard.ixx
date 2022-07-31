@@ -192,7 +192,7 @@ export namespace keyboard
 					switch (((leftShiftPressed | rightShiftPressed) ^ capsLock) && !additional)
 					{
 					case true:
-						teletype::putc(c - 32);
+						teletype::putc(static_cast<i8>(c - 32));
 						break;
 					case false:
 						teletype::putc(c);

@@ -1,12 +1,10 @@
 export module kernel;
-import teletype;
 import types;
+import cpuio;
 import IDT;
 import ISR;
 import IRQ;
-import pci;
-import cpuio;
-
+import teletype;
 //void print_header(const pci::Header0& header)
 //{
 //	//teletype::puth(header);
@@ -28,9 +26,8 @@ extern "C" void kernel_start()
 	IDT::initialize();
 	ISR::initialize();
 	IRQ::initialize();
+	IDT::loadIDTR(&IDT::idtr);
 	teletype::clear();
-	teletype::puts("KLOWN");
-	cpuio::jmping();
 	/*pci::checkAllBuses();
 	teletype::printf("%d", pci::countHeaders);
 	for (u8 i = 0; i < pci::countHeaders; i++)

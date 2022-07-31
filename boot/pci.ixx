@@ -66,7 +66,7 @@ export namespace pci
 	{
 		for (u8 i = 0; i < 32; i++)
 		{
-			reinterpret_cast<u16*>(&header)[i] = configRealWord(bus, device, func, i * 2);
+			reinterpret_cast<u16*>(&header)[i] = configRealWord(bus, device, func, i * 2u);
 		}
 	}
 	void checkFunction(u8 bus, u8 device, u8 func)
