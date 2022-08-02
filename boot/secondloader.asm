@@ -79,13 +79,46 @@ in al, dx
 dec r8
 test r8, r8
 jnz .pior_l
-
 cli
 cld
 jmp KERNEL
 .fail:
-	mov [0xB8000], byte 'S'
-	jmp $
+mov dx, ATA0_P + 1
+in al, dx
+in al, dx
+in al, dx
+in al, dx
+xor rcx, rcx
+mov cl, al
+printhexb:
+    mov rax, rcx
+    mov rcx, 8
+    mov r8, 0xB801E
+.loopp:
+    mov dl, al
+    and dl, 0x0F
+    shr rax, 4
+    call print_nibble
+    mov dl, al
+    and dl, 0x0F
+    shr rax, 4
+    call print_nibble
+    loop .loopp
+    jmp $
+print_nibble:
+    cmp dl, 0x09
+    jg .letter
+    mov r9b, 0x30
+    add r9b, dl
+    mov [r8], r9b
+    sub r8, 2
+    ret
+.letter:
+    mov r9b, 0x37
+    add r9b, dl
+    mov [r8], r9b
+    sub r8, 2
+    ret
 times 512-($-$$) db 0
 section '.text$a' code readable executable
 extrn kernel_start
