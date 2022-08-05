@@ -1,14 +1,15 @@
 format MS64 COFF
-public outb
-public outw
-public outdw
-public inb
-public inw
-public indw
-public reboot
-public jmping
-public iowait
-public loadIDTR
+public outb as '?outb@cpuio@@YAXEG@Z::<!cpuio>'
+public outw as '?outw@cpuio@@YAXGG@Z::<!cpuio>'
+public outdw as '?outdw@cpuio@@YAXIG@Z::<!cpuio>'
+public inb as '?inb@cpuio@@YAEG@Z::<!cpuio>'
+public inw as '?inw@cpuio@@YAGG@Z::<!cpuio>'
+public indw as '?indw@cpuio@@YAIG@Z::<!cpuio>'
+public reboot as '?reboot@cpuio@@YAXXZ::<!cpuio>'
+public halt as '?halt@cpuio@@YAXXZ::<!cpuio>'
+public iowait as '?iowait@cpuio@@YAXXZ::<!cpuio>'
+public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
+
 
 section '.text$mn' code readable executable
 inb:
@@ -45,8 +46,9 @@ reboot:
 	int 0x18
 	hlt
 
-jmping:
-	jmp $
+halt:
+	hlt
+	jmp halt
 
 iowait:
 	mov al, 0

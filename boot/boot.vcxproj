@@ -87,11 +87,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.bin</TargetExt>
-    <LibraryWPath />
-    <LibraryPath>$(VC_LibraryPath_x64);$(LibraryPath)</LibraryPath>
+    <LibraryWPath>$(LibraryWPath)</LibraryWPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(VC_IncludePath)</IncludePath>
-    <ExternalIncludePath>$(VC_IncludePath)</ExternalIncludePath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -187,7 +189,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
@@ -198,7 +200,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MaxSpeed</Optimization>
-      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -206,6 +208,15 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <FloatingPointModel>Precise</FloatingPointModel>
+      <ShowIncludes>false</ShowIncludes>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
@@ -221,25 +232,32 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <AdditionalDependencies />
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
-      <FixedBaseAddress>false</FixedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
       <ShowProgress>NotSet</ShowProgress>
-      <FunctionOrder>
-      </FunctionOrder>
+      <FunctionOrder>order.txt</FunctionOrder>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <BaseAddress>0x100000</BaseAddress>
       <LargeAddressAware>
       </LargeAddressAware>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>false</MapExports>
+      <ForceFileOutput>
+      </ForceFileOutput>
+      <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
-      <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)$(TargetName)$(TargetExt)
-type $(OutDir)boot.bin &gt; $(OutDir)os.bin
+      <Command>objcopy -O binary $(OutDir)boot.bin $(OutDir)os.bin
 align $(OutDir)os.bin 10485760
 qemu-system-x86_64 -display sdl -drive format=raw,file="$(OutDir)os.bin",if=ide,index=0,media=disk
 del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cpuio.ixx" />
@@ -250,6 +268,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="ISR.ixx" />
     <ClCompile Include="kernel.ixx" />
     <ClCompile Include="keyboard.ixx" />
+    <ClCompile Include="memory.ixx" />
     <ClCompile Include="pci.ixx" />
     <ClCompile Include="PIC.ixx" />
     <ClCompile Include="teletype.ixx" />
@@ -267,12 +286,14 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <FASM Include="IOasm.asm" />
     <FASM Include="IRQasm.asm" />
     <FASM Include="ISRasm.asm" />
-    <FASM Include="secondloader.asm" />
+    <FASM Include="memoryasm.asm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpuid.inc" />
-    <None Include="gdt.inc" />
-    <None Include="simplePaging.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdarg.h" />
+    <ClInclude Include="vadefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

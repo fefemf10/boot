@@ -81,7 +81,7 @@ export namespace ISR
 		//teletype::puth(errors);
 		//teletype::puth(errors[0]);
 		//teletype::puts(errors[regs.interruptCode]);
-		cpuio::jmping();
+		cpuio::halt();
 	}
 	void initialize()
 	{

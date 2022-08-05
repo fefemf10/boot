@@ -54,12 +54,12 @@
     <ClCompile Include="PIC.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="memory.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
-      <Filter>Исходные файлы</Filter>
-    </FASM>
-    <FASM Include="secondloader.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
     <FASM Include="ISRasm.asm">
@@ -71,16 +71,21 @@
     <FASM Include="IOasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
+    <FASM Include="memoryasm.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpuid.inc">
       <Filter>Файлы заголовков</Filter>
     </None>
-    <None Include="gdt.inc">
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdarg.h">
       <Filter>Файлы заголовков</Filter>
-    </None>
-    <None Include="simplePaging.inc">
+    </ClInclude>
+    <ClInclude Include="vadefs.h">
       <Filter>Файлы заголовков</Filter>
-    </None>
+    </ClInclude>
   </ItemGroup>
 </Project>

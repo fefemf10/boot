@@ -43,7 +43,7 @@ export namespace IDT
 	};
 	IDT idt[256]{};
 	IDTR idtr{};
-	extern "C" void loadIDTR(const IDTR* idtr);
+	void loadIDTR(const IDTR* idtr);
 	void set(size_t index, void(*function)())
 	{
 		idt[index].setOffset(function);
@@ -54,8 +54,6 @@ export namespace IDT
 	{
 		idtr.size = 4095;
 		idtr.offset = reinterpret_cast<u64>(idt);
-		
-		//teletype::putc('B', teletype::B_BLACK | teletype::F_WHITE);
 		PIC::initialize();
 	}
 }

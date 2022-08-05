@@ -1,5 +1,5 @@
 export module teletype;
-import <cstdarg>;
+import "stdarg.h";
 import types;
 import cpuio;
 export namespace teletype
@@ -42,7 +42,7 @@ export namespace teletype
 	constexpr u8 width = 80;
 	constexpr u8 height = 25;
 	constexpr u32 videoBufferAddress = 0xB8000;
-	extern i16 currentPos = 0;
+	i16 currentPos = 0;
 	const u8 hexChars[] = { "0123456789ABCDEF" };
 	enum class State
 	{
@@ -58,7 +58,7 @@ export namespace teletype
 		LENGTH_INT,
 		LENGTH_LONG_LONG,
 	};
-	char hexToStringOutput[512]{};
+	char hexToStringOutput[128]{};
 	u16 positionFromCoords(u8 x, u8 y)
 	{
 		return static_cast<u16>(y * width + x);

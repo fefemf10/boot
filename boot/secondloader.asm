@@ -8,6 +8,61 @@ COUNTSECTORS equ 0x7F
 KERNEL equ 0x100000
 section '.flat' code data readable writeable executable
 org 0x7e00
+call clear
+
+mov r11, 0xB801E
+
+mov rcx, rdx
+call printhexb
+
+mov dx, ATA0_P + 7
+in al, dx
+mov rcx, rax
+call printhexb
+
+mov al, 0xA0
+mov dx, ATA0_P + 6
+out dx, al
+
+mov al, 0
+mov dx, ATA0_P + 2
+out dx, al
+
+mov dx, ATA0_P + 3
+out dx, al
+
+mov dx, ATA0_P + 4
+out dx, al
+
+mov dx, ATA0_P + 5
+out dx, al
+
+mov al, 0xEC
+mov dx, ATA0_P + 7
+out dx, al
+
+in al, dx
+
+mov rcx, rax
+call printhexb
+
+mov dx, ATA0_P + 4
+in al, dx
+
+mov rcx, rax
+call printhexb
+
+mov dx, ATA0_P + 5
+in al, dx
+
+mov rcx, rax
+call printhexb
+
+jmp $
+;
+;
+;
+
 mov al, 0x40
 mov dx, ATA0_P + 6
 out dx, al
@@ -51,22 +106,23 @@ out dx, al
 mov cx, 4
 mov rdi, KERNEL
 mov r8, COUNTSECTORS
+mov r11, 0xB801E
 .lp1:
 	in al, dx
+    mov rcx, rax
+    call printhexb
+    add r11, 0x20
 	test al, 0x80 ;BSY bit?
-	jne .retry
+	jnz .lp1
 	test al, 0x08 ;DRQ bit?
-	jne .data_ready
-.retry:
-	dec cx
-	jg .lp1
+	jz .lp1
 
 .pior_l:
 	in al, dx
 	test al, 0x80; BSY
-	jne .pior_l
+	jnz .pior_l
 	test al, 0x21; ERR or DF
-	jne .fail
+	jnz .fail
 .data_ready:
 mov rcx, 0x80; 128 dword
 mov dx, ATA0_P; data i/o
@@ -81,6 +137,7 @@ test r8, r8
 jnz .pior_l
 cli
 cld
+
 jmp KERNEL
 .fail:
 mov dx, ATA0_P + 1
@@ -90,34 +147,45 @@ in al, dx
 in al, dx
 xor rcx, rcx
 mov cl, al
+call printhexb
+jmp $
 printhexb:
-    mov rax, rcx
+    ;r8 arg
+    ;r9 temp
+    ;r10 temp
+    ;r11 videobuffer
+    push r8
+    mov r8, rcx
     mov rcx, 8
-    mov r8, 0xB801E
 .loopp:
-    mov dl, al
-    and dl, 0x0F
-    shr rax, 4
     call print_nibble
-    mov dl, al
-    and dl, 0x0F
-    shr rax, 4
     call print_nibble
     loop .loopp
-    jmp $
+    pop r8
+    add r11, 0x42
+    ret
 print_nibble:
-    cmp dl, 0x09
+    mov r9b, r8b
+    shr r8, 4
+    and r9b, 0x0F
+    cmp r9b, 0x09
     jg .letter
-    mov r9b, 0x30
-    add r9b, dl
-    mov [r8], r9b
-    sub r8, 2
+    mov r10b, 0x30
+    add r10b, r9b
+    mov [r11], r10b
+    sub r11, 2
     ret
 .letter:
-    mov r9b, 0x37
-    add r9b, dl
-    mov [r8], r9b
-    sub r8, 2
+    mov r10b, 0x37
+    add r10b, r9b
+    mov [r11], r10b
+    sub r11, 2
+    ret
+clear:
+    mov rdi, 0xb8000
+    mov rcx, 2000
+    mov ax, 0x0F00
+    rep stosw
     ret
 times 512-($-$$) db 0
 section '.text$a' code readable executable
