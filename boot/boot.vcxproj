@@ -252,7 +252,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
     <PostBuildEvent>
       <Command>objcopy -O binary $(OutDir)boot.bin $(OutDir)os.bin
 align $(OutDir)os.bin 10485760
-qemu-system-x86_64 -display sdl -drive format=raw,file="$(OutDir)os.bin",if=ide,index=0,media=disk
+qemu-system-x86_64 -display sdl -serial file:$(OutDir)serial.txt -drive format=raw,file="$(OutDir)os.bin",if=ide,index=0,media=disk
 del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
     <Bscmake>
@@ -260,6 +260,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="console.ixx" />
     <ClCompile Include="cpuio.ixx" />
     <ClCompile Include="disk.ixx" />
     <ClCompile Include="GDT.ixx" />
@@ -268,9 +269,12 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="ISR.ixx" />
     <ClCompile Include="kernel.ixx" />
     <ClCompile Include="keyboard.ixx" />
+    <ClCompile Include="memory-allocator.ixx" />
+    <ClCompile Include="memory-utils.ixx" />
     <ClCompile Include="memory.ixx" />
     <ClCompile Include="pci.ixx" />
     <ClCompile Include="PIC.ixx" />
+    <ClCompile Include="serial.ixx" />
     <ClCompile Include="teletype.ixx" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="vec.ixx" />

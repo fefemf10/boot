@@ -2,7 +2,7 @@ export module ISR;
 import types;
 import IDT;
 import cpuio;
-import teletype;
+import console;
 import PIC;
 export namespace ISR
 {
@@ -75,8 +75,7 @@ export namespace ISR
 	};
 	extern "C" void isrHandler(const cpuio::regs& regs)
 	{
-		teletype::clear();
-		teletype::putregs(regs);
+		console::putregs(regs);
 		//teletype::puth(regs.interruptCode);
 		//teletype::puth(errors);
 		//teletype::puth(errors[0]);

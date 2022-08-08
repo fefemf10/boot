@@ -9,7 +9,7 @@ public reboot as '?reboot@cpuio@@YAXXZ::<!cpuio>'
 public halt as '?halt@cpuio@@YAXXZ::<!cpuio>'
 public iowait as '?iowait@cpuio@@YAXXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
-
+public loadGDT
 
 section '.text$mn' code readable executable
 inb:
@@ -59,4 +59,9 @@ iowait:
 loadIDTR:
 	lidt [rcx]
 	sti
+	ret
+
+loadGDT:
+	mov rdi, [rcx]
+	mov cr3, rdi
 	ret

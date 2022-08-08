@@ -166,7 +166,7 @@ export namespace keyboard
 				teletype::setCursorPosition(teletype::currentPos + 1);
 				break;
 			case KEYBOARD_KEYS::K_ENTER://keypad enter
-				teletype::puts("\n\r");
+				teletype::puts("\n");
 				break;
 			case KEYBOARD_KEYS::K_LEFTCTRL://right ctrl
 				rightCtrlPressed = true;
@@ -228,7 +228,7 @@ export namespace keyboard
 					rightCtrlPressed = false;
 					break;
 				case KEYBOARD_KEYS::K_ENTER://enter
-					teletype::puts("\n\r");
+					teletype::puts("\n");
 					break;
 				case KEYBOARD_KEYS::K_CASPLOCK://capslock
 					capsLock ^= lastScancode != scancode;
