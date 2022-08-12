@@ -11,6 +11,11 @@ export namespace console
 		TELETYPE,
 		SERIAL
 	} out;
+	void initialize()
+	{
+		teletype::clear();
+		serial::initialize();
+	}
 	void setOut(OUT outt)
 	{
 		out = outt;

@@ -40,7 +40,7 @@ export namespace teletype
 	};
 	constexpr u8 width = 80;
 	constexpr u8 height = 25;
-	constexpr u32 videoBufferAddress = 0xB8000;
+	u32 videoBufferAddress = 0xB8000;
 	i16 currentPos = 0;
 	u8 currentColor = B_BLACK | F_WHITE;
 	u16 positionFromCoords(u8 x, u8 y)

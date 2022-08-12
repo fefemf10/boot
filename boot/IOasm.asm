@@ -62,6 +62,6 @@ loadIDTR:
 	ret
 
 loadGDT:
-	mov rdi, [rcx]
+	mov rdi, rcx
 	mov cr3, rdi
 	ret

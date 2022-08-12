@@ -91,6 +91,9 @@
     <None Include="cpuid.inc">
       <Filter>Файлы заголовков</Filter>
     </None>
+    <None Include="disk.sata.ixx">
+      <Filter>Исходные файлы</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdarg.h">

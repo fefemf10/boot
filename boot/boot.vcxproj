@@ -294,6 +294,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpuid.inc" />
+    <None Include="disk.sata.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdarg.h" />

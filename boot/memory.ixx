@@ -56,24 +56,6 @@ export namespace memory
 	{
 		PageDirectoryEntry entries[512];
 	};
-	void initialize()
-	{
-		u32 size = *reinterpret_cast<u32*>(0x27A00);
-		SMAP* smap = reinterpret_cast<SMAP*>(0x27A04);
-		u64 totalRAM = reinterpret_cast<u64>(smap[size - 1].base) + smap[size - 1].length - 1ull;
-		allocator::initialize(reinterpret_cast<u64*>(0x30000), totalRAM);
-		for (u32 i = 0; i < size; ++i)
-		{
-			if (smap[i].type == 1)
-			{
-				allocator::setRegion(smap[i].base, smap[i].length);
-			}
-		}
-		//Reverse memory for this allocator map
-		allocator::unsetRegion(reinterpret_cast<u64*>(0x30000), allocator::maxBlocks >> allocator::BLOCKSPERBYTE);
-		allocator::unsetRegion(reinterpret_cast<u64*>(0), 0x7C00);
-		allocator::unsetRegion(reinterpret_cast<u64*>(0x27A00), sizeof(size) + size * sizeof(SMAP));
-	}
 	struct PageIndex
 	{
 		PageIndex(u64 virtualAddress)
@@ -157,4 +139,32 @@ export namespace memory
 			PT->entries[index.p] = PDE;
 		}
 	};
+	PageTable* PLM4;
+	extern "C" void loadGDT(PageTable * plm4);
+	void initialize()
+	{
+		u32 size = *reinterpret_cast<u32*>(0x27A00);
+		SMAP* smap = reinterpret_cast<SMAP*>(0x27A04);
+		u64 totalRAM = reinterpret_cast<u64>(smap[size - 1].base) + smap[size - 1].length - 1ull;
+		allocator::initialize(reinterpret_cast<u64*>(0x30000), totalRAM);
+		for (u32 i = 0; i < size; ++i)
+		{
+			if (smap[i].type == 1)
+			{
+				allocator::setRegion(smap[i].base, smap[i].length);
+			}
+		}
+		//Reverse memory for this allocator map
+		allocator::unsetRegion(reinterpret_cast<u64*>(0x30000), allocator::maxBlocks >> allocator::BLOCKSPERBYTE);
+		allocator::unsetRegion(reinterpret_cast<u64*>(0), 0x7C00);
+		allocator::unsetRegion(reinterpret_cast<u64*>(0x27A00), sizeof(size) + size * sizeof(SMAP));
+		PLM4 = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
+		set(PLM4, 0, 0x1000);
+		PageTableManager pageTableManager(PLM4);
+		for (u64 i = 0; i < totalRAM / 32/*128mb*/; i += 0x1000)
+		{
+			pageTableManager.mapMemory((void*)i, (void*)i);
+		}
+		loadGDT(PLM4);
+	}
 }

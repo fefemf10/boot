@@ -55,7 +55,7 @@ export namespace pci
 	u16 configRealWord(u8 bus, u8 device, u8 func, u8 offset)
 	{
 		u32 address = (bus << 16u) | (device << 11u) | (func << 8u) | (offset & 0xFC) | 0x80000000;
-		cpuio::outdw(address, configData);
+		cpuio::outdw(address, configAddress);
 		return cpuio::indw(configData) >> ((offset & 2) << 3) & 0xFFFF;
 	}
 	u16 getHeaderField(u8 bus, u8 device, u8 func, Field field)
@@ -75,7 +75,7 @@ export namespace pci
 		u8 baseClassCode = getHeaderField(bus, device, func, Field::BASECLASSCODE) & 0xFF;
 		if (true)
 		{
-			readHeader(h[countHeaders], bus, device, 0);
+			readHeader(h[countHeaders], bus, device, func);
 			countHeaders++;
 		}
 		/*if ((baseClassCode == 0x06) && (subClassCode == 0x04))
@@ -118,7 +118,7 @@ export namespace pci
 		}
 		else
 		{
-			for (u8 func = 1; func < 8; func++)
+			for (u8 func = 0; func < 8; func++)
 			{
 				if (getHeaderField(0, 0, func, Field::VENDOR) != 0xFFFF) break;
 				checkBus(func);
