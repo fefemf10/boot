@@ -20,18 +20,18 @@ export namespace console
 	{
 		out = outt;
 	}
-	void putc(u8 c)
+	void putc(char8_t c)
 	{
 		if (out == OUT::SERIAL)
 			serial::write(c);
 		else
 			teletype::putc(c);
 	}
-	void puts(const i8* str)
+	void puts(const char8_t* str)
 	{
 		if (out == OUT::SERIAL)
 		{
-			i8* strs = const_cast<i8*>(str);
+			char8_t* strs = const_cast<char8_t*>(str);
 			while (*strs)
 			{
 				serial::write(*strs++);
@@ -44,13 +44,13 @@ export namespace console
 	{
 		i8 buffer[32]{};
 		i8 pos = 0;
-		const char hexChars[] = "0123456789ABCDEF";
+		const char8_t hexchar8_ts[] = u8"0123456789ABCDEF";
 		// convert number to ASCII
 		do
 		{
 			u64 rem = number % radix;
 			number /= radix;
-			buffer[pos++] = hexChars[rem];
+			buffer[pos++] = hexchar8_ts[rem];
 		} while (number > 0);
 
 		// print number in reverse order
@@ -93,7 +93,7 @@ export namespace console
 		LENGTH_INT,
 		LENGTH_LONG_LONG,
 	};
-	void printf(const i8* fmt, ...)
+	void printf(const char8_t* fmt, ...)
 	{
 		va_list args;
 		va_start(args, fmt);
@@ -110,11 +110,11 @@ export namespace console
 			case State::STATE_NORMAL:
 				switch (*fmt)
 				{
-				case '%':
+				case u8'%':
 					state = State::STATE_LENGTH;
 					break;
-				case '\n':
-					puts("\n");
+				case u8'\n':
+					puts(u8"\n");
 					break;
 				default:
 					putc(*fmt);
@@ -124,15 +124,15 @@ export namespace console
 			case State::STATE_LENGTH:
 				switch (*fmt)
 				{
-				case 'h':
+				case u8'h':
 					length = State::LENGTH_SHORT;
 					state = State::STATE_LENGTH_SHORT;
 					break;
-				case 'l':
+				case u8'l':
 					length = State::LENGTH_INT;
 					state = State::STATE_LENGTH_INT;
 					break;
-				case '0':
+				case u8'0':
 					length = State::LENGTH_DEFAULT;
 					state = State::STATE_WIDTH;
 					break;
@@ -142,7 +142,7 @@ export namespace console
 				}
 				break;
 			case State::STATE_WIDTH:
-				if (*fmt >= '0' && *fmt <= '9')
+				if (*fmt >= u8'0' && *fmt <= u8'9')
 				{
 					length = State::LENGTH_DEFAULT;
 					state = State::STATE_LENGTH;
@@ -150,7 +150,7 @@ export namespace console
 				}
 				break;
 			case State::STATE_LENGTH_SHORT:
-				if (*fmt == 'h')
+				if (*fmt == u8'h')
 				{
 					length = State::LENGTH_SHORT_SHORT;
 					state = State::STATE_SPEC;
@@ -158,7 +158,7 @@ export namespace console
 				else goto State_STATE_SPEC;
 				break;
 			case State::STATE_LENGTH_INT:
-				if (*fmt == 'l')
+				if (*fmt == u8'l')
 				{
 					length = State::LENGTH_LONG_LONG;
 					state = State::STATE_SPEC;
@@ -169,34 +169,34 @@ export namespace console
 			State_STATE_SPEC:
 				switch (*fmt)
 				{
-				case 'c':
+				case u8'c':
 					putc(static_cast<u8>(va_arg(args, i32)));
 					break;
-				case 's':
-					puts(va_arg(args, const i8*));
+				case u8's':
+					puts(va_arg(args, const char8_t*));
 					break;
-				case '%':
-					putc('%');
+				case u8'%':
+					putc(u8'%');
 					break;
-				case 'i':
-				case 'd':
+				case u8'i':
+				case u8'd':
 					radix = 10;
 					sign = true;
 					number = true;
 					break;
-				case 'u':
+				case u8'u':
 					radix = 10;
 					sign = false;
 					number = true;
 					break;
-				case 'X':
-				case 'x':
-				case 'p':
+				case u8'X':
+				case u8'x':
+				case u8'p':
 					radix = 16;
 					sign = false;
 					number = true;
 					break;
-				case 'o':
+				case u8'o':
 					radix = 8;
 					sign = false;
 					number = true;
@@ -253,32 +253,32 @@ export namespace console
 	{
 		for (size_t i = 1; i <= sizeof(T) / 2; i++)
 		{
-			printf((i % 8 == 0) ? "%04hx" : "%04hx ", reinterpret_cast<u16*>(&value)[i - 1]);
+			printf((i % 8 == 0) ? u8"%04hx" : u8"%04hx ", reinterpret_cast<u16*>(&value)[i - 1]);
 			if (i % 8 == 0)
 			{
-				puts("\n");
+				puts(u8"\n");
 			}
 		}
 	}
 	void putregs(const cpuio::regs& regs)
 	{
-		printf("RAX: %08llx\n", regs.rax);
-		printf("RBX: %08llx\n", regs.rbx);
-		printf("RCX: %08llx\n", regs.rcx);
-		printf("RDX: %08llx\n", regs.rdx);
-		printf("RSI: %08llx\n", regs.rsi);
-		printf("RDI: %08llx\n", regs.rdi);
-		printf("RSP: %08llx\n", regs.rsp);
-		printf("RBP: %08llx\n", regs.rbp);
-		printf("R8:  %08llx\n", regs.r8);
-		printf("R9:  %08llx\n", regs.r9);
-		printf("R10: %08llx\n", regs.r10);
-		printf("R11: %08llx\n", regs.r11);
-		printf("R12: %08llx\n", regs.r12);
-		printf("R13: %08llx\n", regs.r13);
-		printf("R14: %08llx\n", regs.r14);
-		printf("R15: %08llx\n", regs.r15);
-		printf("INC: %08llx\n", regs.interruptCode);
-		printf("ERC: %08llx\n", regs.errorCode);
+		printf(u8"RAX: %08llx\n", regs.rax);
+		printf(u8"RBX: %08llx\n", regs.rbx);
+		printf(u8"RCX: %08llx\n", regs.rcx);
+		printf(u8"RDX: %08llx\n", regs.rdx);
+		printf(u8"RSI: %08llx\n", regs.rsi);
+		printf(u8"RDI: %08llx\n", regs.rdi);
+		printf(u8"RSP: %08llx\n", regs.rsp);
+		printf(u8"RBP: %08llx\n", regs.rbp);
+		printf(u8"R8:  %08llx\n", regs.r8);
+		printf(u8"R9:  %08llx\n", regs.r9);
+		printf(u8"R10: %08llx\n", regs.r10);
+		printf(u8"R11: %08llx\n", regs.r11);
+		printf(u8"R12: %08llx\n", regs.r12);
+		printf(u8"R13: %08llx\n", regs.r13);
+		printf(u8"R14: %08llx\n", regs.r14);
+		printf(u8"R15: %08llx\n", regs.r15);
+		printf(u8"INC: %08llx\n", regs.interruptCode);
+		printf(u8"ERC: %08llx\n", regs.errorCode);
 	}
 }

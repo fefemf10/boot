@@ -69,7 +69,7 @@ export namespace teletype
 		}
 		setCursorPosition(0);
 	}
-	void puts(const i8* string)
+	void puts(const char8_t* string)
 	{
 		short index = currentPos;
 		while (*string)
@@ -81,8 +81,8 @@ export namespace teletype
 				index -= index % width;
 				break;
 			default:
-				*reinterpret_cast<i8*>(videoBufferAddress + index * 2) = *string;
-				*reinterpret_cast<i8*>(videoBufferAddress + index * 2 + 1) = currentColor;
+				*reinterpret_cast<char8_t*>(videoBufferAddress + index * 2) = *string;
+				*reinterpret_cast<u8*>(videoBufferAddress + index * 2 + 1) = currentColor;
 				++index;
 				break;
 			}
@@ -90,9 +90,9 @@ export namespace teletype
 		}
 		setCursorPosition(index);
 	}
-	void putc(u8 c)
+	void putc(char8_t c)
 	{
-		*reinterpret_cast<u8*>(videoBufferAddress + currentPos * 2) = c;
+		*reinterpret_cast<char8_t*>(videoBufferAddress + currentPos * 2) = c;
 		*reinterpret_cast<u8*>(videoBufferAddress + currentPos * 2 + 1) = currentColor;
 		setCursorPosition(currentPos + 1);
 	}

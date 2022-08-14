@@ -102,7 +102,7 @@ export namespace keyboard
 		K_F11,
 		K_F12
 	};
-	constexpr char scancodes[] = {
+	constexpr char8_t scancodes[] = {
 		  0, 0, '1', '2',
 		  '3', '4', '5', '6',
 		  '7', '8', '9', '0',
@@ -145,7 +145,7 @@ export namespace keyboard
 	bool capsLock = false;
 	bool numLock = false;
 	u8 lastScancode{};
-	void standartKeyboard(unsigned char scancode, unsigned char c)
+	void standartKeyboard(u8 scancode, u8 c)
 	{
 		switch (lastScancode)
 		{
@@ -166,7 +166,7 @@ export namespace keyboard
 				teletype::setCursorPosition(teletype::currentPos + 1);
 				break;
 			case KEYBOARD_KEYS::K_ENTER://keypad enter
-				teletype::puts("\n");
+				teletype::puts(u8"\n");
 				break;
 			case KEYBOARD_KEYS::K_LEFTCTRL://right ctrl
 				rightCtrlPressed = true;
@@ -228,7 +228,7 @@ export namespace keyboard
 					rightCtrlPressed = false;
 					break;
 				case KEYBOARD_KEYS::K_ENTER://enter
-					teletype::puts("\n");
+					teletype::puts(u8"\n");
 					break;
 				case KEYBOARD_KEYS::K_CASPLOCK://capslock
 					capsLock ^= lastScancode != scancode;

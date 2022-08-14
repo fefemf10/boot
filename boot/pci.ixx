@@ -3,6 +3,29 @@ import types;
 import cpuio;
 export namespace pci
 {
+	const char8_t* deviceClasses[] =
+	{
+		u8"Unclassified",
+		u8"Mass Storage Controller",
+		u8"Network Controller",
+		u8"Display Controller",
+		u8"Multimedia Controller",
+		u8"Memory Controller",
+		u8"Bridge",
+		u8"Simple Communication Controller",
+		u8"Base System Peripheral",
+		u8"Input Device Controller",
+		u8"Docking Station",
+		u8"Processor",
+		u8"Serial Bus Controller",
+		u8"Wireless Controller",
+		u8"Intelligent Controller",
+		u8"Satellite Communication Controller",
+		u8"Encryption Controller",
+		u8"Signal Processing Controller",
+		u8"Processing Accelerator",
+		u8"Non-Essential Instrumentation",
+	};
 	constexpr u16 configAddress = 0x0CF8;
 	constexpr u16 configData = 0x0CFC;
 	enum class Field : u8

@@ -1,4 +1,4 @@
-export module kernel;
+﻿export module kernel;
 import types;
 import cpuio;
 import IDT;
@@ -7,19 +7,19 @@ import IRQ;
 import pci;
 import memory;
 import console;
-import teletype;
-import serial;
 void print_header(const pci::Header0& header)
 {
 	//teletype::puth(header);
-	console::printf("vendor: %hx device: %hx PI: %hx SCC: %hx BCC: %hx\n", header.vendor, header.device, header.programmingInterface & 0xFF, header.subClassCode & 0xFF, header.baseClassCode & 0xFF);
+	console::printf(u8"vendor: %hx device: %hx baseclass: %hx subclass: %hx %llx %s\n",
+		header.vendor, header.device, header.baseClassCode, header.subClassCode,
+		pci::deviceClasses[0], pci::deviceClasses[0]);
 	/*teletype::printf("command: %hx\n", header.cmd);
 	teletype::printf("status: %hx\n", header.status);
 	teletype::printf("revision: %hx\n", header.revision & 0xFF);*/
 
 	//teletype::printf("cacheLineSize: %hx\n", header.cacheLineSize & 0xFF);
 	//teletype::printf("masterLatencyTimer: %hx\n", header.masterLatencyTimer & 0xFF);
-	console::printf("headerType: %hx\n", header.headerType & 0xFF);
+	console::printf(u8"headerType: %hx\n", header.headerType & 0xFF);
 	//teletype::printf("builtInSeltTest: %hx\n", header.builtInSeltTest & 0xFF);
 }
 

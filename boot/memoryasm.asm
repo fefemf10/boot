@@ -1,6 +1,5 @@
 format MS64 COFF
 section '.text$mn' code readable executable align 16
-extrn  __ImageBase
 public memset
 memset_repstos:
 	push rdi
@@ -14,7 +13,6 @@ memset_repstos:
 memset:
 	mov rax, rcx
 	mov r9, rcx
-	lea r10, [__ImageBase]
 	movzx edx, dl
 	mov r11, 0101010101010101h
 	imul r11, rdx
@@ -25,9 +23,8 @@ memset:
 	align 16
 
 	add rcx, r8
-	mov r9d, [SetSmall - $$ + r10 + r8*4]
-	add r9, r10
-	jmp r9
+	mov r9, SetSmall
+	jmp qword [r9 + r8*4]
 	SetSmall15:
 		mov [rcx-15], r11
 	SetSmall7:
@@ -142,8 +139,8 @@ memset:
 		and r9, -SSE_STEP_LEN
 		mov r11, r9
 		shr r11, SSE_LEN_BIT
-		mov r11d, [SetSmallXmm - $$ + r10 + r11*4]
-		add r11, r10
+		mov r9, SetSmallXmm
+		mov r11, [r9 + r11*4]
 		jmp r11
 	Set8XmmBlocks:
 		movdqu [rcx + r9 - SSE_STEP_LEN * 8], xmm0
@@ -166,29 +163,29 @@ memset:
 		ret
 
 SetSmall:
-	dd SetSmall0
-	dd SetSmall1
-	dd SetSmall2
-	dd SetSmall3
-	dd SetSmall4
-	dd SetSmall5
-	dd SetSmall6
-	dd SetSmall7
-	dd SetSmall8
-	dd SetSmall9
-	dd SetSmall10
-	dd SetSmall11
-	dd SetSmall12
-	dd SetSmall13
-	dd SetSmall14
-	dd SetSmall15
+	dq SetSmall0
+	dq SetSmall1
+	dq SetSmall2
+	dq SetSmall3
+	dq SetSmall4
+	dq SetSmall5
+	dq SetSmall6
+	dq SetSmall7
+	dq SetSmall8
+	dq SetSmall9
+	dq SetSmall10
+	dq SetSmall11
+	dq SetSmall12
+	dq SetSmall13
+	dq SetSmall14
+	dq SetSmall15
 SetSmallXmm:
-	dd Set8XmmBlocks
-	dd Set7XmmBlocks
-	dd Set6XmmBlocks
-	dd Set5XmmBlocks
-	dd Set4XmmBlocks
-	dd Set3XmmBlocks
-	dd Set2XmmBlocks
-	dd Set1XmmBlocks
-	dd Set0XmmBlocks
+	dq Set8XmmBlocks
+	dq Set7XmmBlocks
+	dq Set6XmmBlocks
+	dq Set5XmmBlocks
+	dq Set4XmmBlocks
+	dq Set3XmmBlocks
+	dq Set2XmmBlocks
+	dq Set1XmmBlocks
+	dq Set0XmmBlocks

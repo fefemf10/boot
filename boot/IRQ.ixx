@@ -2,7 +2,6 @@ export module IRQ;
 import types;
 import IDT;
 import cpuio;
-import teletype;
 import keyboard;
 import PIC;
 export namespace IRQ
@@ -27,8 +26,8 @@ export namespace IRQ
 	{
 		if (regs.interruptCode - 0x20 == 1)// - 0x20 offset ISR
 		{
-			unsigned char status;
-			unsigned char keycode;
+			u8 status;
+			u8 keycode;
 
 			status = cpuio::inb(keyboard::KEYBOARD_PORT::STATUS_PORT);
 			if (status & 0x01)
