@@ -10,9 +10,8 @@ import console;
 void print_header(const pci::Header0& header)
 {
 	//teletype::puth(header);
-	console::printf(u8"vendor: %hx device: %hx baseclass: %hx subclass: %hx %llx %s\n",
-		header.vendor, header.device, header.baseClassCode, header.subClassCode,
-		pci::deviceClasses[0], pci::deviceClasses[0]);
+	console::printf(u8"vendor: %hx device: %hx %s\n",
+		header.vendor, header.device, pci::deviceClasses[header.baseClassCode]);
 	/*teletype::printf("command: %hx\n", header.cmd);
 	teletype::printf("status: %hx\n", header.status);
 	teletype::printf("revision: %hx\n", header.revision & 0xFF);*/

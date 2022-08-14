@@ -3,9 +3,9 @@ READCOUNT equ 0x2
 COUNTSECTORS equ 0x7F
 SECONDLOADER equ 0x7e00
 KERNEL equ 0x100000
+section '.text$a' code readable executable
 use16
 org 0x7c00
-
 xor ax, ax  ; set up segments
 mov ds, ax
 mov es, ax
@@ -206,10 +206,10 @@ startProtectedMode:
 use64
 startLongMode:
 	mov rsi, SECONDLOADER
-	mov rdi, KERNEL
+	mov rdi, KERNEL + 0x460
 	mov rcx, (COUNTSECTORS * READCOUNT * 0x200 / 8)
 	rep movsq
-	jmp KERNEL
+	jmp KERNEL + 0x460
 readPacket:
 	db 0x10
 	db 0
