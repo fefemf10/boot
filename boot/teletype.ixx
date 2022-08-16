@@ -69,6 +69,18 @@ export namespace teletype
 		}
 		setCursorPosition(0);
 	}
+	void clearLine()
+	{
+		short index = currentPos;
+		index -= index % width;
+		const u64 value{ static_cast<u64>(currentColor << 8 | currentColor << 24 | currentColor << 40 | currentColor << 56) };
+		u64* video_buffer = reinterpret_cast<u64*>(videoBufferAddress + index*2);
+		for (u64* i = video_buffer; i < reinterpret_cast<u64*>(videoBufferAddress + index*2 + 160u); i++)
+		{
+			*i = value;
+		}
+		setCursorPosition(index);
+	}
 	void puts(const char8_t* string)
 	{
 		short index = currentPos;

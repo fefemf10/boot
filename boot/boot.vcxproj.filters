@@ -69,6 +69,9 @@
     <ClCompile Include="console.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="string.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -88,9 +91,6 @@
     </FASM>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpuid.inc">
-      <Filter>Файлы заголовков</Filter>
-    </None>
     <None Include="disk.sata.ixx">
       <Filter>Исходные файлы</Filter>
     </None>

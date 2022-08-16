@@ -15,7 +15,12 @@ mov ss, ax   ; setup stack
 mov sp, 0x7C00
 cld
 cli
+;mov al, 'G'
+;mov ah, 0x0e
+;int 0x10
+;jmp $
 push dx
+
 ;; GET MEMORY MAP
 memory_entries equ 0x27A00; 2:7a00
 getMemoryMap:
@@ -58,7 +63,11 @@ getMemoryMap:
 	jz .done
 	jmp .next_entry
 .error:
-	stc
+	mov ax, 0xB800
+	mov es, ax
+	mov di, 2
+	mov [es:di], byte 'B'
+	jmp $
 .done:
 	mov ax, ((memory_entries and 0xFF0000) shr 4)
 	mov es, ax
@@ -76,8 +85,10 @@ int 0x13
 add [readPacket + 4], word 0xFE00 ; COUNTSECTORS*512
 add [readPacket + 6], word 0x1000
 add [readPacket + 8], dword COUNTSECTORS
+xor ax, ax
+mov es, ax
+mov ah, 0x42
 int 0x13
-
 jmp enterProtectedMode
 
 gdt_nulldesc:

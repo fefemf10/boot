@@ -239,19 +239,19 @@ export namespace disk::sata
 				switch (dt)
 				{
 				case disk::sata::ACHIDEV::SATAPI:
-					console::printf("SATAPI drive fount at port %d\n", i);
+					console::printf(u8"SATAPI drive found at port %d\n", i);
 					break;
 				case disk::sata::ACHIDEV::SEMB:
-					console::printf("SEMB drive fount at port %d\n", i);
+					console::printf(u8"SEMB drive found at port %d\n", i);
 					break;
 				case disk::sata::ACHIDEV::PM:
-					console::printf("PM drive fount at port %d\n", i);
+					console::printf(u8"PM drive found at port %d\n", i);
 					break;
 				case disk::sata::ACHIDEV::SATA:
-					console::printf("SATA drive fount at port %d\n", i);
+					console::printf(u8"SATA drive found at port %d\n", i);
 					break;
 				default:
-					console::printf("No drive fount at port %d\n", i);
+					console::printf(u8"No drive found at port %d\n", i);
 					break;
 				}
 			}

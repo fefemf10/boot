@@ -47,7 +47,7 @@ reboot:
 	hlt
 
 halt:
-	hlt
+	jmp $
 	jmp halt
 
 iowait:

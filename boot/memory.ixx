@@ -1,6 +1,8 @@
 export module memory;
 import types;
+import cpuio;
 import console;
+import teletype;
 export import :allocator;
 export import :utils;
 export namespace memory
@@ -99,7 +101,6 @@ export namespace memory
 			{
 				PDP = reinterpret_cast<PageTable*>(PDE.address << 12);
 			}
-			
 			PDE = PDP->entries[index.pd];
 			PageTable* PD;
 			if (!PDE.present)
@@ -115,13 +116,11 @@ export namespace memory
 			{
 				PD = reinterpret_cast<PageTable*>(PDE.address << 12);
 			}
-			
 			PDE = PD->entries[index.pt];
 			PageTable* PT;
 			if (!PDE.present)
 			{
 				PT = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
-				set(PT, 0, 0x1000);
 				PDE.address = reinterpret_cast<u64>(PT) >> 12;
 				PDE.present = true;
 				PDE.readWrite = true;
@@ -131,7 +130,6 @@ export namespace memory
 			{
 				PT = reinterpret_cast<PageTable*>(PDE.address << 12);
 			}
-
 			PDE = PT->entries[index.p];
 			PDE.address = reinterpret_cast<u64>(physicalMemory) >> 12;
 			PDE.present = true;
@@ -161,10 +159,11 @@ export namespace memory
 		PLM4 = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
 		set(PLM4, 0, 0x1000);
 		PageTableManager pageTableManager(PLM4);
-		for (u64 i = 0; i < totalRAM / 32/*128mb*/; i += 0x1000)
+		for (u64 i = 0; i < 0x9000000/*128mb*/; i += 0x1000)
 		{
 			pageTableManager.mapMemory((void*)i, (void*)i);
 		}
+		
 		loadGDT(PLM4);
 	}
 }

@@ -1,6 +1,7 @@
 export module pci;
 import types;
 import cpuio;
+import string;
 export namespace pci
 {
 	const char8_t* deviceClasses[] =
@@ -26,6 +27,126 @@ export namespace pci
 		u8"Processing Accelerator",
 		u8"Non-Essential Instrumentation",
 	};
+	constexpr const char8_t* getVendorName(u16 vendor)
+	{
+		switch (vendor)
+		{
+		case 0x8086:
+			return u8"Intel Corp.";
+		case 0x1022:
+			return u8"Advanced Micro Devices, Inc. [AMD]";
+		case 0x10DE:
+			return u8"NVIDIA Corporation";
+		case 0x15AD:
+			return u8"VMware";
+		case 0x1002:
+			return u8"Advanced Micro Devices, Inc. [AMD/ATI]";
+		default:
+			return string::itos(vendor, 16);
+		}
+	}
+	constexpr const char8_t* getDeviceName(u16 vendor, u16 device)
+	{
+		switch (vendor)
+		{
+		case 0x8086:
+			switch (device)
+			{
+			case 0x1237:
+				return u8"440FX - 82441FX PMC [Natoma]";
+			case 0x7000:
+				return u8"82371SB PIIX3 ISA [Natoma/Triton II]";
+			case 0x7010:
+				return u8"82371SB PIIX3 IDE [Natoma/Triton II]";
+			case 0x7190:
+				return u8"440BX/ZX/DX - 82443BX/ZX/DX Host bridge";
+			case 0x7191:
+				return u8"440BX/ZX/DX - 82443BX/ZX/DX AGP bridge";
+			case 0x7110:
+				return u8"82371AB/EB/MB PIIX4 ISA";
+			case 0x7111:
+				return u8"82371AB/EB/MB PIIX4 IDE";
+			case 0x7113:
+				return u8"82371AB/EB/MB PIIX4 ACPI";
+			case 0x100E:
+				return u8"82540EM Gigabit Ethernet Controller";
+			case 0x29C0:
+				return u8"82G33/G31/P35/P31 Express DRAM Controller";
+			case 0x2918:
+				return u8"82801IB (ICH9) LPC Interface Controller";
+			case 0x2922:
+				return u8"82801IR/IO/IH(ICH9R/DO/DH) 6 port SATA Controller[AHCI mode]";
+			case 0x2930:
+				return u8"82801I (ICH9 Family) SMBus Controller";
+			default:
+				return string::itos(device, 16);
+			}
+		case 0x15AD:
+			switch (device)
+			{
+			case 0x0405:
+				return u8"SVGA II Adapter";
+			case 0x0710:
+				return u8"SVGA Adapter";
+			case 0x0720:
+				return u8"VMXNET Ethernet Controller";
+			case 0x0740:
+				return u8"Virtual Machine Communication Interface";
+			case 0x0770:
+				return u8"USB2 EHCI Controller";
+			case 0x0774:
+				return u8"USB1.1 UHCI Controller";
+			case 0x0778:
+				return u8"USB3 xHCI 0.96 Controller";
+			case 0x0779:
+				return u8"USB3 xHCI 1.0 Controller";
+			case 0x0790:
+				return u8"PCI bridge";
+			case 0x07A0:
+				return u8"PCI Express Root Port";
+			case 0x07b0:
+				return u8"VMXNET3 Ethernet Controller";
+			case 0x07c0:
+				return u8"PVSCSI SCSI Controller";
+			case 0x07e0:
+				return u8"SATA AHCI controller";
+			case 0x0801:
+				return u8"Virtual Machine Interface";
+			case 0x0820:
+				return u8"Paravirtual RDMA controller";
+			case 0x1977:
+				return u8"HD Audio Controller";
+			default:
+				return string::itos(device, 16);
+			}
+		case 0x1022:
+			switch (device)
+			{
+			case 0x9600:
+				return u8"RS780 Host Bridge";
+			case 0x9603:
+				return u8"RS780 PCI to PCI bridge (ext gfx port 0)";
+			case 0x9604:
+				return u8"RS780/RS880 PCI to PCI bridge (PCIE port 0)";
+			}
+		case 0x1002:
+			switch (device)
+			{
+			case 0x1200:
+				return u8"Family 10h Processor HyperTransport Configuration";
+			case 0x1201:
+				return u8"Family 10h Processor Address Map";
+			case 0x1202:
+				return u8"Family 10h Processor DRAM Controller";
+			case 0x1203:
+				return u8"Family 10h Processor Miscellaneous Control";
+			case 0x1204:
+				return u8"Family 10h Processor Link Control";
+			}
+		default:
+			return string::itos(device, 16);
+		}
+	}
 	constexpr u16 configAddress = 0x0CF8;
 	constexpr u16 configData = 0x0CFC;
 	enum class Field : u8
@@ -116,7 +237,7 @@ export namespace pci
 		u8 headerType = getHeaderField(bus, device, func, Field::HEADERTYPE) & 0xFF;
 		if ((headerType & 0x80) != 0)
 		{
-			for (func = 1; func < 8 ; func++)
+			for (func = 1; func < 8; func++)
 			{
 				if (getHeaderField(bus, device, func, Field::VENDOR) != 0xFFFF)
 				{

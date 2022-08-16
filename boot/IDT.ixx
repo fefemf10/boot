@@ -42,7 +42,7 @@ export namespace IDT
 		}
 	};
 	IDT idt[256]{};
-	IDTR idtr{};
+	IDTR idtr{ .size = 4095, .offset = reinterpret_cast<u64>(idt) };
 	void loadIDTR(const IDTR* idtr);
 	void set(size_t index, void(*function)())
 	{
@@ -52,8 +52,6 @@ export namespace IDT
 	}
 	void initialize()
 	{
-		idtr.size = 4095;
-		idtr.offset = reinterpret_cast<u64>(idt);
 		PIC::initialize();
 	}
 }
