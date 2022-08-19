@@ -269,6 +269,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="cpuio.ixx" />
     <ClCompile Include="disk.ixx" />
     <ClCompile Include="GDT.ixx" />
+    <ClCompile Include="hash-crc.ixx" />
+    <ClCompile Include="hash.ixx" />
     <ClCompile Include="IDT.ixx" />
     <ClCompile Include="IRQ.ixx" />
     <ClCompile Include="ISR.ixx" />

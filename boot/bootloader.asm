@@ -85,9 +85,6 @@ int 0x13
 add [readPacket + 4], word 0xFE00 ; COUNTSECTORS*512
 add [readPacket + 6], word 0x1000
 add [readPacket + 8], dword COUNTSECTORS
-xor ax, ax
-mov es, ax
-mov ah, 0x42
 int 0x13
 jmp enterProtectedMode
 

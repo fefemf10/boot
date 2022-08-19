@@ -7,6 +7,7 @@ import IRQ;
 import pci;
 import memory;
 import console;
+import hash;
 void print_header(const pci::Header0& header)
 {
 	//teletype::puth(header);
@@ -30,10 +31,7 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-	pci::checkAllBuses();
-	for (u8 i = 0; i < pci::countHeaders; i++)
-	{
-		print_header(pci::h[i]);
-	}
+	hash::crc::initialize();
+	console::printf(u8"%hx", hash::crc::crcFast("123456789", 9));
 	cpuio::halt();
 }
