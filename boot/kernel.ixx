@@ -32,6 +32,10 @@ extern "C" void kernel_start()
 	console::initialize();
 	memory::initialize();
 	hash::crc::initialize();
-	console::printf(u8"%hx", hash::crc::crcFast("123456789", 9));
+	for (size_t i = 0; i < 9; i++)
+	{
+		console::printf(u8"%lx\n", hash::crc::crc32("123456789", 9, static_cast<hash::crc::Type32>(i)));
+	}
+	
 	cpuio::halt();
 }
