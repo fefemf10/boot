@@ -91,7 +91,7 @@ export namespace console
 		LENGTH_SHORT_SHORT,
 		LENGTH_SHORT,
 		LENGTH_INT,
-		LENGTH_LONG_LONG,
+		LENGTH_LONG_LONG
 	};
 	void printf(const char8_t* fmt, ...)
 	{
@@ -180,6 +180,7 @@ export namespace console
 					break;
 				case u8'i':
 				case u8'd':
+				case u8'f':
 					radix = 10;
 					sign = true;
 					number = true;

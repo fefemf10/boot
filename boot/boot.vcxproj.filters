@@ -78,6 +78,18 @@
     <ClCompile Include="hash-crc.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="math.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="typetraits.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="concepts.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsic.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -93,6 +105,9 @@
       <Filter>Исходные файлы</Filter>
     </FASM>
     <FASM Include="memoryasm.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
+    <FASM Include="mathasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
   </ItemGroup>

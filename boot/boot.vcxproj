@@ -265,6 +265,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="concepts.ixx" />
     <ClCompile Include="console.ixx" />
     <ClCompile Include="cpuio.ixx" />
     <ClCompile Include="disk.ixx" />
@@ -272,10 +273,12 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="hash-crc.ixx" />
     <ClCompile Include="hash.ixx" />
     <ClCompile Include="IDT.ixx" />
+    <ClCompile Include="intrinsic.ixx" />
     <ClCompile Include="IRQ.ixx" />
     <ClCompile Include="ISR.ixx" />
     <ClCompile Include="kernel.ixx" />
     <ClCompile Include="keyboard.ixx" />
+    <ClCompile Include="math.ixx" />
     <ClCompile Include="memory-allocator.ixx" />
     <ClCompile Include="memory-utils.ixx" />
     <ClCompile Include="memory.ixx" />
@@ -285,6 +288,10 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="string.ixx" />
     <ClCompile Include="teletype.ixx" />
     <ClCompile Include="types.ixx" />
+    <ClCompile Include="typetraits.ixx">
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</PreprocessToFile>
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PreprocessToFile>
+    </ClCompile>
     <ClCompile Include="vec.ixx" />
   </ItemGroup>
   <ItemGroup>
@@ -298,6 +305,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <FASM Include="IOasm.asm" />
     <FASM Include="IRQasm.asm" />
     <FASM Include="ISRasm.asm" />
+    <FASM Include="mathasm.asm" />
     <FASM Include="memoryasm.asm" />
   </ItemGroup>
   <ItemGroup>

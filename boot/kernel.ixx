@@ -8,6 +8,7 @@ import pci;
 import memory;
 import console;
 import hash;
+import math;
 void print_header(const pci::Header0& header)
 {
 	//teletype::puth(header);
@@ -21,7 +22,6 @@ void print_header(const pci::Header0& header)
 	//console::printf(u8"headerType: %hx\n", header.headerType & 0xFF);
 	//teletype::printf("builtInSeltTest: %hx\n", header.builtInSeltTest & 0xFF);
 }
-
 extern "C" void kernel_start()
 {
 	console::setOut(console::OUT::TELETYPE);
@@ -31,11 +31,7 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-	hash::crc::initialize();
-	for (size_t i = 0; i < 9; i++)
-	{
-		console::printf(u8"%lx\n", hash::crc::crc32("123456789", 9, static_cast<hash::crc::Type32>(i)));
-	}
-	
+	console::printf(u8"%lx %lx\n", -1.f, math::abs(-1.5f));
+	console::printf(u8"%llx %llx", -1.0, math::abs(-1.50));
 	cpuio::halt();
 }
