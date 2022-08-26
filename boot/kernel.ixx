@@ -31,7 +31,7 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-	console::printf(u8"%lx %lx\n", -1.f, math::abs(-1.5f));
-	console::printf(u8"%llx %llx", -1.0, math::abs(-1.50));
+	console::printf(u8"%f %f\n", -18.75f, math::abs(-1.75f));
+	console::printf(u8"%lf %lf", -154.65, math::abs(-1.75));
 	cpuio::halt();
 }

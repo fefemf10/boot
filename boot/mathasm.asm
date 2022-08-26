@@ -17,10 +17,8 @@ absi64:
 	sub rax, rdx
 	ret
 absf32:
-	pslld xmm0, 1
-	psrld xmm0, 1
-	ret
 absf64:
-	psllq xmm0, 1
-	psrlq xmm0, 1
+	xorps xmm1, xmm1
+	subps xmm1, xmm0
+	maxps xmm0, xmm1
 	ret

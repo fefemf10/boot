@@ -45,39 +45,95 @@ export namespace console
 		i8 buffer[32]{};
 		i8 pos = 0;
 		const char8_t hexchar8_ts[] = u8"0123456789ABCDEF";
-		// convert number to ASCII
 		do
 		{
-			u64 rem = number % radix;
+			const u64 rem = number % radix;
 			number /= radix;
 			buffer[pos++] = hexchar8_ts[rem];
-		} while (number > 0);
-
-		// print number in reverse order
-		if (width > pos)
-		{
-			i8 pad = width - pos;
-			for (i8 i = 0; i < pad; i++)
-			{
-				putc('0');
-			}
-			goto print_number;
-		}
-		else
-		{
-		print_number:
-			while (--pos >= 0)
-				putc(buffer[pos]);
-		}
+		} while (number);
+		for (i8 i = 0; i < width - pos; i++)
+			putc('0');
+		while (--pos >= 0)
+			putc(buffer[pos]);
 	}
 	void printf_signed(i64 number, i32 radix, i8 width)
 	{
 		if (number < 0)
+			putc('-'), -number;
+		printf_unsigned(number, radix, width);
+	}
+	constexpr double xpow2(int e)
+	{
+		double result = 1.0;
+		constexpr double table[] = { 2.0, 4.0, 8.0, 16.0, 32.0, 64.0 };
+		constexpr i64 size = sizeof(table) / sizeof(table[0]);
+
+		if (e > 0)
 		{
-			putc('-');
-			printf_unsigned(-number, radix, width);
+			if (e > size)
+			{
+				result = table[size - 1];
+				for (i64 i = 0; i < e - size; ++i)
+					result *= 2.0;
+			}
+			else
+				result = table[e - 1];
 		}
-		else printf_unsigned(number, radix, width);
+		return result;
+	}
+
+	void printf_f32(const float number, u64 precision)
+	{
+		struct fp
+		{
+			u32 mantis : 23;
+			u32 exp : 8;
+			u32 sign : 1;
+		};
+		const fp num = *reinterpret_cast<const fp*>(&number);
+		if (num.sign)
+			putc(u8'-');
+
+		constexpr double mpow[] = { 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.00390625, 0.001953125, 0.0009765625 };
+		//constexpr u64 mpow[] = { 5, 25, 125, 625, 3125, 15625, 78125, 390625, 1953125 };
+		double sum = 1.0;
+		for (size_t i = 0; i < 10; i++)
+		{
+			if (num.mantis >> (22 - i) & 0x1)
+				sum += mpow[i];
+		}
+		printf_unsigned(static_cast<u64>(xpow2(num.exp - 127) * (sum)), 10, 0);
+		putc(u8'.');
+		printf_unsigned(static_cast<u64>(precision * (sum - 1.0)), 10, 0);
+		putc(u8' ');
+		printf_unsigned(*reinterpret_cast<const u64*>(&number), 16, 0);
+
+	}
+	void printf_f64(double number, u64 precision)
+	{
+		struct fp
+		{
+			u64 mantis : 52;
+			u64 exp : 11;
+			u64 sign : 1;
+		};
+		const fp num = *reinterpret_cast<const fp*>(&number);
+		if (num.sign)
+			putc(u8'-');
+
+		constexpr double mpow[] = { 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.00390625, 0.001953125, 0.0009765625 };
+		//constexpr u64 mpow[] = { 5, 25, 125, 625, 3125, 15625, 78125, 390625, 1953125 };
+		double sum = 1.0;
+		for (size_t i = 0; i < 10; i++)
+		{
+			if (num.mantis >> (51 - i) & 0x1)
+				sum += mpow[i];
+		}
+		printf_unsigned(static_cast<u64>(xpow2(num.exp - 1023) * (sum)), 10, 0);
+		putc(u8'.');
+		printf_unsigned(static_cast<u64>(precision * (sum - 1.0)), 10, 0);
+		putc(u8' ');
+		printf_unsigned(*reinterpret_cast<const u64*>(&number), 16, 0);
 	}
 	enum class State
 	{
@@ -103,6 +159,7 @@ export namespace console
 		i32 radix = 10;
 		bool sign{};
 		bool number{};
+		bool fp{};
 		while (*fmt)
 		{
 			switch (state)
@@ -158,6 +215,11 @@ export namespace console
 				else goto State_STATE_SPEC;
 				break;
 			case State::STATE_LENGTH_INT:
+				if (*fmt == u8'f')
+				{
+					length = State::LENGTH_LONG_LONG;
+					goto State_STATE_SPEC;
+				}
 				if (*fmt == u8'l')
 				{
 					length = State::LENGTH_LONG_LONG;
@@ -178,9 +240,10 @@ export namespace console
 				case u8'%':
 					putc(u8'%');
 					break;
+				case u8'f':
+					fp = true;
 				case u8'i':
 				case u8'd':
-				case u8'f':
 					radix = 10;
 					sign = true;
 					number = true;
@@ -214,10 +277,16 @@ export namespace console
 						case State::LENGTH_SHORT:
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
-							printf_signed(va_arg(args, i32), radix, width);
+							if (fp)
+								printf_f32((float)va_arg(args, f64), 1000000000);
+							else
+								printf_signed(va_arg(args, i32), radix, width);
 							break;
 						case State::LENGTH_LONG_LONG:
-							printf_signed(va_arg(args, i64), radix, width);
+							if (fp)
+								printf_f64(va_arg(args, f64), 1000000000);
+							else
+								printf_signed(va_arg(args, i64), radix, width);
 							break;
 						}
 					}
@@ -243,6 +312,7 @@ export namespace console
 				radix = 10;
 				sign = false;
 				number = false;
+				fp = false;
 				break;
 			}
 			++fmt;
