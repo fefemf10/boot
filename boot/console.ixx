@@ -4,6 +4,7 @@ import teletype;
 import serial;
 import cpuio;
 import types;
+import math;
 export namespace console
 {
 	enum class OUT
@@ -62,78 +63,16 @@ export namespace console
 			putc('-'), -number;
 		printf_unsigned(number, radix, width);
 	}
-	constexpr double xpow2(int e)
-	{
-		double result = 1.0;
-		constexpr double table[] = { 2.0, 4.0, 8.0, 16.0, 32.0, 64.0 };
-		constexpr i64 size = sizeof(table) / sizeof(table[0]);
-
-		if (e > 0)
-		{
-			if (e > size)
-			{
-				result = table[size - 1];
-				for (i64 i = 0; i < e - size; ++i)
-					result *= 2.0;
-			}
-			else
-				result = table[e - 1];
-		}
-		return result;
-	}
-
-	void printf_f32(const float number, u64 precision)
-	{
-		struct fp
-		{
-			u32 mantis : 23;
-			u32 exp : 8;
-			u32 sign : 1;
-		};
-		const fp num = *reinterpret_cast<const fp*>(&number);
-		if (num.sign)
-			putc(u8'-');
-
-		constexpr double mpow[] = { 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.00390625, 0.001953125, 0.0009765625 };
-		//constexpr u64 mpow[] = { 5, 25, 125, 625, 3125, 15625, 78125, 390625, 1953125 };
-		double sum = 1.0;
-		for (size_t i = 0; i < 10; i++)
-		{
-			if (num.mantis >> (22 - i) & 0x1)
-				sum += mpow[i];
-		}
-		printf_unsigned(static_cast<u64>(xpow2(num.exp - 127) * (sum)), 10, 0);
-		putc(u8'.');
-		printf_unsigned(static_cast<u64>(precision * (sum - 1.0)), 10, 0);
-		putc(u8' ');
-		printf_unsigned(*reinterpret_cast<const u64*>(&number), 16, 0);
-
-	}
 	void printf_f64(double number, u64 precision)
 	{
-		struct fp
-		{
-			u64 mantis : 52;
-			u64 exp : 11;
-			u64 sign : 1;
-		};
-		const fp num = *reinterpret_cast<const fp*>(&number);
-		if (num.sign)
+		if (number < 0)
 			putc(u8'-');
-
-		constexpr double mpow[] = { 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.00390625, 0.001953125, 0.0009765625 };
-		//constexpr u64 mpow[] = { 5, 25, 125, 625, 3125, 15625, 78125, 390625, 1953125 };
-		double sum = 1.0;
-		for (size_t i = 0; i < 10; i++)
-		{
-			if (num.mantis >> (51 - i) & 0x1)
-				sum += mpow[i];
-		}
-		printf_unsigned(static_cast<u64>(xpow2(num.exp - 1023) * (sum)), 10, 0);
+		const f64 absnum = math::abs(number);
+		const u64 intnum = absnum;
+		const u64 fracnum = (absnum - static_cast<f64>(intnum)) * precision;
+		printf_unsigned(intnum, 10, 0);
 		putc(u8'.');
-		printf_unsigned(static_cast<u64>(precision * (sum - 1.0)), 10, 0);
-		putc(u8' ');
-		printf_unsigned(*reinterpret_cast<const u64*>(&number), 16, 0);
+		printf_unsigned(fracnum, 10, 0);
 	}
 	enum class State
 	{
@@ -142,6 +81,7 @@ export namespace console
 		STATE_LENGTH_SHORT,
 		STATE_LENGTH_INT,
 		STATE_WIDTH,
+		STATE_PRECISION,
 		STATE_SPEC,
 		LENGTH_DEFAULT = 0,
 		LENGTH_SHORT_SHORT,
@@ -156,6 +96,7 @@ export namespace console
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
 		i8 width = 0;
+		i8 precision = 0;
 		i32 radix = 10;
 		bool sign{};
 		bool number{};
@@ -190,12 +131,22 @@ export namespace console
 					state = State::STATE_LENGTH_INT;
 					break;
 				case u8'0':
-					length = State::LENGTH_DEFAULT;
 					state = State::STATE_WIDTH;
+					break;
+				case u8'.':
+					state = State::STATE_PRECISION;
 					break;
 				default:
 					goto State_STATE_SPEC;
 					break;
+				}
+				break;
+			case State::STATE_PRECISION:
+				if (*fmt >= u8'0' && *fmt <= u8'9')
+				{
+					length = State::LENGTH_DEFAULT;
+					state = State::STATE_LENGTH;
+					precision = *fmt - 48;
 				}
 				break;
 			case State::STATE_WIDTH:
@@ -215,11 +166,6 @@ export namespace console
 				else goto State_STATE_SPEC;
 				break;
 			case State::STATE_LENGTH_INT:
-				if (*fmt == u8'f')
-				{
-					length = State::LENGTH_LONG_LONG;
-					goto State_STATE_SPEC;
-				}
 				if (*fmt == u8'l')
 				{
 					length = State::LENGTH_LONG_LONG;
@@ -278,7 +224,7 @@ export namespace console
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
 							if (fp)
-								printf_f32((float)va_arg(args, f64), 1000000000);
+								printf_f64(va_arg(args, f64), 1000000000);
 							else
 								printf_signed(va_arg(args, i32), radix, width);
 							break;

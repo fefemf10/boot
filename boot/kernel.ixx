@@ -7,7 +7,6 @@ import IRQ;
 import pci;
 import memory;
 import console;
-import hash;
 import math;
 void print_header(const pci::Header0& header)
 {
@@ -32,6 +31,6 @@ extern "C" void kernel_start()
 	console::initialize();
 	memory::initialize();
 	console::printf(u8"%f %f\n", -18.75f, math::abs(-1.75f));
-	console::printf(u8"%lf %lf", -154.65, math::abs(-1.75));
+	console::printf(u8"%f %f", -154.65, math::abs(-1.75));
 	cpuio::halt();
 }
