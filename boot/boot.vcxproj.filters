@@ -90,6 +90,9 @@
     <ClCompile Include="intrinsic.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="hash-sha.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
