@@ -164,11 +164,12 @@ export namespace memory
 		{
 			pageTableManager.mapMemory((void*)i, (void*)i);
 		}
-		initializeHeap((void*)0x0000100000000000, 0x10);
 		loadGDT(PLM4);
+		initializeHeap((void*)0x0000100000000000, 0x10);
 	}
 	struct HeapSegment;
 	HeapSegment* lastHS;
+#pragma pack(8)
 	struct HeapSegment
 	{
 		u64 size;

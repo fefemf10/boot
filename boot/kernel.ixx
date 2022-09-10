@@ -30,6 +30,6 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-	console::printf(u8"%llx", memory::alloc(0x1000));
+
 	cpuio::halt();
 }
