@@ -290,3 +290,22 @@ export namespace memory
 		segment->combineBackward();
 	}
 }
+export
+{
+	void* operator new(size_t size)
+	{
+		return memory::alloc(size);
+	}
+	void* operator new[](size_t size)
+	{
+		return memory::alloc(size);
+	}
+	void operator delete(void* p)
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p)
+	{
+		memory::free(p);
+	}
+}

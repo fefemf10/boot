@@ -7,7 +7,7 @@ import IRQ;
 import pci;
 import memory;
 import console;
-import math;
+import hash;
 void print_header(const pci::Header0& header)
 {
 	//teletype::puth(header);
@@ -30,6 +30,7 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-
+	const void* adr = (const void*)0xB8000;
+	console::puth(adr, 64);
 	cpuio::halt();
 }

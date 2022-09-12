@@ -41,7 +41,7 @@ export namespace console
 		else
 			teletype::puts(str);
 	}
-	void printf_unsigned(u64 number, i32 radix, i8 width)
+	void printf_unsigned(u64 number, i32 radix, u64 width)
 	{
 		i8 buffer[32]{};
 		i8 pos = 0;
@@ -57,7 +57,7 @@ export namespace console
 		while (--pos >= 0)
 			putc(buffer[pos]);
 	}
-	void printf_signed(i64 number, i32 radix, i8 width)
+	void printf_signed(i64 number, i32 radix, u64 width)
 	{
 		if (number < 0)
 			putc('-'), -number;
@@ -95,7 +95,7 @@ export namespace console
 		va_start(args, fmt);
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
-		i8 width = 0;
+		u64 width = 0;
 		i8 precision = 0;
 		i32 radix = 10;
 		bool sign{};
@@ -120,25 +120,30 @@ export namespace console
 				}
 				break;
 			case State::STATE_LENGTH:
-				switch (*fmt)
+				if (*fmt >= u8'0' && *fmt <= u8'9')
 				{
-				case u8'h':
-					length = State::LENGTH_SHORT;
-					state = State::STATE_LENGTH_SHORT;
-					break;
-				case u8'l':
-					length = State::LENGTH_INT;
-					state = State::STATE_LENGTH_INT;
-					break;
-				case u8'0':
 					state = State::STATE_WIDTH;
-					break;
-				case u8'.':
-					state = State::STATE_PRECISION;
-					break;
-				default:
-					goto State_STATE_SPEC;
-					break;
+				}
+				else
+				{
+					State_WidthLabel:
+					switch (*fmt)
+					{
+					case u8'h':
+						length = State::LENGTH_SHORT;
+						state = State::STATE_LENGTH_SHORT;
+						break;
+					case u8'l':
+						length = State::LENGTH_INT;
+						state = State::STATE_LENGTH_INT;
+						break;
+					case u8'.':
+						state = State::STATE_PRECISION;
+						break;
+					default:
+						goto State_STATE_SPEC;
+						break;
+					}
 				}
 				break;
 			case State::STATE_PRECISION:
@@ -152,10 +157,11 @@ export namespace console
 			case State::STATE_WIDTH:
 				if (*fmt >= u8'0' && *fmt <= u8'9')
 				{
-					length = State::LENGTH_DEFAULT;
-					state = State::STATE_LENGTH;
-					width = *fmt - 48;
+					state = State::STATE_WIDTH;
+					width = width * 10 + (*fmt - 48);
 				}
+				else
+					goto State_WidthLabel;
 				break;
 			case State::STATE_LENGTH_SHORT:
 				if (*fmt == u8'h')
@@ -265,16 +271,11 @@ export namespace console
 		}
 		va_end(args);
 	}
-	template <typename T>
-	void puth(T value)
+	void puth(const void* data, u64 size)
 	{
-		for (size_t i = 1; i <= sizeof(T) / 2; i++)
+		for (size_t i = 1; i <= size / 8; i++)
 		{
-			printf((i % 8 == 0) ? u8"%04hx" : u8"%04hx ", reinterpret_cast<u16*>(&value)[i - 1]);
-			if (i % 8 == 0)
-			{
-				puts(u8"\n");
-			}
+			printf((i % 2 == 0) ? u8"%016x\n" : u8"%016x ", reinterpret_cast<const u64*>(data)[i - 1]);
 		}
 	}
 	void putregs(const cpuio::regs& regs)
