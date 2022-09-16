@@ -93,7 +93,22 @@
     <ClCompile Include="hash-sha.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="aboba.ixx">
+    <ClCompile Include="std.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="std-span.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="std-type.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="std-vector.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="std-allocator.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="std-numeric_limits.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

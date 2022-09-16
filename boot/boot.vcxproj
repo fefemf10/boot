@@ -286,6 +286,12 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="pci.ixx" />
     <ClCompile Include="PIC.ixx" />
     <ClCompile Include="serial.ixx" />
+    <ClCompile Include="std-allocator.ixx" />
+    <ClCompile Include="std-numeric_limits.ixx" />
+    <ClCompile Include="std-span.ixx" />
+    <ClCompile Include="std-type.ixx" />
+    <ClCompile Include="std-vector.ixx" />
+    <ClCompile Include="std.ixx" />
     <ClCompile Include="string.ixx" />
     <ClCompile Include="teletype.ixx" />
     <ClCompile Include="types.ixx" />

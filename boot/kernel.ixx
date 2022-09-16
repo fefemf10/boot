@@ -8,6 +8,7 @@ import pci;
 import memory;
 import console;
 import hash;
+import std;
 void print_header(const pci::Header0& header)
 {
 	//teletype::puth(header);
@@ -30,7 +31,9 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-	const void* adr = (const void*)0xB8000;
-	console::puth(adr, 64);
+	std::vector<u64> s(8, 4568);
+	std::vector<u64> sa(10, 78484);
+	console::puth(s.data(), s.size() * sizeof(u64));
+	console::puth(sa.data(), sa.size() * sizeof(u64));
 	cpuio::halt();
 }
