@@ -1,15 +1,21 @@
 export module std:allocator;
-
+import :type;
+import :typetraits;
 export namespace std
 {
 	template <class T>
 	struct allocator
 	{
+		using _From_primary = allocator;
+		using value_type = T;
+		using size_type = size_t;
+		using difference_type = ptrdiff_t;
+		using propagate_on_container_move_assignment = true_type;
 		constexpr allocator() noexcept = default;
 		/*template <class U>
 		constexpr allocator(const allocator<U>& other) noexcept;*/
 		constexpr ~allocator() = default;
-		[[nodiscard]] constexpr T* allocate(size_t n) const
+		[[nodiscard]] constexpr __declspec(allocator) T* allocate(size_t n) const
 		{
 			return new T[n];
 		}

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Исходные файлы\std">
+      <UniqueIdentifier>{6455a9c7-d02a-4c5f-bbc1-d8aa25b49389}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vec.ixx">
@@ -81,20 +84,56 @@
     <ClCompile Include="math.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="typetraits.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="concepts.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="intrinsic.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="hash-sha.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="aboba.ixx">
-      <Filter>Исходные файлы</Filter>
+    <ClCompile Include="std.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-allocator.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-concepts.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-initializer_list.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-iterator.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-memory.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-numeric_limits.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-span.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-type.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-typetraits.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-vector.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-source_location.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-utility.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-ratio.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="std-compare.ixx">
+      <Filter>Исходные файлы\std</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

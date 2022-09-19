@@ -7,7 +7,6 @@ import IRQ;
 import pci;
 import memory;
 import console;
-import hash;
 import std;
 void print_header(const pci::Header0& header)
 {
@@ -33,6 +32,10 @@ extern "C" void kernel_start()
 	memory::initialize();
 	std::vector<u64> s(8, 4568);
 	std::vector<u64> sa(10, 78484);
+	for (auto& item : s)
+	{
+		console::printf(u8"%ull ", item);
+	}
 	console::puth(s.data(), s.size() * sizeof(u64));
 	console::puth(sa.data(), sa.size() * sizeof(u64));
 	cpuio::halt();

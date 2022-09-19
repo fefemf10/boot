@@ -265,7 +265,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="concepts.ixx" />
+    <ClCompile Include="std-compare.ixx" />
+    <ClCompile Include="std-concepts.ixx" />
     <ClCompile Include="console.ixx" />
     <ClCompile Include="cpuio.ixx" />
     <ClCompile Include="disk.ixx" />
@@ -286,10 +287,22 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="pci.ixx" />
     <ClCompile Include="PIC.ixx" />
     <ClCompile Include="serial.ixx" />
+    <ClCompile Include="std-allocator.ixx" />
+    <ClCompile Include="std-initializer_list.ixx" />
+    <ClCompile Include="std-iterator.ixx" />
+    <ClCompile Include="std-memory.ixx" />
+    <ClCompile Include="std-numeric_limits.ixx" />
+    <ClCompile Include="std-ratio.ixx" />
+    <ClCompile Include="std-source_location.ixx" />
+    <ClCompile Include="std-span.ixx" />
+    <ClCompile Include="std-type.ixx" />
+    <ClCompile Include="std-utility.ixx" />
+    <ClCompile Include="std-vector.ixx" />
+    <ClCompile Include="std.ixx" />
     <ClCompile Include="string.ixx" />
     <ClCompile Include="teletype.ixx" />
     <ClCompile Include="types.ixx" />
-    <ClCompile Include="typetraits.ixx">
+    <ClCompile Include="std-typetraits.ixx">
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</PreprocessToFile>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PreprocessToFile>
     </ClCompile>

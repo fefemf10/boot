@@ -2,28 +2,28 @@ export module std:numeric_limits;
 
 namespace std
 {
-	static constexpr char CHAR_MIN = -128;
-	static constexpr char CHAR_MAX = 127;
-	static constexpr signed char SCHAR_MIN = -128;
-	static constexpr signed char SCHAR_MAX = 127;
-	static constexpr unsigned char UCHAR_MIN = 0;
-	static constexpr unsigned char UCHAR_MAX = 255;
-	static constexpr short SHRT_MIN = -32768;
-	static constexpr short SHRT_MAX = 32767;
-	static constexpr unsigned short USHRT_MIN = 0;
-	static constexpr unsigned short USHRT_MAX = 65535;
-	static constexpr int INT_MIN = -2147483648;
-	static constexpr int INT_MAX = 2147483647;
-	static constexpr unsigned int UINT_MIN = 0;
-	static constexpr unsigned int UINT_MAX = 4294967295;
-	static constexpr long long LLONG_MIN = -9223372036854775808i64;
-	static constexpr long long LLONG_MAX = 9223372036854775807;
-	static constexpr unsigned long long ULLONG_MIN = 0;
-	static constexpr unsigned long long ULLONG_MAX = 18446744073709551615;
-	static constexpr float FLT_MIN = 0;
-	static constexpr float FLT_MAX = 2147483;
-	static constexpr double DBL_MIN = 0;
-	static constexpr double DBL_MAX = 922337203685477;
+	constexpr char CHAR_MIN = -128;
+	constexpr char CHAR_MAX = 127;
+	constexpr signed char SCHAR_MIN = -128;
+	constexpr signed char SCHAR_MAX = 127;
+	constexpr unsigned char UCHAR_MIN = 0;
+	constexpr unsigned char UCHAR_MAX = 255;
+	constexpr short SHRT_MIN = -32768;
+	constexpr short SHRT_MAX = 32767;
+	constexpr unsigned short USHRT_MIN = 0;
+	constexpr unsigned short USHRT_MAX = 65535;
+	constexpr int INT_MIN = -2147483648;
+	constexpr int INT_MAX = 2147483647;
+	constexpr unsigned int UINT_MIN = 0;
+	constexpr unsigned int UINT_MAX = 4294967295;
+	constexpr long long LLONG_MIN = -9223372036854775808i64;
+	constexpr long long LLONG_MAX = 9223372036854775807;
+	constexpr unsigned long long ULLONG_MIN = 0;
+	constexpr unsigned long long ULLONG_MAX = 18446744073709551615;
+	constexpr float FLT_MIN = 0;
+	constexpr float FLT_MAX = 2147483;
+	constexpr double DBL_MIN = 0;
+	constexpr double DBL_MAX = 922337203685477;
 }
 
 export namespace std
@@ -51,7 +51,7 @@ export namespace std
 		static constexpr int radix = 0;
 	};
 	template <class T>
-	class numeric_limits : public numeric_base
+	struct numeric_limits : public numeric_base
 	{
 		[[nodiscard]] static constexpr T min() noexcept
 		{
@@ -92,13 +92,13 @@ export namespace std
 		}
 	};
 	template <class T>
-	class numeric_limits<const T> : public numeric_limits<T> {};
+	struct numeric_limits<const T> : public numeric_limits<T> {};
 
 	template <class T>
-	class numeric_limits<volatile T> : public numeric_limits<T> {};
+	struct numeric_limits<volatile T> : public numeric_limits<T> {};
 
 	template <class T>
-	class numeric_limits<const volatile T> : public numeric_limits<T> {};
+	struct numeric_limits<const volatile T> : public numeric_limits<T> {};
 
 	struct numeric_int_base : numeric_base
 	{
@@ -121,9 +121,8 @@ export namespace std
 	};
 
 	template <>
-	class numeric_limits<bool> : public numeric_int_base
+	struct numeric_limits<bool> : public numeric_int_base
 	{
-	public:
 		[[nodiscard]] static constexpr bool min() noexcept
 		{
 			return false;
@@ -163,7 +162,7 @@ export namespace std
 		static constexpr int digist = 1;
 	};
 	template <>
-	class numeric_limits<char> : public numeric_int_base
+	struct numeric_limits<char> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr char min() noexcept
 		{
@@ -207,7 +206,7 @@ export namespace std
 		static constexpr int digits10 = 2;
 	};
 	template <>
-	class numeric_limits<signed char> : public numeric_int_base
+	struct numeric_limits<signed char> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr signed char min() noexcept
 		{
@@ -250,7 +249,7 @@ export namespace std
 		static constexpr int digits10 = 2;
 	};
 	template <>
-	class numeric_limits<unsigned char> : public numeric_int_base
+	struct numeric_limits<unsigned char> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr unsigned char min() noexcept
 		{
@@ -293,7 +292,7 @@ export namespace std
 		static constexpr int digits10 = 2;
 	};
 	template <>
-	class numeric_limits<char8_t> : public numeric_int_base
+	struct numeric_limits<char8_t> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr char8_t min() noexcept
 		{
@@ -336,7 +335,7 @@ export namespace std
 		static constexpr int digits10 = 2;
 	};
 	template <>
-	class numeric_limits<char16_t> : public numeric_int_base
+	struct numeric_limits<char16_t> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr char16_t min() noexcept
 		{
@@ -379,7 +378,7 @@ export namespace std
 		static constexpr int digits10 = 4;
 	};
 	template <>
-	class numeric_limits<char32_t> : public numeric_int_base
+	struct numeric_limits<char32_t> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr char32_t min() noexcept
 		{
@@ -422,7 +421,7 @@ export namespace std
 		static constexpr int digits10 = 9;
 	};
 	template <>
-	class numeric_limits<short> : public numeric_int_base
+	struct numeric_limits<short> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr short min() noexcept
 		{
@@ -465,7 +464,7 @@ export namespace std
 		static constexpr int digits10 = 4;
 	};
 	template <>
-	class numeric_limits<unsigned short> : public numeric_int_base
+	struct numeric_limits<unsigned short> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr unsigned short min() noexcept
 		{
@@ -508,7 +507,7 @@ export namespace std
 		static constexpr int digits10 = 4;
 	};
 	template <>
-	class numeric_limits<int> : public numeric_int_base
+	struct numeric_limits<int> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr int min() noexcept
 		{
@@ -551,7 +550,7 @@ export namespace std
 		static constexpr int digits10 = 9;
 	};
 	template <>
-	class numeric_limits<unsigned int> : public numeric_int_base
+	struct numeric_limits<unsigned int> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr unsigned int min() noexcept
 		{
@@ -594,7 +593,7 @@ export namespace std
 		static constexpr int digits10 = 9;
 	};
 	template <>
-	class numeric_limits<long long> : public numeric_int_base
+	struct numeric_limits<long long> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr long long min() noexcept
 		{
@@ -637,7 +636,7 @@ export namespace std
 		static constexpr int digits10 = 18;
 	};
 	template <>
-	class numeric_limits<unsigned long long> : public numeric_int_base
+	struct numeric_limits<unsigned long long> : public numeric_int_base
 	{
 		[[nodiscard]] static constexpr unsigned long long min() noexcept
 		{
@@ -680,7 +679,7 @@ export namespace std
 		static constexpr int digits10 = 19;
 	};
 	template <>
-	class numeric_limits<float> : public numeric_float_base
+	struct numeric_limits<float> : public numeric_float_base
 	{
 		[[nodiscard]] static constexpr float min() noexcept
 		{
@@ -729,7 +728,7 @@ export namespace std
 		static constexpr int min_exponent10 = FLT_MIN_10_EXP;*/
 	};
 	template <>
-	class numeric_limits<double> : public numeric_float_base
+	struct numeric_limits<double> : public numeric_float_base
 	{
 		[[nodiscard]] static constexpr double min() noexcept
 		{

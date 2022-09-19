@@ -1,4 +1,4 @@
-export module typetraits;
+export module std:typetraits;
 
 export namespace std
 {
@@ -416,10 +416,460 @@ export namespace std
 
 	template <class T> inline constexpr bool _Is_nonbool_integral = is_integral_v<T> && !is_same_v<remove_cv_t<T>, bool>;
 
+	template <bool>
+	struct _Select
+	{
+		template <class _Ty1, class> using _Apply = _Ty1;
+	};
+
+	template <>
+	struct _Select<false>
+	{
+		template <class, class _Ty2> using _Apply = _Ty2;
+	};
+
+	template <size_t>
+	struct _Make_signed2;
+
+	template <>
+	struct _Make_signed2<1> {
+		template <class> using _Apply = signed char;
+	};
+
+	template <>
+	struct _Make_signed2<2> {
+		template <class> using _Apply = short;
+	};
+
+	template <>
+	struct _Make_signed2<4> {
+		template <class _Ty> using _Apply = typename _Select<is_same_v<_Ty, long> || is_same_v<_Ty, unsigned long>>::template _Apply<long, int>;
+	};
+
+	template <>
+	struct _Make_signed2<8> {
+		template <class> using _Apply = long long;
+	};
+
+	template <class _Ty>
+	using _Make_signed1 = typename _Make_signed2<sizeof(_Ty)>::template _Apply<_Ty>;
+
+	template <class _Ty>
+	struct make_signed
+	{
+		static_assert(_Is_nonbool_integral<_Ty> || is_enum_v<_Ty>,
+			"make_signed<T> requires that T shall be a (possibly cv-qualified) "
+			"integral type or enumeration but not a bool type.");
+
+		using type = typename remove_cv<_Ty>::template _Apply<_Make_signed1>;
+	};
+
+	template <class _Ty>
+	using make_signed_t = typename make_signed<_Ty>::type;
+
+	template <size_t>
+	struct _Make_unsigned2;
+
+	template <>
+	struct _Make_unsigned2<1>
+	{
+		template <class> using _Apply = unsigned char;
+	};
+
+	template <>
+	struct _Make_unsigned2<2>
+	{
+		template <class> using _Apply = unsigned short;
+	};
+
+	template <>
+	struct _Make_unsigned2<4>
+	{
+		template <class _Ty> using _Apply = typename _Select<is_same_v<_Ty, long> || is_same_v<_Ty, unsigned long>>::template _Apply<unsigned long, unsigned int>;
+	};
+
+	template <>
+	struct _Make_unsigned2<8>
+	{
+		template <class> using _Apply = unsigned long long;
+	};
+
+	template <class _Ty>
+	using _Make_unsigned1 = typename _Make_unsigned2<sizeof(_Ty)>::template _Apply<_Ty>;
+
+	template <class _Ty>
+	struct make_unsigned
+	{
+		static_assert(_Is_nonbool_integral<_Ty> || is_enum_v<_Ty>,
+			"make_unsigned<T> requires that T shall be a (possibly cv-qualified) "
+			"integral type or enumeration but not a bool type.");
+
+		using type = typename remove_cv<_Ty>::template _Apply<_Make_unsigned1>;
+	};
+
+	template <class _Ty>
+	using make_unsigned_t = typename make_unsigned<_Ty>::type;
+
+	template <class _Rep>
+	constexpr make_unsigned_t<_Rep> _Unsigned_value(_Rep _Val)
+	{
+		return static_cast<make_unsigned_t<_Rep>>(_Val);
+	}
+
 	template <class T> inline constexpr size_t alignment_of_v = alignof(T);
 	template <class T>struct alignment_of : integral_constant<size_t, alignof(T)> {};
 
 	template <class Base, class Derived> inline constexpr bool is_base_of_v = __is_base_of(Base, Derived);
 	template <class Base, class Derived> struct is_base_of : bool_constant<__is_base_of(Base, Derived)> {};
 
+	template <class T>
+	struct decay {
+		using T1 = remove_reference_t<T>;
+		using T2 = typename _Select<is_function_v<T1>>::template _Apply<add_pointer<T1>, remove_cv<T1>>;
+		using type = typename _Select<is_array_v<T1>>::template _Apply<add_pointer<remove_extent_t<T1>>, T2>::type;
+	};
+
+	template <class _Ty>
+	using decay_t = typename decay<_Ty>::type;
+
+	template <class... T>
+	struct common_type;
+
+	template <class... T>
+	using common_type_t = typename common_type<T...>::type;
+
+	template <>
+	struct common_type<> {};
+
+	template <class T>
+	struct common_type<T> : common_type<T, T> {};
+
+	template <class...>
+	struct common_reference;
+
+	template <class... T>
+	using common_reference_t = typename common_reference<T...>::type;
+
+	template <>
+	struct common_reference<> {};
+
+	template <class T>
+	struct common_reference<T> {
+		using type = T;
+	};
+
+	template <class To>
+	void _Implicitly_convert_to(To) noexcept;
+
+	template <class From, class To, bool = is_convertible_v<From, To>, bool = is_void_v<To>>
+	inline constexpr bool _Is_nothrow_convertible_v = noexcept(_Implicitly_convert_to<To>(declval<From>()));
+
+	template <class From, class To, bool IsVoid>
+	inline constexpr bool _Is_nothrow_convertible_v<From, To, false, IsVoid> = false;
+
+	template <class From, class To>
+	inline constexpr bool _Is_nothrow_convertible_v<From, To, true, true> = true;
+
+	template <class From, class To>
+	struct _Is_nothrow_convertible : bool_constant<_Is_nothrow_convertible_v<From, To>> {};
+
+	template <class From, class To>
+	inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<From, To>;
+
+	template <class From, class To>
+	using is_nothrow_convertible = _Is_nothrow_convertible<From, To>;
+
+	template <class Type, template <class...> class Template>
+	inline constexpr bool _Is_specialization_v = false;
+	template <template <class...> class Template, class... Types>
+	inline constexpr bool _Is_specialization_v<Template<Types...>, Template> = true;
+
+	template <class T>
+	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>& arg) noexcept
+	{
+		return static_cast<T&&>(arg);
+	}
+
+	template <class T>
+	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>&& arg) noexcept
+	{
+		static_assert(!is_lvalue_reference_v<T>, "bad forward call");
+		return static_cast<T&&>(arg);
+	}
+
+	template <class T>
+	[[nodiscard]] constexpr remove_reference_t<T>&& move(T&& arg) noexcept
+	{
+		return static_cast<remove_reference_t<T>&&>(arg);
+	}
+
+	template <class T>
+	[[nodiscard]] constexpr conditional_t<!is_nothrow_move_constructible_v<T>&& is_copy_constructible_v<T>, const T&, T&&> move_if_noexcept(T& arg) noexcept
+	{
+		return move(arg);
+	}
+
+	template <class T>
+	class reference_wrapper;
+
+	// std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
+	// (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
+	// invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
+
+	enum class _Invoker_strategy {
+		_Functor,
+		_Pmf_object,
+		_Pmf_refwrap,
+		_Pmf_pointer,
+		_Pmd_object,
+		_Pmd_refwrap,
+		_Pmd_pointer
+	};
+
+	struct _Invoker_functor {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Functor;
+
+		template <class _Callable, class... _Types>
+		static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
+			noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)))
+			-> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
+			return static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...);
+		}
+	};
+
+	struct _Invoker_pmf_object {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_object;
+
+		template <class _Decayed, class T1, class... _Types2>
+		static constexpr auto _Call(_Decayed _Pmf, T1&& _Arg1, _Types2&&... _Args2) noexcept(
+			noexcept((static_cast<T1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+			-> decltype((static_cast<T1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+			return (static_cast<T1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+		}
+	};
+
+	struct _Invoker_pmf_refwrap {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_refwrap;
+
+		template <class _Decayed, class _Refwrap, class... _Types2>
+		static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2) noexcept(
+			noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+			-> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+			return (_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+		}
+	};
+
+	struct _Invoker_pmf_pointer {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_pointer;
+
+		template <class _Decayed, class T1, class... _Types2>
+		static constexpr auto _Call(_Decayed _Pmf, T1&& _Arg1, _Types2&&... _Args2) noexcept(
+			noexcept(((*static_cast<T1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+			-> decltype(((*static_cast<T1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+			return ((*static_cast<T1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+		}
+	};
+
+	struct _Invoker_pmd_object {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_object;
+
+		template <class _Decayed, class T1>
+		static constexpr auto _Call(_Decayed _Pmd, T1&& _Arg1) noexcept -> decltype(static_cast<T1&&>(_Arg1).*_Pmd) {
+			return static_cast<T1&&>(_Arg1).*_Pmd;
+		}
+	};
+
+	struct _Invoker_pmd_refwrap {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_refwrap;
+
+		template <class _Decayed, class _Refwrap>
+		static constexpr auto _Call(_Decayed _Pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*_Pmd) {
+			return _Rw.get().*_Pmd;
+		}
+	};
+
+	struct _Invoker_pmd_pointer {
+		static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
+
+		template <class _Decayed, class T1>
+		static constexpr auto _Call(_Decayed _Pmd, T1&& _Arg1) noexcept(noexcept((*static_cast<T1&&>(_Arg1)).*_Pmd))
+			-> decltype((*static_cast<T1&&>(_Arg1)).*_Pmd) {
+			return (*static_cast<T1&&>(_Arg1)).*_Pmd;
+		}
+	};
+
+	template <class _Callable, class T1, class _Removed_cvref = _Remove_cvref_t<_Callable>,
+		bool _Is_pmf = is_member_function_pointer_v<_Removed_cvref>,
+		bool _Is_pmd = is_member_object_pointer_v<_Removed_cvref>>
+		struct _Invoker1;
+
+	template <class _Callable, class T1, class _Removed_cvref>
+	struct _Invoker1<_Callable, T1, _Removed_cvref, true, false>
+		: conditional_t<is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, remove_reference_t<T1>>,
+		_Invoker_pmf_object,
+		conditional_t<_Is_specialization_v<_Remove_cvref_t<T1>, reference_wrapper>, _Invoker_pmf_refwrap,
+		_Invoker_pmf_pointer>> {}; // pointer to member function
+
+	template <class _Callable, class T1, class _Removed_cvref>
+	struct _Invoker1<_Callable, T1, _Removed_cvref, false, true>
+		: conditional_t<
+		is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, remove_reference_t<T1>>,
+		_Invoker_pmd_object,
+		conditional_t<_Is_specialization_v<_Remove_cvref_t<T1>, reference_wrapper>, _Invoker_pmd_refwrap,
+		_Invoker_pmd_pointer>> {}; // pointer to member data
+
+	template <class _Callable, class T1, class _Removed_cvref>
+	struct _Invoker1<_Callable, T1, _Removed_cvref, false, false> : _Invoker_functor {};
+
+	template <class T>
+	T _Returns_exactly() noexcept; // not defined
+
+	template <class From, class To, class = void>
+	struct _Invoke_convertible : false_type {};
+
+	template <class From, class To>
+	struct _Invoke_convertible<From, To, void_t<decltype(_Implicitly_convert_to<To>(_Returns_exactly<From>()))>>
+		: true_type {};
+
+	template <class From, class To>
+	struct _Invoke_nothrow_convertible : bool_constant<noexcept(_Implicitly_convert_to<To>(_Returns_exactly<From>()))> {};
+
+	template <class _Result, bool _Nothrow>
+	struct _Invoke_traits_common {
+		using type = _Result;
+		using _Is_invocable = true_type;
+		using _Is_nothrow_invocable = bool_constant<_Nothrow>;
+		template <class _Rx>
+		using _Is_invocable_r = bool_constant<disjunction_v<is_void<_Rx>, _Invoke_convertible<type, _Rx>>>;
+		template <class _Rx>
+		using _Is_nothrow_invocable_r = bool_constant<conjunction_v<_Is_nothrow_invocable,
+			disjunction<is_void<_Rx>,
+			conjunction<_Invoke_convertible<type, _Rx>, _Invoke_nothrow_convertible<type, _Rx>>>>>;
+	};
+
+	template <class _Void, class _Callable>
+	struct _Invoke_traits_zero {
+		// selected when _Callable isn't callable with zero _Args
+		using _Is_invocable = false_type;
+		using _Is_nothrow_invocable = false_type;
+		template <class _Rx>
+		using _Is_invocable_r = false_type;
+		template <class _Rx>
+		using _Is_nothrow_invocable_r = false_type;
+	};
+
+	template <class _Callable>
+	using _Decltype_invoke_zero = decltype(declval<_Callable>()());
+
+	template <class _Callable>
+	struct _Invoke_traits_zero<void_t<_Decltype_invoke_zero<_Callable>>, _Callable>
+		: _Invoke_traits_common<_Decltype_invoke_zero<_Callable>, noexcept(declval<_Callable>()())> {};
+
+	template <class _Void, class... _Types>
+	struct _Invoke_traits_nonzero {
+		using _Is_invocable = false_type;
+		using _Is_nothrow_invocable = false_type;
+		template <class _Rx>
+		using _Is_invocable_r = false_type;
+		template <class _Rx>
+		using _Is_nothrow_invocable_r = false_type;
+	};
+
+	template <class _Callable, class T1, class... _Types2>
+	using _Decltype_invoke_nonzero = decltype(_Invoker1<_Callable, T1>::_Call(
+		declval<_Callable>(), declval<T1>(), declval<_Types2>()...));
+
+
+	template <class _Callable, class T1, class... _Types2>
+	struct _Invoke_traits_nonzero<void_t<_Decltype_invoke_nonzero<_Callable, T1, _Types2...>>, _Callable, T1,
+		_Types2...> : _Invoke_traits_common<_Decltype_invoke_nonzero<_Callable, T1, _Types2...>,
+		noexcept(_Invoker1<_Callable, T1>::_Call(
+			declval<_Callable>(), declval<T1>(), declval<_Types2>()...))> {};
+
+	template <class _Callable, class... _Args>
+	using _Select_invoke_traits = conditional_t<sizeof...(_Args) == 0, _Invoke_traits_zero<void, _Callable>,
+		_Invoke_traits_nonzero<void, _Callable, _Args...>>;
+
+	template <class _Callable, class... _Args>
+	using _Invoke_result_t = typename _Select_invoke_traits<_Callable, _Args...>::type;
+
+	template <class _Rx, class _Callable, class... _Args>
+	using _Is_invocable_r_ = typename _Select_invoke_traits<_Callable, _Args...>::template _Is_invocable_r<_Rx>;
+
+	template <class _Rx, class _Callable, class... _Args>
+	struct _Is_invocable_r : _Is_invocable_r_<_Rx, _Callable, _Args...> {};
+
+	template <class _Callable, class... _Args>
+	struct invoke_result : _Select_invoke_traits<_Callable, _Args...> {};
+
+	template <class _Callable, class... _Args>
+	using invoke_result_t = typename _Select_invoke_traits<_Callable, _Args...>::type;
+
+	template <class _Callable, class... _Args>
+	struct is_invocable : _Select_invoke_traits<_Callable, _Args...>::_Is_invocable {};
+
+	template <class _Callable, class... _Args>
+	inline constexpr bool is_invocable_v = _Select_invoke_traits<_Callable, _Args...>::_Is_invocable::value;
+
+	template <class _Callable, class... _Args>
+	struct is_nothrow_invocable : _Select_invoke_traits<_Callable, _Args...>::_Is_nothrow_invocable {};
+
+	template <class _Callable, class... _Args>
+	inline constexpr bool is_nothrow_invocable_v = _Select_invoke_traits<_Callable, _Args...>::_Is_nothrow_invocable::value;
+
+	template <class _Rx, class _Callable, class... _Args>
+	struct is_invocable_r : _Is_invocable_r_<_Rx, _Callable, _Args...> {};
+
+	template <class _Rx, class _Callable, class... _Args>
+	inline constexpr bool is_invocable_r_v = _Is_invocable_r_<_Rx, _Callable, _Args...>::value;
+
+	template <class _Rx, class _Callable, class... _Args>
+	struct is_nothrow_invocable_r : _Select_invoke_traits<_Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx> {};
+
+	template <class _Rx, class _Callable, class... _Args>
+	inline constexpr bool is_nothrow_invocable_r_v =
+		_Select_invoke_traits<_Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx>::value;
+
+	template <class _FloatingType>
+	struct _Floating_type_traits;
+
+	template <>
+	struct _Floating_type_traits<float> {
+		static constexpr int _Mantissa_bits = 24; // FLT_MANT_DIG
+		static constexpr int _Exponent_bits = 8; // sizeof(float) * CHAR_BIT - FLT_MANT_DIG
+		static constexpr int _Maximum_binary_exponent = 127; // FLT_MAX_EXP - 1
+		static constexpr int _Minimum_binary_exponent = -126; // FLT_MIN_EXP - 1
+		static constexpr int _Exponent_bias = 127;
+		static constexpr int _Sign_shift = 31; // _Exponent_bits + _Mantissa_bits - 1
+		static constexpr int _Exponent_shift = 23; // _Mantissa_bits - 1
+
+		using _Uint_type = unsigned int;
+
+		static constexpr unsigned int _Exponent_mask = 0x000000FFu; // (1u << _Exponent_bits) - 1
+		static constexpr unsigned int _Normal_mantissa_mask = 0x00FFFFFFu; // (1u << _Mantissa_bits) - 1
+		static constexpr unsigned int _Denormal_mantissa_mask = 0x007FFFFFu; // (1u << (_Mantissa_bits - 1)) - 1
+		static constexpr unsigned int _Special_nan_mantissa_mask = 0x00400000u; // 1u << (_Mantissa_bits - 2)
+		static constexpr unsigned int _Shifted_sign_mask = 0x80000000u; // 1u << _Sign_shift
+		static constexpr unsigned int _Shifted_exponent_mask = 0x7F800000u; // _Exponent_mask << _Exponent_shift
+	};
+
+	template <>
+	struct _Floating_type_traits<double> {
+		static constexpr int _Mantissa_bits = 53; // DBL_MANT_DIG
+		static constexpr int _Exponent_bits = 11; // sizeof(double) * CHAR_BIT - DBL_MANT_DIG
+		static constexpr int _Maximum_binary_exponent = 1023; // DBL_MAX_EXP - 1
+		static constexpr int _Minimum_binary_exponent = -1022; // DBL_MIN_EXP - 1
+		static constexpr int _Exponent_bias = 1023;
+		static constexpr int _Sign_shift = 63; // _Exponent_bits + _Mantissa_bits - 1
+		static constexpr int _Exponent_shift = 52; // _Mantissa_bits - 1
+
+		using _Uint_type = unsigned long long;
+
+		static constexpr unsigned long long _Exponent_mask = 0x00000000000007FFu; // (1ULL << _Exponent_bits) - 1
+		static constexpr unsigned long long _Normal_mantissa_mask = 0x001FFFFFFFFFFFFFu; // (1ULL << _Mantissa_bits) - 1
+		static constexpr unsigned long long _Denormal_mantissa_mask = 0x000FFFFFFFFFFFFFu; // (1ULL << (_Mantissa_bits - 1)) - 1
+		static constexpr unsigned long long _Special_nan_mantissa_mask = 0x0008000000000000u; // 1ULL << (_Mantissa_bits - 2)
+		static constexpr unsigned long long _Shifted_sign_mask = 0x8000000000000000u; // 1ULL << _Sign_shift
+		static constexpr unsigned long long _Shifted_exponent_mask = 0x7FF0000000000000u; // _Exponent_mask << _Exponent_shift
+	};
 }

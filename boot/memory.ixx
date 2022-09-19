@@ -251,7 +251,7 @@ export namespace memory
 		newSegment->size = size - sizeof(HeapSegment);
 		newSegment->combineBackward();
 	}
-	void* alloc(u64 size)
+	__declspec(allocator) void* alloc(u64 size)
 	{
 		if (size % 0x10 > 0)
 		{
