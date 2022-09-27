@@ -32,9 +32,9 @@ extern "C" void kernel_start()
 	memory::initialize();
 	std::vector<u64> s(8, 4568);
 	std::vector<u64> sa(10, 78484);
-	for (auto& item : s)
+	for (auto it = s.cbegin(); it != s.cend(); ++it)
 	{
-		console::printf(u8"%ull ", item);
+		console::printf(u8"%llx\n", *it);
 	}
 	console::puth(s.data(), s.size() * sizeof(u64));
 	console::puth(sa.data(), sa.size() * sizeof(u64));

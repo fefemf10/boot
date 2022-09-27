@@ -3,6 +3,9 @@ import :allocator;
 import :numeric_limits;
 import :memory;
 import :iterator;
+import :typetraits;
+import :concepts;
+import :type;
 export namespace std
 {
 	template <class T, class Allocator = allocator<T>>
@@ -17,9 +20,45 @@ export namespace std
 		using const_reference = const T&;
 		using size_type = typename allocator_traits<Allocator>::size_type;
 		using difference_type = typename allocator_traits<Allocator>::difference_type;
-		
-		using iterator = linear_iterator<vector<T>>;
-		using const_iterator = const_linear_iterator<vector<T>>;
+		template <class T>
+		constexpr bool _Is_simple_alloc_v = is_same_v<typename allocator_traits<T>::size_type, size_t> &&
+			is_same_v<typename allocator_traits<T>::difference_type, ptrdiff_t> &&
+			is_same_v<typename allocator_traits<T>::pointer, typename T::value_type*> &&
+			is_same_v<typename allocator_traits<T>::const_pointer, const typename T::value_type*>;
+
+		template <class _Value_type>
+		struct _Simple_types
+		{
+			using value_type = _Value_type;
+			using size_type = size_t;
+			using difference_type = ptrdiff_t;
+			using pointer = value_type*;
+			using const_pointer = const value_type*;
+		};
+		template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer, class _Reference, class _Const_reference>
+		struct _Vec_iter_types {
+			using value_type = _Value_type;
+			using size_type = _Size_type;
+			using difference_type = _Difference_type;
+			using pointer = _Pointer;
+			using const_pointer = _Const_pointer;
+		};
+		template <class _Val_types>
+		class _Vector_val
+		{
+		public:
+			using value_type = typename _Val_types::value_type;
+			using size_type = typename _Val_types::size_type;
+			using difference_type = typename _Val_types::difference_type;
+			using pointer = typename _Val_types::pointer;
+			using const_pointer = typename _Val_types::const_pointer;
+			using reference = value_type&;
+			using const_reference = const value_type&;
+		};
+		using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<Allocator>, _Simple_types<T>,
+			_Vec_iter_types<T, size_type, difference_type, pointer, const_pointer, T&, const T&>>>;
+		using iterator = linear_iterator<_Scary_val>;
+		using const_iterator = const_linear_iterator<_Scary_val>;
 		//using reverse_iterator = reverse_iterator<iterator>;
 		//using const_reverse_iterator = reverse_iterator<const_iterator>;
 		constexpr vector() noexcept(noexcept(Allocator())) {}
@@ -88,6 +127,10 @@ export namespace std
 		{
 			return const_iterator(m_first, addressof(*this));
 		}
+		[[nodiscard]] constexpr const_iterator cbegin() const noexcept
+		{
+			return begin();
+		}
 		[[nodiscard]] constexpr iterator end() noexcept
 		{
 			return iterator(m_last, addressof(*this));
@@ -95,6 +138,10 @@ export namespace std
 		[[nodiscard]] constexpr const_iterator end() const noexcept
 		{
 			return const_iterator(m_last, addressof(*this));
+		}
+		[[nodiscard]] constexpr const_iterator cend() const noexcept
+		{
+			return end();
 		}
 		[[nodiscard]] constexpr T& front(const size_t pos) noexcept
 		{

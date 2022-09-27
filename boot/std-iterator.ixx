@@ -4,6 +4,7 @@ import :compare;
 import :typetraits;
 import :concepts;
 import :utility;
+import console;
 export namespace std
 {
 	template <class T>
@@ -131,7 +132,12 @@ export namespace std
 		using reference = const value_type&;
 
 		constexpr const_linear_iterator() noexcept = default;
-		constexpr const_linear_iterator(typename T::pointer ptr, const T* container) noexcept : ptr(ptr), container(container) {}
+		constexpr const_linear_iterator(typename T::pointer ptr, const T* container) noexcept : ptr(ptr), container(container)
+		{
+			console::setOut(console::OUT::SERIAL);
+			console::printf(u8"const_linear_iterator\n");
+			console::setOut(console::OUT::TELETYPE);
+		}
 		[[nodiscard]] constexpr reference operator*() const noexcept
 		{
 			return *ptr;
@@ -212,7 +218,7 @@ export namespace std
 			}
 		}
 		typename T::pointer ptr{};
-		T* container;
+		const T* container;
 	};
 
 	template <class T>
@@ -225,6 +231,14 @@ export namespace std
 		using pointer = typename T::pointer;
 		using reference = value_type&;
 		
+		constexpr linear_iterator() noexcept = default;
+		constexpr linear_iterator(typename T::pointer ptr, const T* container) noexcept : const_linear_iterator<T>(ptr, container)
+		{
+			console::setOut(console::OUT::SERIAL);
+			console::printf(u8"linear_iterator\n");
+			console::setOut(console::OUT::TELETYPE);
+		}
+
 		[[nodiscard]] constexpr reference operator*() const noexcept
 		{
 			return const_cast<reference>(base::operator*());

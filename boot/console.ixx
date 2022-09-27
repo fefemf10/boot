@@ -41,7 +41,7 @@ export namespace console
 		else
 			teletype::puts(str);
 	}
-	void printf_unsigned(u64 number, i32 radix, u64 width)
+	void printf_unsigned(u64 number, i32 radix, i64 width)
 	{
 		i8 buffer[32]{};
 		i8 pos = 0;
@@ -57,7 +57,7 @@ export namespace console
 		while (--pos >= 0)
 			putc(buffer[pos]);
 	}
-	void printf_signed(i64 number, i32 radix, u64 width)
+	void printf_signed(i64 number, i32 radix, i64 width)
 	{
 		if (number < 0)
 			putc('-'), -number;
@@ -95,7 +95,7 @@ export namespace console
 		va_start(args, fmt);
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
-		u64 width = 0;
+		i64 width = 0;
 		i8 precision = 0;
 		i32 radix = 10;
 		bool sign{};
