@@ -3,8 +3,17 @@ export module std:initializer_list;
 export namespace std
 {
 	template <class T>
-	struct initializer_list
+	class initializer_list
 	{
+	public:
+		using value_type = T;
+		using reference = const T&;
+		using const_reference = const T&;
+		using size_type = size_t;
+
+		using iterator = const T*;
+		using const_iterator = const T*;
+
 		constexpr initializer_list() noexcept = default;
 		constexpr initializer_list(const T* first, const T* last) noexcept : first(first), last(last) {};
 		constexpr const T* begin() const noexcept
@@ -19,6 +28,7 @@ export namespace std
 		{
 			return static_cast<size_t>(last - first);
 		}
+	private:
 		const T* first{};
 		const T* last{};
 	};
