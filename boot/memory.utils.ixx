@@ -1,4 +1,4 @@
-export module memory:utils;
+export module memory.utils;
 import types;
 export namespace memory
 {

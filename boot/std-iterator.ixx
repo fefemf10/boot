@@ -1,9 +1,6 @@
 export module std:iterator;
 import :memory;
 import :compare;
-import :typetraits;
-import :concepts;
-import :utility;
 export namespace std
 {
 	template <class T>
@@ -130,10 +127,8 @@ export namespace std
 		using pointer = typename T::const_pointer;
 		using reference = const value_type&;
 
-		using _Tptr = typename T::pointer;
-
 		constexpr const_linear_iterator() noexcept = default;
-		constexpr const_linear_iterator(_Tptr ptr, const T* container) noexcept : ptr(ptr), container(const_cast<T*>(container)) {}
+		constexpr const_linear_iterator(typename T::pointer ptr, const T* container) noexcept : ptr(ptr), container(const_cast<T*>(container)) {}
 		[[nodiscard]] constexpr reference operator*() const noexcept
 		{
 			return *ptr;

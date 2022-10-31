@@ -16,6 +16,9 @@
     <Filter Include="Исходные файлы\std">
       <UniqueIdentifier>{6455a9c7-d02a-4c5f-bbc1-d8aa25b49389}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\driver">
+      <UniqueIdentifier>{17ae28ec-bc7c-439e-97a8-43d2c7be5e1e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vec.ixx">
@@ -63,7 +66,7 @@
     <ClCompile Include="memory-allocator.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="memory-utils.ixx">
+    <ClCompile Include="memory.utils.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="serial.ixx">
@@ -135,6 +138,27 @@
     <ClCompile Include="std-compare.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
+    <ClCompile Include="ACPI.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="PIT.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="disk.sata.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="driver.ixx">
+      <Filter>Исходные файлы\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="driver-ACHI.ixx">
+      <Filter>Исходные файлы\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="driver-Driver.ixx">
+      <Filter>Исходные файлы\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="pci.structures.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -155,11 +179,6 @@
     <FASM Include="mathasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="disk.sata.ixx">
-      <Filter>Исходные файлы</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdarg.h">

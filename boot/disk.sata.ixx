@@ -1,6 +1,7 @@
 export module disk.sata;
 import types;
 import console;
+
 export namespace disk::sata
 {
 	enum class FIS
@@ -140,7 +141,7 @@ export namespace disk::sata
 		u32 bohc;
 		u8 rsv[0xA0 - 0x2C];
 		u8 vendor[0x100 - 0xA0];
-		HBAPORT port;
+		HBAPORT ports[1];
 	};
 	struct HBAFIS
 	{
@@ -150,7 +151,7 @@ export namespace disk::sata
 		u32 pad1[3];
 		REGD2H rfis;
 		u32 pad2;
-		DEVBITS sdbfiis;
+		//DEVBITS sdbfiis;
 		u64 ufis[8];
 		u8 rsv[0x100 - 0xA0];
 	};
@@ -235,7 +236,7 @@ export namespace disk::sata
 		{
 			if (pi & 1)
 			{
-				ACHIDEV dt = static_cast<ACHIDEV>(&abar->ports[i]);
+				ACHIDEV dt = getType(&abar->ports[i]);
 				switch (dt)
 				{
 				case disk::sata::ACHIDEV::SATAPI:

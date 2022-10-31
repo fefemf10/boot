@@ -8,19 +8,9 @@ import pci;
 import memory;
 import console;
 import std;
-void print_header(const pci::Header0& header)
-{
-	//teletype::puth(header);
-	console::printf(u8"vendor: %s device: %s status: %hx %s\n", pci::getVendorName(header.vendor), pci::getDeviceName(header.vendor, header.device), header.status, pci::deviceClasses[header.baseClassCode]);
-	/*teletype::printf("command: %hx\n", header.cmd);
-	teletype::printf("status: %hx\n", header.status);
-	teletype::printf("revision: %hx\n", header.revision & 0xFF);*/
+import ACPI;
+import PIT;
 
-	//teletype::printf("cacheLineSize: %hx\n", header.cacheLineSize & 0xFF);
-	//teletype::printf("masterLatencyTimer: %hx\n", header.masterLatencyTimer & 0xFF);
-	//console::printf(u8"headerType: %hx\n", header.headerType & 0xFF);
-	//teletype::printf("builtInSeltTest: %hx\n", header.builtInSeltTest & 0xFF);
-}
 extern "C" void kernel_start()
 {
 	console::setOut(console::OUT::TELETYPE);
@@ -30,13 +20,15 @@ extern "C" void kernel_start()
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
 	memory::initialize();
-	std::vector<u64> s(8, 4568);
-	std::vector<u64> sa(10, 78484);
-	for (auto it = s.cbegin(); it != s.cend(); ++it)
+	//memory::printSMAP();
+	PIT::setDivisor(65535);
+	ACPI::RSDP* rsdp = ACPI::RSDP::find();
+	ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
+	pci::enumeratePCI(mcfg);
+	for (int i = 0; i < 100; i++)
 	{
-		console::printf(u8"%llx\n", *it);
+		console::printf(u8"%u ", i);
+		PIT::sleep(100);
 	}
-	console::puth(s.data(), s.size() * sizeof(u64));
-	console::puth(sa.data(), sa.size() * sizeof(u64));
-	cpuio::halt();
+	cpuio::loop();
 }

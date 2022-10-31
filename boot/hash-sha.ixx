@@ -1,4 +1,4 @@
-export module hash:sha;
+export module hash.sha;
 import types;
 import memory;
 
@@ -8,7 +8,7 @@ export namespace hash::sha
 	{
 		u64 data[8];
 	};
-	bool operator==(const sha256_t& lhs, const sha256_t& rhs)
+	constexpr bool operator==(const sha256_t& lhs, const sha256_t& rhs)
 	{
 		for (u8 i = 0; i < 8; ++i)
 			if (lhs.data[i] != rhs.data[i])

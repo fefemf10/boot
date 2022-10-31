@@ -217,7 +217,7 @@ startLongMode:
 	mov rdi, KERNEL + 0x460
 	mov rcx, (COUNTSECTORS * READCOUNT * 0x200 / 8)
 	rep movsq
-	jmp KERNEL + 0x460
+	call KERNEL + 0x460
 readPacket:
 	db 0x10
 	db 0

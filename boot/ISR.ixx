@@ -80,6 +80,7 @@ export namespace ISR
 		//teletype::puth(errors);
 		//teletype::puth(errors[0]);
 		//teletype::puts(errors[regs.interruptCode]);
+		console::puts(errors[regs.interruptCode]);
 		cpuio::halt();
 	}
 	void initialize()

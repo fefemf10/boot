@@ -1,10 +1,11 @@
 export module memory;
+export import memory.utils;
+export import :allocator;
 import types;
 import cpuio;
 import console;
 import teletype;
-export import :allocator;
-export import :utils;
+
 export namespace memory
 {
 	struct SMAP
@@ -79,6 +80,7 @@ export namespace memory
 	struct PageTableManager
 	{
 		PageTable* PLM4;
+		PageTableManager() = default;
 		PageTableManager(PageTable* PLM4) : PLM4(PLM4)
 		{
 
@@ -138,6 +140,7 @@ export namespace memory
 		}
 	};
 	PageTable* PLM4;
+	PageTableManager pageTableManager;
 	extern "C" void loadGDT(PageTable * plm4);
 	void initializeHeap(void* address, u64 size);
 	void initialize()
@@ -159,7 +162,7 @@ export namespace memory
 		allocator::unsetRegion(reinterpret_cast<u64*>(0x27A00), sizeof(size) + size * sizeof(SMAP));
 		PLM4 = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
 		set(PLM4, 0, 0x1000);
-		PageTableManager pageTableManager(PLM4);
+		pageTableManager = PageTableManager(PLM4);
 		for (u64 i = 0; i < 0x9000000/*128mb*/; i += 0x1000)
 		{
 			pageTableManager.mapMemory((void*)i, (void*)i);
@@ -304,7 +307,15 @@ export
 	{
 		memory::free(p);
 	}
+	void operator delete(void* p, u64 size)
+	{
+		memory::free(p);
+	}
 	void operator delete[](void* p)
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p, u64 size)
 	{
 		memory::free(p);
 	}

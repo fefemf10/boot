@@ -4,6 +4,7 @@ import IDT;
 import cpuio;
 import keyboard;
 import PIC;
+import PIT;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -24,8 +25,14 @@ export namespace IRQ
 	extern "C" void irq15();
 	extern "C" void irqHandler(const cpuio::regs& regs)
 	{
-		if (regs.interruptCode - 0x20 == 1)// - 0x20 offset ISR
+		size_t code = regs.interruptCode - 0x20;
+		switch (code)
 		{
+		case 0:
+			PIT::tick();
+			PIC::eioPrimary();
+			break;
+		case 1:
 			u8 status;
 			u8 keycode;
 
@@ -35,12 +42,16 @@ export namespace IRQ
 				keycode = cpuio::inb(keyboard::KEYBOARD_PORT::DATA_PORT);
 				keyboard::standartKeyboard(keycode, keyboard::scancodes[keycode]);
 			}
+			PIC::eioPrimary();
+			break;
+		default:
+			PIC::eioSecondary();
+			break;
 		}
-		PIC::eio();
 	}
 	void initialize()
 	{
-		IDT::set(32, irq0);
+		IDT::set(32, irq0); PIC::setMask(0, 0);
 		IDT::set(33, irq1); PIC::setMask(1, 0);
 		IDT::set(34, irq2);
 		IDT::set(35, irq3);

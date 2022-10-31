@@ -16,5 +16,6 @@ export namespace cpuio
 	void outdw(u32 data, u16 port);
 	void reboot();
 	void halt();
+	void loop();
 	void iowait();
 }

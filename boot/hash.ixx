@@ -1,3 +1,3 @@
 export module hash;
-export import :crc;
-export import :sha;
+export import hash.crc;
+export import hash.sha;

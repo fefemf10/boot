@@ -60,7 +60,11 @@ export namespace PIC
 		}
 		cpuio::outb(data, port);
 	}
-	void eio()
+	void eioPrimary()
+	{
+		cpuio::outb(0x20, PIC::PIC1_C);
+	}
+	void eioSecondary()
 	{
 		cpuio::outb(0x20, PIC::PIC2_C);
 		cpuio::outb(0x20, PIC::PIC1_C);

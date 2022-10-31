@@ -184,7 +184,7 @@ export namespace console
 				switch (*fmt)
 				{
 				case u8'c':
-					putc(static_cast<u8>(va_arg(args, i32)));
+					putc(static_cast<char8_t>(va_arg(args, i32)));
 					break;
 				case u8's':
 					puts(va_arg(args, const char8_t*));

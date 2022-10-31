@@ -7,6 +7,7 @@ public inw as '?inw@cpuio@@YAGG@Z::<!cpuio>'
 public indw as '?indw@cpuio@@YAIG@Z::<!cpuio>'
 public reboot as '?reboot@cpuio@@YAXXZ::<!cpuio>'
 public halt as '?halt@cpuio@@YAXXZ::<!cpuio>'
+public loopp as '?loop@cpuio@@YAXXZ::<!cpuio>'
 public iowait as '?iowait@cpuio@@YAXXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
 public loadGDT
@@ -47,8 +48,11 @@ reboot:
 	hlt
 
 halt:
+	hlt
+	ret
+
+loopp:
 	jmp $
-	jmp halt
 
 iowait:
 	mov al, 0

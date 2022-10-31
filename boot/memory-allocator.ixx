@@ -1,6 +1,6 @@
 export module memory:allocator;
+import memory.utils;
 import types;
-import :utils;
 export namespace memory::allocator
 {
 	u64* memoryMap{};
