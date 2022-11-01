@@ -150,7 +150,7 @@
     <ClCompile Include="driver.ixx">
       <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
-    <ClCompile Include="driver-ACHI.ixx">
+    <ClCompile Include="driver-AHCI.ixx">
       <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
     <ClCompile Include="driver-Driver.ixx">

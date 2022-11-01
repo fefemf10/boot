@@ -266,7 +266,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ACPI.ixx" />
-    <ClCompile Include="driver-ACHI.ixx" />
+    <ClCompile Include="driver-AHCI.ixx" />
     <ClCompile Include="driver-Driver.ixx" />
     <ClCompile Include="driver.ixx" />
     <ClCompile Include="pci.structures.ixx" />

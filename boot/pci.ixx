@@ -4,7 +4,7 @@ import types;
 import string;
 import ACPI;
 import memory;
-import driver.ACHI;
+import driver.AHCI;
 export namespace pci
 {
 	const char8_t* deviceClasses[] =
@@ -268,8 +268,8 @@ export namespace pci
 			case 0x06:
 				switch (deviceHeader->programmingInterface)
 				{
-				case 0x01:
-					new driver::ACHI(deviceHeader);
+				case 0x02:
+					new driver::AHCI(deviceHeader);
 					return;
 				default:
 					break;

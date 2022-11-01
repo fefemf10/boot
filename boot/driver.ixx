@@ -1,6 +1,6 @@
 export module driver;
 export import driver.Driver;
-export import driver.ACHI;
+export import driver.AHCI;
 export namespace driver
 {
 	
