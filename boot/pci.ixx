@@ -5,6 +5,7 @@ import string;
 import ACPI;
 import memory;
 import driver.AHCI;
+import console;
 export namespace pci
 {
 	const char8_t* deviceClasses[] =
@@ -256,8 +257,9 @@ export namespace pci
 		u64 functionAddress = deviceAddress + offset;
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(functionAddress), reinterpret_cast<void*>(functionAddress));
 		Header* deviceHeader = reinterpret_cast<Header*>(functionAddress);
-		if (deviceHeader->device == 0) return;
-		if (deviceHeader->device == 0xFFFF) return;
+		if (deviceHeader->vendor == 0) return;
+		if (deviceHeader->vendor == 0xFFFF) return;
+		
 		//console::printf(u8"%s %s %s %s %s\n\n", getVendorName(deviceHeader->vendor), getDeviceName(deviceHeader->vendor, deviceHeader->device),
 			//getClassName(deviceHeader->classCode), getSubclassName(deviceHeader->classCode, deviceHeader->subclassCode), getProgIFName(deviceHeader->classCode, deviceHeader->subclassCode, deviceHeader->programmingInterface));
 		switch (deviceHeader->classCode)
@@ -287,8 +289,9 @@ export namespace pci
 		u64 deviceAddress = busAddress + offset;
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(deviceAddress), reinterpret_cast<void*>(deviceAddress));
 		Header* deviceHeader = reinterpret_cast<Header*>(deviceAddress);
-		if (deviceHeader->device == 0) return;
-		if (deviceHeader->device == 0xFFFF) return;
+		if (deviceHeader->vendor == 0) return;
+		if (deviceHeader->vendor == 0xFFFF) return;
+
 		for (size_t i = 0; i < 32; i++)
 		{
 			enumerateFunction(deviceAddress, i);
@@ -300,8 +303,9 @@ export namespace pci
 		u64 busAddress = baseAddress + offset;
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(busAddress), reinterpret_cast<void*>(busAddress));
 		Header* deviceHeader = reinterpret_cast<Header*>(baseAddress);
-		if (deviceHeader->device == 0) return;
-		if (deviceHeader->device == 0xFFFF) return;
+		if (deviceHeader->vendor == 0) return;
+		if (deviceHeader->vendor == 0xFFFF) return;
+		
 		for (size_t i = 0; i < 32; i++)
 		{
 			enumerateDevice(busAddress, i);
@@ -315,7 +319,11 @@ export namespace pci
 		{
 			for (size_t j = deviceConfigs[i].startBus; j < deviceConfigs[i].endBus; j++)
 			{
+				console::printf(u8"%hx", j);
 				enumerateBus(deviceConfigs[i].baseAddress, j);
+				int a = 1;
+				int b = 0;
+				int c = a/b;
 			}
 		}
 	}
