@@ -25,7 +25,7 @@ extern "C" void kernel_start()
 	ACPI::RSDP* rsdp = ACPI::RSDP::find();
 	ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
 	pci::enumeratePCI(mcfg);
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		console::printf(u8"%u ", i);
 		PIT::sleep(100);

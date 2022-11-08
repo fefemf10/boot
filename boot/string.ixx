@@ -5,7 +5,7 @@ export namespace string
 	char8_t buffer[9]{};
 	const char8_t* itos(u64 number, i32 radix)
 	{
-		i8 buf[32]{};
+		i8 buf[32];
 		i8 pos = 0;
 		const char8_t hexchar8_ts[] = u8"0123456789ABCDEF";
 		// convert number to ASCII

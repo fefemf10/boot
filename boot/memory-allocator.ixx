@@ -87,7 +87,6 @@ export namespace memory::allocator
 		for (u64 i = 0; i < countBlocks; ++i)
 		{
 			setBlock(startBlock + i);
-			
 		}
 		usedBlocks += countBlocks;
 		u64 address = startBlock << BLOCKSIZE;

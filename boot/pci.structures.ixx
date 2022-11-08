@@ -23,7 +23,6 @@ export namespace pci
 	{
 		Header header;
 		u32 bars[5];
-		u32 bars5;
 		u32 reversed;
 		u16 subsystemVendor;
 		u16 subsystemID;

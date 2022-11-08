@@ -8,6 +8,7 @@ import teletype;
 
 export namespace memory
 {
+	constexpr u64 KERNELSIZE = 0x1000 * 64;//64 pages for kernel
 	struct SMAP
 	{
 		u64* base;
@@ -160,6 +161,7 @@ export namespace memory
 		allocator::unsetRegion(reinterpret_cast<u64*>(0x30000), allocator::maxBlocks >> allocator::BLOCKSPERBYTE);
 		allocator::unsetRegion(reinterpret_cast<u64*>(0), 0x7C00);
 		allocator::unsetRegion(reinterpret_cast<u64*>(0x27A00), sizeof(size) + size * sizeof(SMAP));
+		allocator::unsetRegion(reinterpret_cast<u64*>(0x100000), KERNELSIZE);
 		PLM4 = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
 		set(PLM4, 0, 0x1000);
 		pageTableManager = PageTableManager(PLM4);
@@ -187,6 +189,7 @@ export namespace memory
 			if (next->next != nullptr)
 				next->next->last = this;
 			size = size + next->size + sizeof(HeapSegment);
+			next = next->next;
 		}
 		void combineBackward()
 		{

@@ -158,7 +158,7 @@ export namespace pci
 		switch (classCode)
 		{
 		case 0x06:
-				return u8"Bridge";
+			return u8"Bridge";
 		default:
 			return string::itos(classCode, 16);
 		}
@@ -253,13 +253,13 @@ export namespace pci
 
 	void enumerateFunction(u64 deviceAddress, u64 function)
 	{
-		u64 offset = function << 15;
+		u64 offset = function << 12;
 		u64 functionAddress = deviceAddress + offset;
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(functionAddress), reinterpret_cast<void*>(functionAddress));
 		Header* deviceHeader = reinterpret_cast<Header*>(functionAddress);
-		if (deviceHeader->vendor == 0) return;
-		if (deviceHeader->vendor == 0xFFFF) return;
-		
+		if (deviceHeader->device == 0) return;
+		if (deviceHeader->device == 0xFFFF) return;
+
 		//console::printf(u8"%s %s %s %s %s\n\n", getVendorName(deviceHeader->vendor), getDeviceName(deviceHeader->vendor, deviceHeader->device),
 			//getClassName(deviceHeader->classCode), getSubclassName(deviceHeader->classCode, deviceHeader->subclassCode), getProgIFName(deviceHeader->classCode, deviceHeader->subclassCode, deviceHeader->programmingInterface));
 		switch (deviceHeader->classCode)
@@ -270,17 +270,11 @@ export namespace pci
 			case 0x06:
 				switch (deviceHeader->programmingInterface)
 				{
-				case 0x02:
+				case 0x01:
 					new driver::AHCI(deviceHeader);
 					return;
-				default:
-					break;
 				}
-			default:
-				break;
 			}
-		default:
-			break;
 		}
 	}
 	void enumerateDevice(u64 busAddress, u64 device)
@@ -289,13 +283,10 @@ export namespace pci
 		u64 deviceAddress = busAddress + offset;
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(deviceAddress), reinterpret_cast<void*>(deviceAddress));
 		Header* deviceHeader = reinterpret_cast<Header*>(deviceAddress);
-		if (deviceHeader->vendor == 0) return;
-		if (deviceHeader->vendor == 0xFFFF) return;
-
-		for (size_t i = 0; i < 32; i++)
-		{
+		if (deviceHeader->device == 0) return;
+		if (deviceHeader->device == 0xFFFF) return;
+		for (size_t i = 0; i < 8; i++)
 			enumerateFunction(deviceAddress, i);
-		}
 	}
 	void enumerateBus(u64 baseAddress, u64 bus)
 	{
@@ -303,13 +294,10 @@ export namespace pci
 		u64 busAddress = baseAddress + offset;
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(busAddress), reinterpret_cast<void*>(busAddress));
 		Header* deviceHeader = reinterpret_cast<Header*>(baseAddress);
-		if (deviceHeader->vendor == 0) return;
-		if (deviceHeader->vendor == 0xFFFF) return;
-		
+		if (deviceHeader->device == 0) return;
+		if (deviceHeader->device == 0xFFFF) return;
 		for (size_t i = 0; i < 32; i++)
-		{
 			enumerateDevice(busAddress, i);
-		}
 	}
 	void enumeratePCI(ACPI::MCFGHeader* mcfg)
 	{
@@ -317,14 +305,13 @@ export namespace pci
 		ACPI::DeviceConfig* deviceConfigs = reinterpret_cast<ACPI::DeviceConfig*>(reinterpret_cast<u64>(mcfg) + sizeof(ACPI::MCFGHeader));
 		for (size_t i = 0; i < entries; i++)
 		{
-			for (size_t j = deviceConfigs[i].startBus; j < deviceConfigs[i].endBus; j++)
-			{
-				console::printf(u8"%hx", j);
-				enumerateBus(deviceConfigs[i].baseAddress, j);
-				int a = 1;
-				int b = 0;
-				int c = a/b;
-			}
+			memory::pageTableManager.mapMemory(reinterpret_cast<void*>(deviceConfigs[i].baseAddress), reinterpret_cast<void*>(deviceConfigs[i].baseAddress));
+			Header* deviceHeader = reinterpret_cast<Header*>(deviceConfigs[i].baseAddress);
+			if ((deviceHeader->headerType & 0x80) == 0)
+				enumerateBus(deviceConfigs[i].baseAddress, 0);
+			else
+				for (size_t j = deviceConfigs[i].startBus; j < deviceConfigs[i].endBus; j++)
+					enumerateBus(deviceConfigs[i].baseAddress, j);
 		}
 	}
 }
