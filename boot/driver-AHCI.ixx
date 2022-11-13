@@ -3,6 +3,7 @@ import pci.structures;
 import types;
 import console;
 import memory;
+import sl.utility;
 export namespace driver
 {
 	enum class FIS
@@ -207,9 +208,9 @@ export namespace driver
 		u64 cfis[8];
 		u64 acmd[2];
 		u64 rsv[6];
-		HBAPRDTENTRY prdtEntry[];
+		HBAPRDTENTRY* prdtEntry;
 	};
-	enum class ACHISIG
+	enum class ACHISIG : u32
 	{
 		ATAPI = 0xEB140101,
 		SEMB = 0xC33C0101,
@@ -300,22 +301,22 @@ export namespace driver
 		}
 		void startCMD()
 		{
-			while (HBAPort->cmd & static_cast<u32>(HBAPxCMD::CR));
-			HBAPort->cmd |= static_cast<u32>(HBAPxCMD::FRE);
-			HBAPort->cmd |= static_cast<u32>(HBAPxCMD::ST);
+			while (HBAPort->cmd & std::to_underlying(HBAPxCMD::CR));
+			HBAPort->cmd |= std::to_underlying(HBAPxCMD::FRE);
+			HBAPort->cmd |= std::to_underlying(HBAPxCMD::ST);
 		}
 		void stopCMD()
 		{
-			HBAPort->cmd &= ~static_cast<u32>(HBAPxCMD::ST);
-			HBAPort->cmd &= ~static_cast<u32>(HBAPxCMD::FRE);
+			HBAPort->cmd &= ~std::to_underlying(HBAPxCMD::ST);
+			HBAPort->cmd &= ~std::to_underlying(HBAPxCMD::FRE);
 			while (true)
 			{
-				if (HBAPort->cmd & static_cast<u32>(HBAPxCMD::FR)) continue;
-				if (HBAPort->cmd & static_cast<u32>(HBAPxCMD::CR)) continue;
+				if (HBAPort->cmd & std::to_underlying(HBAPxCMD::FR)) continue;
+				if (HBAPort->cmd & std::to_underlying(HBAPxCMD::CR)) continue;
 				break;
 			}
 		}
-		bool read(u64 sector, u32 sectorCount, void* buffer)
+		bool read(u64 sector, u16 sectorCount, void* buffer)
 		{
 			HBAPort->is = u32(-1);
 			HBACMDHEADER* cmdHeader = reinterpret_cast<HBACMDHEADER*>(HBAPort->clb);
@@ -330,19 +331,19 @@ export namespace driver
 			cmdTable->prdtEntry[0].dbc = (sectorCount << 9) - 1;
 			cmdTable->prdtEntry[0].i = 1;
 			REGH2D* cmdFIS = reinterpret_cast<REGH2D*>(&cmdTable->cfis);
-			cmdFIS->fis = static_cast<u8>(FIS::REGH2D);
+			cmdFIS->fis = std::to_underlying(FIS::REGH2D);
 			cmdFIS->control = 1;
-			cmdFIS->command = static_cast<u8>(ATA::CMDREADDMAEX);
-			cmdFIS->lba0 = (u8)sector;
-			cmdFIS->lba1 = (u8)sector >> 8;
-			cmdFIS->lba2 = (u8)sector >> 16;
-			cmdFIS->lba3 = (u8)sector >> 24;
-			cmdFIS->lba4 = (u8)sector >> 32;
-			cmdFIS->lba5 = (u8)sector >> 40;
+			cmdFIS->command = std::to_underlying(ATA::CMDREADDMAEX);
+			cmdFIS->lba0 = static_cast<u8>(sector);
+			cmdFIS->lba1 = static_cast<u8>(sector >> 8);
+			cmdFIS->lba2 = static_cast<u8>(sector >> 16);
+			cmdFIS->lba3 = static_cast<u8>(sector >> 24);
+			cmdFIS->lba4 = static_cast<u8>(sector >> 32);
+			cmdFIS->lba5 = static_cast<u8>(sector >> 40);
 			cmdFIS->device = 1 << 6;//LBA Mode
 			cmdFIS->count = (u16)sectorCount;
 			u64 spin{};
-			while ((HBAPort->tfd & (static_cast<u32>(ATA::BUSY) | static_cast<u32>(ATA::DRQ))) && spin < 1000000)
+			while ((HBAPort->tfd & (std::to_underlying(ATA::BUSY) | std::to_underlying(ATA::DRQ))) && spin < 1000000)
 			{
 				++spin;
 			}
@@ -354,7 +355,7 @@ export namespace driver
 			while (true)
 			{
 				if (HBAPort->ci == 0) break;
-				if (HBAPort->is & static_cast<u32>(HBAPxIS::TFES))
+				if (HBAPort->is & std::to_underlying(HBAPxIS::TFES))
 				{
 					return false;
 				}

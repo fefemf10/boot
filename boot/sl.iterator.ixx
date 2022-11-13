@@ -1,6 +1,8 @@
-export module std:iterator;
-import :memory;
-import :compare;
+export module sl.iterator;
+import sl.memory;
+import sl.compare;
+import sl.utility;
+import sl.type;
 export namespace std
 {
 	template <class T>

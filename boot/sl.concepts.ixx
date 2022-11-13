@@ -1,5 +1,5 @@
-export module std:concepts;
-import :typetraits;
+export module sl.concepts;
+import sl.typetraits;
 export namespace std
 {
     template <class T1, class T2>

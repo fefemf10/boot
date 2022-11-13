@@ -1,4 +1,4 @@
-export module std:numeric_limits;
+export module sl.numeric_limits;
 
 namespace std
 {

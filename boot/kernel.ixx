@@ -7,7 +7,7 @@ import IRQ;
 import pci;
 import memory;
 import console;
-import std;
+import sl;
 import ACPI;
 import PIT;
 

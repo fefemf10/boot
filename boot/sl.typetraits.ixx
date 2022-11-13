@@ -1,4 +1,4 @@
-export module std:typetraits;
+export module sl.typetraits;
 
 export namespace std
 {
@@ -515,6 +515,15 @@ export namespace std
 	{
 		return static_cast<make_unsigned_t<_Rep>>(_Val);
 	}
+
+	template <class T, bool = is_enum_v<T>>
+	struct _Underlying_type
+	{
+		using type = __underlying_type(T);
+	};
+	template <class T> struct _Underlying_type<T, false> {};
+	template <class T>struct underlying_type : _Underlying_type<T> {};
+	template <class T> using underlying_type_t = typename _Underlying_type<T>::type;
 
 	template <class T> inline constexpr size_t alignment_of_v = alignof(T);
 	template <class T>struct alignment_of : integral_constant<size_t, alignof(T)> {};

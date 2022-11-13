@@ -1,6 +1,6 @@
-export module std:ratio;
-import :numeric_limits;
-import :typetraits;
+export module sl.ratio;
+import sl.numeric_limits;
+import sl.typetraits;
 namespace std
 {
 	[[nodiscard]] constexpr long long abs(const long long value) noexcept {

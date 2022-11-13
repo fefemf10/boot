@@ -1,4 +1,4 @@
-export module std:source_location;
+export module sl.source_location;
 export namespace std
 {
     struct source_location

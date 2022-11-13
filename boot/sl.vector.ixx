@@ -1,12 +1,12 @@
-export module std:vector;
-import :allocator;
-import :typetraits;
-import :numeric_limits;
-import :memory;
-import :iterator;
-import :typetraits;
-import :concepts;
-import :type;
+export module sl.vector;
+import sl.allocator;
+import sl.typetraits;
+import sl.numeric_limits;
+import sl.memory;
+import sl.iterator;
+import sl.typetraits;
+import sl.concepts;
+import sl.type;
 export namespace std
 {
 	template <class T, class Allocator = allocator<T>>

@@ -1,5 +1,5 @@
-export module std:span;
-import :type;
+export module sl.span;
+import sl.type;
 export namespace std
 {
 	template <class T>

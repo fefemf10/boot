@@ -1,6 +1,6 @@
-export module std:utility;
-import :typetraits;
-import :type;
+export module sl.utility;
+import sl.typetraits;
+import sl.type;
 namespace std
 {
     template <class T>
@@ -258,5 +258,10 @@ export namespace std
     [[noreturn]] inline void unreachable() noexcept
     {
         __assume(false);
+    }
+
+    template <class T>
+        [[nodiscard]] constexpr underlying_type_t<T> to_underlying(T _Value) noexcept {
+        return static_cast<underlying_type_t<T>>(_Value);
     }
 }

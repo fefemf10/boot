@@ -93,49 +93,49 @@
     <ClCompile Include="hash-sha.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="std.ixx">
+    <ClCompile Include="sl.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-allocator.ixx">
+    <ClCompile Include="sl.allocator.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-concepts.ixx">
+    <ClCompile Include="sl.concepts.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-initializer_list.ixx">
+    <ClCompile Include="sl.initializer_list.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-iterator.ixx">
+    <ClCompile Include="sl.iterator.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-memory.ixx">
+    <ClCompile Include="sl.memory.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-numeric_limits.ixx">
+    <ClCompile Include="sl.numeric_limits.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-span.ixx">
+    <ClCompile Include="sl.span.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-type.ixx">
+    <ClCompile Include="sl.type.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-typetraits.ixx">
+    <ClCompile Include="sl.typetraits.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-vector.ixx">
+    <ClCompile Include="sl.vector.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-source_location.ixx">
+    <ClCompile Include="sl.source_location.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-utility.ixx">
+    <ClCompile Include="sl.utility.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-ratio.ixx">
+    <ClCompile Include="sl.ratio.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="std-compare.ixx">
+    <ClCompile Include="sl.compare.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
     <ClCompile Include="ACPI.ixx">

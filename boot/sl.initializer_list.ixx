@@ -1,4 +1,4 @@
-export module std:initializer_list;
+export module sl.initializer_list;
 
 export namespace std
 {

@@ -1,4 +1,4 @@
-export module std:type;
+export module sl.type;
 
 export namespace std
 {

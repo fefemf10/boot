@@ -1,6 +1,6 @@
-export module std:allocator;
-import :type;
-import :typetraits;
+export module sl.allocator;
+import sl.type;
+import sl.typetraits;
 export namespace std
 {
 	template <class T>

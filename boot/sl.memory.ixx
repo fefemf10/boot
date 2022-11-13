@@ -1,9 +1,9 @@
-export module std:memory;
-import :typetraits;
-import :concepts;
-import :allocator;
-import :type;
-import :utility;
+export module sl.memory;
+import sl.typetraits;
+import sl.concepts;
+import sl.allocator;
+import sl.type;
+import sl.utility;
 namespace std
 {
 	template <class T>

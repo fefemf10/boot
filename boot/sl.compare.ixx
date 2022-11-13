@@ -1,7 +1,7 @@
-export module std:compare;
-import :type;
-import :concepts;
-import :typetraits;
+export module sl.compare;
+import sl.type;
+import sl.concepts;
+import sl.typetraits;
 export namespace std
 {
     using _Compare_t = signed char;
