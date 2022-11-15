@@ -257,6 +257,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
     <PostBuildEvent>
       <Command>objcopy -O binary $(OutDir)boot.bin $(OutDir)os.bin
 align $(OutDir)os.bin 10485760
+sfk partcopy $(OutDir)os.bin 0 10485760 $(OutDir)boot.vhd 0 -yes
 qemu-system-x86_64 -display sdl -machine q35 -serial file:$(OutDir)serial.txt -drive format=raw,file="$(OutDir)os.bin",id=disk,if=none -device ich9-ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
 del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>

@@ -1,5 +1,6 @@
 export module ACPI;
 import types;
+import memory;
 export namespace ACPI
 {
 #pragma pack(1)
@@ -51,17 +52,22 @@ export namespace ACPI
 	{
 		static SDTHeader* find(ACPI::SDTHeader* rsdt, const char8_t* signature)
 		{
+			memory::pageTableManager.mapMemory(rsdt, rsdt); //Important
 			size_t entries = (rsdt->length - sizeof(ACPI::SDTHeader)) / 4;
 			u32* ptrToSDT = reinterpret_cast<u32*>(reinterpret_cast<u64>(rsdt) + sizeof(ACPI::SDTHeader));
 			for (size_t i = 0; i < entries; i++)
 			{
 				ACPI::SDTHeader* SDTHeader = reinterpret_cast<ACPI::SDTHeader*>(ptrToSDT[i]);
-				for (size_t j = 0; j < 4; j++)
+				if (SDTHeader)
 				{
-					if (SDTHeader->signature[j] != signature[j])
-						break;
-					if (i == 3)
-						return SDTHeader;
+					memory::pageTableManager.mapMemory(SDTHeader->signature, SDTHeader->signature); //Important
+					for (size_t j = 0; j < 4; j++)
+					{
+						if (SDTHeader->signature[j] != signature[j])
+							break;
+						if (i == 3)
+							return SDTHeader;
+					}
 				}
 			}
 			return nullptr;

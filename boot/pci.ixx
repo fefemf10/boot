@@ -6,8 +6,10 @@ import ACPI;
 import memory;
 import driver.AHCI;
 import console;
+import cpuio;
 export namespace pci
 {
+
 	const char8_t* deviceClasses[] =
 	{
 		u8"Unclassified",
@@ -233,34 +235,10 @@ export namespace pci
 			return string::itos(classCode, 16);
 		}
 	}
-	constexpr u16 configAddress = 0x0CF8;
-	constexpr u16 configData = 0x0CFC;
-	enum class Field : u8
-	{
-		VENDOR = 0x00,
-		DEVICE = 0x02,
-		COMMAND = 0x04,
-		STATUS = 0x06,
-		REVISION = 0x08,
-		PROGRAMMINGINTERFACE = 0x09,
-		SUBCLASSCODE = 0x0A,
-		BASECLASSCODE = 0x0B,
-		CACHELINESIZE = 0x0C,
-		MASTERLATENCYTIMER = 0x0D,
-		HEADERTYPE = 0x0E,
-		BITS = 0x0F,
-	};
 
-	void enumerateFunction(u64 deviceAddress, u64 function)
+	void enumeratePCIDevice(Header* deviceHeader)
 	{
-		u64 offset = function << 12;
-		u64 functionAddress = deviceAddress + offset;
-		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(functionAddress), reinterpret_cast<void*>(functionAddress));
-		Header* deviceHeader = reinterpret_cast<Header*>(functionAddress);
-		if (deviceHeader->device == 0) return;
-		if (deviceHeader->device == 0xFFFF) return;
-
-		//console::printf(u8"%s %s %s %s %s\n\n", getVendorName(deviceHeader->vendor), getDeviceName(deviceHeader->vendor, deviceHeader->device),
+		//console::printf(u8"%s %s %s %s %s\n", getVendorName(deviceHeader->vendor), getDeviceName(deviceHeader->vendor, deviceHeader->device),
 			//getClassName(deviceHeader->classCode), getSubclassName(deviceHeader->classCode, deviceHeader->subclassCode), getProgIFName(deviceHeader->classCode, deviceHeader->subclassCode, deviceHeader->programmingInterface));
 		switch (deviceHeader->classCode)
 		{
@@ -276,6 +254,83 @@ export namespace pci
 				}
 			}
 		}
+	}
+	namespace old
+	{
+		Header0 staticDeviceHeader;
+		constexpr u16 configAddress = 0x0CF8;
+		constexpr u16 configData = 0x0CFC;
+		enum class Field : u8
+		{
+			VENDOR = 0x00,
+			DEVICE = 0x02,
+			COMMAND = 0x04,
+			STATUS = 0x06,
+			REVISION = 0x08,
+			PROGRAMMINGINTERFACE = 0x09,
+			SUBCLASSCODE = 0x0A,
+			BASECLASSCODE = 0x0B,
+			CACHELINESIZE = 0x0C,
+			MASTERLATENCYTIMER = 0x0D,
+			HEADERTYPE = 0x0E,
+			BITS = 0x0F,
+		};
+		u16 configRealWord(u8 bus, u8 device, u8 function, u8 offset)
+		{
+			u32 address = (bus << 16u) | (device << 11u) | (function << 8u) | (offset & 0xFC) | 0x80000000;
+			cpuio::outdw(address, configAddress);
+			return (cpuio::indw(configData) >> ((offset & 2) << 3)) & 0xFFFF;
+		}
+		u16 getHeaderField(u8 bus, u8 device, u8 function, Field field)
+		{
+			return configRealWord(bus, device, function, static_cast<u8>(field));
+		}
+		Header0 readHeader(u8 bus, u8 device, u8 function)
+		{
+			Header0 header;
+			for (u8 i = 0; i < 16; i++)
+				reinterpret_cast<u16*>(&header)[i] = configRealWord(bus, device, function, i * 2u);
+			return header;
+		}
+		void enumerateFunction(u8 bus, u8 device, u8 function)
+		{
+			u16 deviced = getHeaderField(bus, device, function, Field::DEVICE);
+			if (deviced == 0) return;
+			if (deviced == 0xFFFF) return;
+			staticDeviceHeader = readHeader(bus, device, function);
+			enumeratePCIDevice(reinterpret_cast<Header*>(&staticDeviceHeader));
+		}
+		void enumerateDevice(u8 bus, u8 device)
+		{
+			u16 deviced = getHeaderField(bus, device, 0, Field::DEVICE);
+			if (deviced == 0) return;
+			if (deviced == 0xFFFF) return;
+			for (size_t i = 0; i < 8; i++)
+			{
+				enumerateFunction(bus, device, i);
+			}
+		}
+		void enumerateBus(u8 bus)
+		{
+			u16 device = getHeaderField(bus, 0, 0, Field::DEVICE);
+			if (device == 0) return;
+			if (device == 0xFFFF) return;
+			for (u8 i = 0; i < 32; i++)
+			{
+				enumerateDevice(bus, i);
+			}
+		}
+	};
+
+	void enumerateFunction(u64 deviceAddress, u64 function)
+	{
+		u64 offset = function << 12;
+		u64 functionAddress = deviceAddress + offset;
+		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(functionAddress), reinterpret_cast<void*>(functionAddress));
+		Header* deviceHeader = reinterpret_cast<Header*>(functionAddress);
+		if (deviceHeader->device == 0) return;
+		if (deviceHeader->device == 0xFFFF) return;
+		enumeratePCIDevice(deviceHeader);
 	}
 	void enumerateDevice(u64 busAddress, u64 device)
 	{
@@ -301,17 +356,30 @@ export namespace pci
 	}
 	void enumeratePCI(ACPI::MCFGHeader* mcfg)
 	{
-		size_t entries = (mcfg->header.length - sizeof(ACPI::MCFGHeader)) / sizeof(ACPI::DeviceConfig);
-		ACPI::DeviceConfig* deviceConfigs = reinterpret_cast<ACPI::DeviceConfig*>(reinterpret_cast<u64>(mcfg) + sizeof(ACPI::MCFGHeader));
-		for (size_t i = 0; i < entries; i++)
+		mcfg = nullptr;
+		if (mcfg)
 		{
-			memory::pageTableManager.mapMemory(reinterpret_cast<void*>(deviceConfigs[i].baseAddress), reinterpret_cast<void*>(deviceConfigs[i].baseAddress));
-			Header* deviceHeader = reinterpret_cast<Header*>(deviceConfigs[i].baseAddress);
-			if ((deviceHeader->headerType & 0x80) == 0)
-				enumerateBus(deviceConfigs[i].baseAddress, 0);
+			size_t entries = (mcfg->header.length - sizeof(ACPI::MCFGHeader)) / sizeof(ACPI::DeviceConfig);
+			ACPI::DeviceConfig* deviceConfigs = reinterpret_cast<ACPI::DeviceConfig*>(reinterpret_cast<u64>(mcfg) + sizeof(ACPI::MCFGHeader));
+			for (size_t i = 0; i < entries; i++)
+			{
+				memory::pageTableManager.mapMemory(reinterpret_cast<void*>(deviceConfigs[i].baseAddress), reinterpret_cast<void*>(deviceConfigs[i].baseAddress));
+				Header* deviceHeader = reinterpret_cast<Header*>(deviceConfigs[i].baseAddress);
+				if ((deviceHeader->headerType & 0x80) == 0)
+					enumerateBus(deviceConfigs[i].baseAddress, 0);
+				else
+					for (size_t j = deviceConfigs[i].startBus; j < deviceConfigs[i].endBus; j++)
+						enumerateBus(deviceConfigs[i].baseAddress, j);
+			}
+		}
+		else
+		{
+			u16 headerType = old::getHeaderField(0, 0, 0, old::Field::HEADERTYPE) & 0xFF;
+			if ((headerType & 0x80) == 0)
+				old::enumerateBus(0);
 			else
-				for (size_t j = deviceConfigs[i].startBus; j < deviceConfigs[i].endBus; j++)
-					enumerateBus(deviceConfigs[i].baseAddress, j);
+				for (size_t i = 0; i < 8; i++)
+					old::enumerateBus(i);
 		}
 	}
 }

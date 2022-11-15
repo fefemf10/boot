@@ -281,10 +281,12 @@ export namespace driver
 		{
 			stopCMD();
 			void* newBase = memory::allocator::allocBlocks(1);
+			memory::pageTableManager.mapMemory(newBase, newBase);
 			HBAPort->clb = reinterpret_cast<u64>(newBase);
 			memory::set(newBase, 0, 1024);
 
 			void* fisBase = memory::allocator::allocBlocks(1);
+			memory::pageTableManager.mapMemory(fisBase, fisBase);
 			HBAPort->fb = reinterpret_cast<u64>(fisBase);
 			memory::set(fisBase, 0, 256);
 
@@ -293,8 +295,9 @@ export namespace driver
 			{
 				cmdHeader[i].prdtl = 8;
 				void* cmdTableAddress = memory::allocator::allocBlocks(1);
+				memory::pageTableManager.mapMemory(cmdTableAddress, cmdTableAddress);
 				u64 address = reinterpret_cast<u64>(cmdTableAddress) + (i << 8);
-				cmdHeader[i].ctba = reinterpret_cast<u64>(cmdTableAddress);
+				cmdHeader[i].ctba = address;
 				memory::set(cmdTableAddress, 0, 256);
 			}
 			startCMD();
@@ -390,6 +393,7 @@ export namespace driver
 				port->buffer = (u8*)memory::allocator::allocBlocks(1);
 				memory::set(port->buffer, 0, 0x1000);
 				port->read(0, 4, port->buffer);
+				memory::pageTableManager.mapMemory(port->buffer, port->buffer);
 				for (size_t j = 0; j < 1024; j++)
 				{
 					console::putc(port->buffer[i]);
@@ -418,6 +422,29 @@ export namespace driver
 					}
 				}
 			}
+		}
+		void printStats()
+		{
+			console::printf(u8"S64A %x\n", abar->cap.s64a);
+			console::printf(u8"SNCQ %x\n", abar->cap.sncq);
+			console::printf(u8"SSNTF %x\n", abar->cap.ssntf);
+			console::printf(u8"SMPS %x\n", abar->cap.smps);
+			console::printf(u8"SSS %x\n", abar->cap.sss);
+			console::printf(u8"SALP %x\n", abar->cap.salp);
+			console::printf(u8"SAL %x\n", abar->cap.sal);
+			console::printf(u8"SCLO %x\n", abar->cap.sclo);
+			console::printf(u8"ISS %x\n", abar->cap.iss);
+			console::printf(u8"SAM %x\n", abar->cap.sam);
+			console::printf(u8"SPM %x\n", abar->cap.spm);
+			console::printf(u8"FBSS %x\n", abar->cap.fbss);
+			console::printf(u8"PMD %x\n", abar->cap.pmd);
+			console::printf(u8"SSC %x\n", abar->cap.ssc);
+			console::printf(u8"PSC %x\n", abar->cap.psc);
+			console::printf(u8"NCS %x\n", abar->cap.ncs);
+			console::printf(u8"CCCS %x\n", abar->cap.cccs);
+			console::printf(u8"EMS %x\n", abar->cap.ems);
+			console::printf(u8"SXS %x\n", abar->cap.sxs);
+			console::printf(u8"NP %x\n", abar->cap.np);
 		}
 	private:
 		pci::Header* baseAddress;
