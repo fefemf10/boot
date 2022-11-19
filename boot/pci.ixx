@@ -240,6 +240,7 @@ export namespace pci
 	{
 		//console::printf(u8"%s %s %s %s %s\n", getVendorName(deviceHeader->vendor), getDeviceName(deviceHeader->vendor, deviceHeader->device),
 			//getClassName(deviceHeader->classCode), getSubclassName(deviceHeader->classCode, deviceHeader->subclassCode), getProgIFName(deviceHeader->classCode, deviceHeader->subclassCode, deviceHeader->programmingInterface));
+		//console::printf(u8"%llx %s\n", deviceHeader, getDeviceName(deviceHeader->vendor, deviceHeader->device));
 		switch (deviceHeader->classCode)
 		{
 		case 0x01:
@@ -257,7 +258,6 @@ export namespace pci
 	}
 	namespace old
 	{
-		Header0 staticDeviceHeader;
 		constexpr u16 configAddress = 0x0CF8;
 		constexpr u16 configData = 0x0CFC;
 		enum class Field : u8
@@ -279,7 +279,7 @@ export namespace pci
 		{
 			u32 address = (bus << 16u) | (device << 11u) | (function << 8u) | (offset & 0xFC) | 0x80000000;
 			cpuio::outdw(address, configAddress);
-			return (cpuio::indw(configData) >> ((offset & 2) << 3)) & 0xFFFF;
+			return cpuio::indw(configData) >> ((offset & 2) << 3) & 0xFFFF;
 		}
 		u16 getHeaderField(u8 bus, u8 device, u8 function, Field field)
 		{
@@ -288,7 +288,7 @@ export namespace pci
 		Header0 readHeader(u8 bus, u8 device, u8 function)
 		{
 			Header0 header;
-			for (u8 i = 0; i < 16; i++)
+			for (u8 i = 0; i < sizeof(Header0)/2; i++)
 				reinterpret_cast<u16*>(&header)[i] = configRealWord(bus, device, function, i * 2u);
 			return header;
 		}
@@ -297,8 +297,9 @@ export namespace pci
 			u16 deviced = getHeaderField(bus, device, function, Field::DEVICE);
 			if (deviced == 0) return;
 			if (deviced == 0xFFFF) return;
-			staticDeviceHeader = readHeader(bus, device, function);
-			enumeratePCIDevice(reinterpret_cast<Header*>(&staticDeviceHeader));
+			Header0* staticDeviceHeader = new Header0();
+			*staticDeviceHeader = readHeader(bus, device, function);
+			enumeratePCIDevice(reinterpret_cast<Header*>(staticDeviceHeader));
 		}
 		void enumerateDevice(u8 bus, u8 device)
 		{
@@ -306,9 +307,7 @@ export namespace pci
 			if (deviced == 0) return;
 			if (deviced == 0xFFFF) return;
 			for (size_t i = 0; i < 8; i++)
-			{
 				enumerateFunction(bus, device, i);
-			}
 		}
 		void enumerateBus(u8 bus)
 		{
@@ -316,9 +315,7 @@ export namespace pci
 			if (device == 0) return;
 			if (device == 0xFFFF) return;
 			for (u8 i = 0; i < 32; i++)
-			{
 				enumerateDevice(bus, i);
-			}
 		}
 	};
 
@@ -356,7 +353,6 @@ export namespace pci
 	}
 	void enumeratePCI(ACPI::MCFGHeader* mcfg)
 	{
-		mcfg = nullptr;
 		if (mcfg)
 		{
 			size_t entries = (mcfg->header.length - sizeof(ACPI::MCFGHeader)) / sizeof(ACPI::DeviceConfig);

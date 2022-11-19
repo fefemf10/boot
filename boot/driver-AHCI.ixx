@@ -386,6 +386,7 @@ export namespace driver
 			abar = reinterpret_cast<HBAMEM*>(reinterpret_cast<pci::Header0*>(baseAddress)->bars[5]);
 			memory::pageTableManager.mapMemory(abar, abar);
 			probePort();
+			console::printf(u8"%llx ", abar);
 			for (size_t i = 0; i < portCount; i++)
 			{
 				Port* port = ports[i];
