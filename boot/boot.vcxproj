@@ -267,8 +267,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ACPI.ixx" />
-    <ClCompile Include="driver-AHCI.ixx" />
-    <ClCompile Include="driver-Driver.ixx" />
+    <ClCompile Include="driver.AHCI.ixx" />
+    <ClCompile Include="driver.Driver.ixx" />
     <ClCompile Include="driver.ixx" />
     <ClCompile Include="pci.structures.ixx" />
     <ClCompile Include="PIT.ixx" />
@@ -337,6 +337,11 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
   <ItemGroup>
     <ClInclude Include="stdarg.h" />
     <ClInclude Include="vadefs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.AHCI.structures.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

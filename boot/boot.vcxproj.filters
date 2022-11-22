@@ -150,14 +150,17 @@
     <ClCompile Include="driver.ixx">
       <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
-    <ClCompile Include="driver-AHCI.ixx">
+    <ClCompile Include="driver.AHCI.ixx">
       <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
-    <ClCompile Include="driver-Driver.ixx">
+    <ClCompile Include="driver.Driver.ixx">
       <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
     <ClCompile Include="pci.structures.ixx">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="driver.AHCI.structures.ixx">
+      <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

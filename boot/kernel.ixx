@@ -10,7 +10,6 @@ import console;
 import sl;
 import ACPI;
 import PIT;
-
 extern "C" void kernel_start()
 {
 	console::setOut(console::OUT::TELETYPE);
