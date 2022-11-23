@@ -10,6 +10,7 @@ import console;
 import sl;
 import ACPI;
 import PIT;
+import driver.AHCI.structures;
 extern "C" void kernel_start()
 {
 	console::setOut(console::OUT::TELETYPE);

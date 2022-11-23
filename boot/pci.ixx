@@ -306,7 +306,7 @@ export namespace pci
 			u16 deviced = getHeaderField(bus, device, 0, Field::DEVICE);
 			if (deviced == 0) return;
 			if (deviced == 0xFFFF) return;
-			for (size_t i = 0; i < 8; i++)
+			for (u8 i = 0; i < 8; i++)
 				enumerateFunction(bus, device, i);
 		}
 		void enumerateBus(u8 bus)
@@ -374,7 +374,7 @@ export namespace pci
 			if ((headerType & 0x80) == 0)
 				old::enumerateBus(0);
 			else
-				for (size_t i = 0; i < 8; i++)
+				for (u8 i = 0; i < 8; i++)
 					old::enumerateBus(i);
 		}
 	}
