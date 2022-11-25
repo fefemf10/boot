@@ -257,6 +257,7 @@ export namespace driver
 		u64 rsv[6];
 		HBAPRDTENTRY prdtEntry[maxCountPRDTEntry];
 	};
+#pragma pack(1)
 	struct ATAIDENTIFYDATA {
 		struct {
 			u16 Reserved1 : 1;
@@ -507,7 +508,7 @@ export namespace driver
 		u16 StreamingTransferTimeDMA;
 		u16 StreamingAccessLatencyDMAPIO;
 		u32 StreamingPerfGranularity;
-		u32 Max48BitLBA[2];
+		u64 Max48BitLBA;
 		u16 StreamingTransferTime;
 		u16 DsmCap;
 		struct {
@@ -660,7 +661,7 @@ export namespace driver
 		BUSY = 0x80,
 		DRQ = 0x08,
 		CMDREADDMAEX = 0x25,
-		CMDWRITEDMAEX = 0x25,
+		CMDWRITEDMAEX = 0x35,
 		CMDIDENTIFYDEVICE = 0xEC
 	};
 	enum class HBAPxIS

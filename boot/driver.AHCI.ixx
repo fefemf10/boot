@@ -6,6 +6,7 @@ import console;
 import memory;
 import sl.utility;
 import string;
+import cpuio;
 export namespace driver
 {
 	AHCIDEV getType(const HBAPORT& port)
@@ -38,19 +39,20 @@ export namespace driver
 		AHCIDEV portType;
 		u8* buffer;
 		u8 portNumber;
+		u8 HBAportCount;
 		void configure()
 		{
 			stopCMD();
-			HBACMDHEADER* cmdHeader = reinterpret_cast<HBACMDHEADER*>(memory::allocator::allocBlocks(1));
-			memory::pageTableManager.mapMemory(cmdHeader, cmdHeader);
-			HBAPort->clb = reinterpret_cast<u64>(cmdHeader);
-			memory::set(cmdHeader, 0, 32 * sizeof(HBACMDHEADER));
+			HBACMDHEADER* cmdHeaders = reinterpret_cast<HBACMDHEADER*>(memory::allocator::allocBlocks(1));
+			memory::pageTableManager.mapMemory(cmdHeaders, cmdHeaders);
+			HBAPort->clb = reinterpret_cast<u64>(cmdHeaders);
+			memory::set(cmdHeaders, 0, 32 * sizeof(HBACMDHEADER));
 			for (size_t i = 0; i < 32; i++)
 			{
-				cmdHeader[i].prdtl = maxCountPRDTEntry;
+				cmdHeaders[i].prdtl = maxCountPRDTEntry;
 				void* cmdTableAddress = memory::allocator::allocBlocks(1);
 				memory::pageTableManager.mapMemory(cmdTableAddress, cmdTableAddress);
-				cmdHeader[i].ctba = reinterpret_cast<u64>(cmdTableAddress);
+				cmdHeaders[i].ctba = reinterpret_cast<u64>(cmdTableAddress);
 				memory::set(cmdTableAddress, 0, sizeof(HBACMDTBL));
 			}
 			void* fisBase = memory::allocator::allocBlocks(1);
@@ -61,7 +63,11 @@ export namespace driver
 		}
 		void startCMD()
 		{
-			while (HBAPort->cmd & std::to_underlying(HBAPxCMD::CR));
+			while (HBAPort->cmd & std::to_underlying(HBAPxCMD::CR))
+			{
+				console::printf(u8"a");
+				cpuio::iowait();
+			}
 			HBAPort->cmd |= std::to_underlying(HBAPxCMD::FRE);
 			HBAPort->cmd |= std::to_underlying(HBAPxCMD::ST);
 		}
@@ -69,11 +75,11 @@ export namespace driver
 		{
 			HBAPort->cmd &= ~std::to_underlying(HBAPxCMD::ST);
 			HBAPort->cmd &= ~std::to_underlying(HBAPxCMD::FRE);
-			while (true)
+			//big function in asm, maybe need rewriten to asm code
+			while (HBAPort->cmd & std::to_underlying(HBAPxCMD::FR) || HBAPort->cmd & std::to_underlying(HBAPxCMD::CR))
 			{
-				if (HBAPort->cmd & std::to_underlying(HBAPxCMD::FR)) continue;
-				if (HBAPort->cmd & std::to_underlying(HBAPxCMD::CR)) continue;
-				break;
+				console::printf(u8"a");
+				cpuio::iowait();
 			}
 		}
 		bool read(const u64 sector, const u16 sectorCount, void* buffer)
@@ -85,20 +91,20 @@ export namespace driver
 			HBACMDHEADER* cmdHeaders = reinterpret_cast<HBACMDHEADER*>(HBAPort->clb);
 			cmdHeaders[slot].clf = sizeof(REGH2D)/sizeof(u32);
 			cmdHeaders[slot].w = 0;//read
-			cmdHeaders[slot].prdtl = ((sectorCount - 1) >> 4) + 1;
+			//cmdHeaders[slot].prdtl = ((sectorCount - 1) >> 4) + 1;
 			
 			HBACMDTBL* cmdTable = reinterpret_cast<HBACMDTBL*>(cmdHeaders[slot].ctba);
 			memory::set(cmdTable, 0, sizeof(HBACMDTBL));
 			{
 				u16 count = sectorCount;
 				i64 i = 0;
-				for (; i < cmdHeaders[slot].prdtl - 1; i++)
+				/*for (; i < cmdHeaders[slot].prdtl - 1; i++)
 				{
 					cmdTable->prdtEntry[i].dba = reinterpret_cast<u64>(buffer) + i * 0x2000;
 					cmdTable->prdtEntry[i].dbc = 0x2000 - 1;
 					cmdTable->prdtEntry[i].i = 1;
 					count -= 16;
-				}
+				}*/
 				cmdTable->prdtEntry[i].dba = reinterpret_cast<u64>(buffer) + i * 0x2000;
 				cmdTable->prdtEntry[i].dbc = (count << 9) - 1;
 				cmdTable->prdtEntry[i].i = 1;
@@ -125,12 +131,17 @@ export namespace driver
 			{
 				return false;
 			}
+			else
+			{
+				console::printf(u8"%llx %x SDF", spin, HBAPort->tfd);
+			}
 			HBAPort->ci = 1 << slot;
 			while (true)
 			{
 				if ((HBAPort->ci & 1 << slot) == 0) break;
 				if (HBAPort->is & std::to_underlying(HBAPxIS::TFES))
 				{
+					console::printf(u8"a");
 					return false;
 				}
 			}
@@ -138,12 +149,13 @@ export namespace driver
 			{
 				return false;
 			}
+			console::printf(u8"%x %x %x %x\n", HBAPort->ssts, HBAPort->sctl, HBAPort->sntf, HBAPort->serr);
 			return true;
 		}
 		i32 findSlot()
 		{
 			u32 slots = HBAPort->sact | HBAPort->ci;
-			for (u32 i = 0; i < 32; i++)
+			for (u32 i = 0; i < HBAportCount; i++)
 			{
 				if ((slots & 1) == 0)
 					return i;
@@ -163,7 +175,7 @@ export namespace driver
 
 			HBACMDTBL* cmdTable = reinterpret_cast<HBACMDTBL*>(cmdHeaders[slot].ctba);
 			cmdTable->prdtEntry[0].dba = reinterpret_cast<u64>(buf);
-			cmdTable->prdtEntry[0].dbc = 512;
+			cmdTable->prdtEntry[0].dbc = 511;
 			cmdTable->prdtEntry[0].i;
 			
 			REGH2D* cmdFIS = reinterpret_cast<REGH2D*>(&cmdTable->cfis);
@@ -205,7 +217,7 @@ export namespace driver
 			abar = reinterpret_cast<HBAMEM*>(static_cast<u64>(reinterpret_cast<pci::Header0*>(baseAddress)->bars[5]));
 			memory::pageTableManager.mapMemory(abar, abar);
 			probePort();
-			//console::printf(u8"%llx ", abar);
+			
 			//abar->ghc.ie = 1;
 			for (size_t i = 0; i < portCount; i++)
 			{
@@ -219,6 +231,21 @@ export namespace driver
 				console::setOut(console::OUT::SERIAL);
 				console::puth(buf, 512);
 				console::setOut(console::OUT::TELETYPE);
+				char8_t name[41] = {0};
+				{
+					size_t i = 0;
+					for (; i < 40; i+=2)
+					{
+						if (buf->ModelNumber[i] > 32 && buf->ModelNumber[i] < 128)
+						{
+							name[i] = buf->ModelNumber[i + 1];
+							name[i + 1] = buf->ModelNumber[i];
+						}
+					}
+					name[i] = u8'\0';
+				}
+
+				console::printf(u8"[AHCI] Detected SATA: %s (%llu MiB)\n", name, buf->Max48BitLBA / 2048);
 				port->buffer = (u8*)memory::allocator::allocBlocks(1);
 				memory::pageTableManager.mapMemory(port->buffer, port->buffer);
 				memory::set(port->buffer, 0, 0x1000);
@@ -252,6 +279,7 @@ export namespace driver
 						ports[portCount]->portType = dt;
 						ports[portCount]->HBAPort = &abar->ports[i];
 						ports[portCount]->portNumber = portCount;
+						ports[portCount]->HBAportCount = abar->cap.np;
 						++portCount;
 					}
 				}
