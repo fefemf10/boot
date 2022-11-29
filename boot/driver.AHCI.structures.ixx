@@ -102,13 +102,39 @@ export namespace driver
 		u32 tc;
 		u32 rsv3;
 	};
+	struct HBAPxCMD
+	{
+		u32 s : 1;
+		u32 sud : 1;
+		u32 pod : 1;
+		u32 clo : 1;
+		u32 fre : 1;
+		u32 rsv : 3;
+		u32 ccs : 4;
+		u32 mpss : 1;
+		u32 fr : 1;
+		u32 cr : 1;
+		u32 cps : 1;
+		u32 pma : 1;
+		u32 hpcp : 1;
+		u32 mpsp : 1;
+		u32 cpd : 1;
+		u32 esp : 1;
+		u32 fbscp : 1;
+		u32 apste : 1;
+		u32 atapi : 1;
+		u32 dlae : 1;
+		u32 alpe : 1;
+		u32 asp : 1;
+		u32 icc : 4;
+	};
 	struct HBAPORT
 	{
 		u64 clb;
 		u64 fb;
 		u32 is;
 		u32 ie;
-		u32 cmd;
+		HBAPxCMD cmd;
 		u32 rsv0;
 		u32 tfd;
 		u32 sig;
@@ -221,7 +247,7 @@ export namespace driver
 		u32 pad1[3];
 		REGD2H rfis;
 		u32 pad2;
-		//DEVBITS sdbfiis;
+		u16 sdbfiis;
 		u64 ufis[8];
 		u8 rsv[0x100 - 0xA0];
 	};
@@ -649,7 +675,7 @@ export namespace driver
 		ACTIVE = 0x01,
 		PRESENT = 0x03
 	};
-	enum class HBAPxCMD
+	enum class HBAPxCMDe
 	{
 		CR = 0x8000,
 		FRE = 0x0010,
@@ -664,7 +690,7 @@ export namespace driver
 		CMDWRITEDMAEX = 0x35,
 		CMDIDENTIFYDEVICE = 0xEC
 	};
-	enum class HBAPxIS
+	enum class HBAPxISe
 	{
 		TFES = (1 << 30)
 	};
