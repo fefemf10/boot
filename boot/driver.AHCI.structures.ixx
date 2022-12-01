@@ -13,6 +13,7 @@ export namespace driver
 		PIOSETUP = 0x5F,
 		DEVBITS = 0xA1
 	};
+#pragma pack(1)
 	struct REGH2D
 	{
 		u8 fis;
@@ -34,6 +35,7 @@ export namespace driver
 		u8 control;
 		u32 rsv1;
 	};
+#pragma pack(1)
 	struct REGD2H
 	{
 		u8 fis;
@@ -55,6 +57,7 @@ export namespace driver
 		u16 rsv3;
 		u32 rsv4;
 	};
+#pragma pack(1)
 	struct DATA
 	{
 		u8 fis;
@@ -63,6 +66,7 @@ export namespace driver
 		u16 rsv1;
 		u32 data;
 	};
+#pragma pack(1)
 	struct PIOSETUP
 	{
 		u8 fis;
@@ -87,6 +91,7 @@ export namespace driver
 		u16 tc;
 		u16 rsv4;
 	};
+#pragma pack(1)
 	struct DMASETUP
 	{
 		u8 fis;
@@ -102,6 +107,7 @@ export namespace driver
 		u32 tc;
 		u32 rsv3;
 	};
+#pragma pack(1)
 	struct HBAPxCMD
 	{
 		u32 s : 1;
@@ -110,7 +116,7 @@ export namespace driver
 		u32 clo : 1;
 		u32 fre : 1;
 		u32 rsv : 3;
-		u32 ccs : 4;
+		u32 ccs : 5;
 		u32 mpss : 1;
 		u32 fr : 1;
 		u32 cr : 1;
@@ -128,6 +134,7 @@ export namespace driver
 		u32 asp : 1;
 		u32 icc : 4;
 	};
+#pragma pack(1)
 	struct HBAPORT
 	{
 		u64 clb;
@@ -145,9 +152,11 @@ export namespace driver
 		u32 ci;
 		u32 sntf;
 		u32 fbs;
-		u32 rsv1[11];
+		u32 devslp;
+		u32 rsv1[10];
 		u32 vendor[4];
 	};
+#pragma pack(1)
 	struct HBACAP
 	{
 		u32 np : 5;
@@ -172,6 +181,7 @@ export namespace driver
 		u32 sncq : 1;
 		u32 s64a : 1;
 	};
+#pragma pack(1)
 	struct HBAGHC
 	{
 		u32 hr : 1;
@@ -180,11 +190,13 @@ export namespace driver
 		u32 rsv : 28;
 		u32 ae : 1;
 	};
+#pragma pack(1)
 	struct HBAEMLOC
 	{
 		u16 sz;
 		u16 ofst;
 	};
+#pragma pack(1)
 	struct HBAEMCTL
 	{
 		u32 stsmr : 1;
@@ -203,6 +215,7 @@ export namespace driver
 		u32 attrpm : 1;
 		u32 rsv3 : 4;
 	};
+#pragma pack(1)
 	struct HBACAP2
 	{
 		u32 boh : 1;
@@ -213,6 +226,7 @@ export namespace driver
 		u32 deso : 1;
 		u32 rsv : 26;
 	};
+#pragma pack(1)
 	struct HBABOHC
 	{
 		u32 bos : 1;
@@ -222,6 +236,7 @@ export namespace driver
 		u32 bb : 1;
 		u32 rsv : 27;
 	};
+#pragma pack(1)
 	struct HBAMEM
 	{
 		HBACAP cap;
@@ -235,10 +250,11 @@ export namespace driver
 		HBAEMCTL emCtl;
 		HBACAP2 cap2;
 		HBABOHC bohc;
-		u8 rsv[0xA0 - 0x2C];
-		u8 vendor[0x100 - 0xA0];
+		u8 rsv[0x74];
+		u8 vendor[0x60];
 		HBAPORT ports[1];
 	};
+#pragma pack(1)
 	struct HBAFIS
 	{
 		DMASETUP dsfis;
@@ -251,6 +267,7 @@ export namespace driver
 		u64 ufis[8];
 		u8 rsv[0x100 - 0xA0];
 	};
+#pragma pack(1)
 	struct HBACMDHEADER
 	{
 		u8 clf : 5;
@@ -267,6 +284,7 @@ export namespace driver
 		u64 ctba;
 		u32 rsv2[4];
 	};
+#pragma pack(1)
 	struct HBAPRDTENTRY
 	{
 		u64 dba;
@@ -276,6 +294,7 @@ export namespace driver
 		u32 i : 1;
 	};
 	constexpr u64 maxCountPRDTEntry = 8;
+#pragma pack(1)
 	struct HBACMDTBL
 	{
 		u64 cfis[8];
