@@ -5,6 +5,7 @@ import serial;
 import cpuio;
 import types;
 import math;
+import sl.bit;
 export namespace console
 {
 	enum class OUT
@@ -275,7 +276,7 @@ export namespace console
 	{
 		for (size_t i = 1; i <= size / 8; i++)
 		{
-			printf((i % 4 == 0) ? u8"%016x\n" : u8"%016x ", reinterpret_cast<const u64*>(data)[i - 1]);
+			printf((i % 4 == 0) ? u8"%016llx\n" : u8"%016llx ", std::byteswap(reinterpret_cast<const u64*>(data)[i - 1]));
 		}
 	}
 	void putregs(const cpuio::regs& regs)

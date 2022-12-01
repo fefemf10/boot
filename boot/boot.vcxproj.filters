@@ -162,6 +162,9 @@
     <ClCompile Include="driver.AHCI.structures.ixx">
       <Filter>Исходные файлы\driver</Filter>
     </ClCompile>
+    <ClCompile Include="sl.bit.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

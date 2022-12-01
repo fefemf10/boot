@@ -9,6 +9,7 @@ public reboot as '?reboot@cpuio@@YAXXZ::<!cpuio>'
 public halt as '?halt@cpuio@@YAXXZ::<!cpuio>'
 public loopp as '?loop@cpuio@@YAXXZ::<!cpuio>'
 public iowait as '?iowait@cpuio@@YAXXZ::<!cpuio>'
+public pausee as '?pause@cpuio@@YAXXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
 public loadGDT
 
@@ -58,6 +59,10 @@ iowait:
 	mov al, 0
 	mov dx, 0x80
 	out dx, al 
+	ret
+
+pausee:
+	pause
 	ret
 
 loadIDTR:

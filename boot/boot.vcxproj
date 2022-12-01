@@ -343,6 +343,11 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
       <FileType>Document</FileType>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sl.bit.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\BuildCustomizations\fasm.targets" />

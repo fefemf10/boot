@@ -2,6 +2,10 @@ export module math;
 import types;
 export namespace math
 {
+	constexpr u16 byteswap(u16 value);
+	constexpr u32 byteswap(u32 value);
+	constexpr u64 byteswap(u64 value);
+
 	constexpr i32 abs(i32 value);
 	constexpr i64 abs(i64 value);
 

@@ -7,6 +7,7 @@ import memory;
 import sl.utility;
 import string;
 import cpuio;
+import PIT;
 export namespace driver
 {
 	AHCIDEV getType(const HBAPORT& port)
@@ -52,9 +53,7 @@ export namespace driver
 			memory::pageTableManager.mapMemory(fisBase, fisBase);
 			port->fb = reinterpret_cast<u64>(fisBase);
 			memory::set(fisBase, 0, sizeof(HBAFIS));
-			port->is = 0;
-			port->ie = 0;
-			port->serr = 1;
+
 			void* cmdTableAddress = memory::allocator::allocBlocks(2);
 			memory::pageTableManager.mapMemory(cmdTableAddress, cmdTableAddress);
 			memory::pageTableManager.mapMemory(reinterpret_cast<u8*>(cmdTableAddress) + 4096, reinterpret_cast<u8*>(cmdTableAddress) + 4096);
@@ -64,12 +63,6 @@ export namespace driver
 				cmdHeaders[i].prdtl = maxCountPRDTEntry;
 				cmdHeaders[i].ctba = reinterpret_cast<u64>(cmdTableAddress) + i * sizeof(HBACMDTBL);
 			}
-			/*port->cmd.icc = 1;
-			port->cmd.pod = 1;
-			port->cmd.sud = 1;
-			port->is = 0xFFFFFFFF;
-			port->ie = 1;
-			console::printf(u8"%x ", port->cmd);*/
 			
 			startCMD();
 			port->is = 0;
@@ -80,7 +73,7 @@ export namespace driver
 			while (port->cmd.cr)
 			{
 				console::printf(u8"a");
-				cpuio::iowait();
+				cpuio::pause();
 			}
 			port->cmd.fre = 1;
 			port->cmd.s = 1;
@@ -88,17 +81,18 @@ export namespace driver
 		void stopCMD()
 		{
 			port->cmd.s = 0;
-			port->cmd.fre = 0;
-			//big function in asm, maybe need rewriten to asm code
-			while (port->cmd.fr || port->cmd.cr)
+			while (port->cmd.cr)
 			{
-				console::printf(u8"a");
-				cpuio::iowait();
+				cpuio::pause();
 			}
-			port->cmd.cr = 0;
-			port->cmd.fr = 0;
-			port->cmd.fre = 0;
-			port->cmd.s = 0;
+			if (port->cmd.fre)
+			{
+				port->cmd.fre = 0;
+				while (port->cmd.fr)
+				{
+					cpuio::pause();
+				}
+			}
 		}
 		bool read(const u64 sector, const u16 sectorCount, void* buffer)
 		{
@@ -109,8 +103,6 @@ export namespace driver
 			HBACMDHEADER* cmdHeaders = reinterpret_cast<HBACMDHEADER*>(port->clb);
 			cmdHeaders[slot].clf = sizeof(REGH2D) / sizeof(u32);
 			cmdHeaders[slot].w = 0;//read
-			cmdHeaders[slot].c = 1;//readport->is = 0;
-			cmdHeaders[slot].p = 1;//read
 			cmdHeaders[slot].prdtl = ((sectorCount - 1) >> 4) + 1;
 
 			HBACMDTBL* cmdTable = reinterpret_cast<HBACMDTBL*>(cmdHeaders[slot].ctba);
@@ -133,6 +125,7 @@ export namespace driver
 			REGH2D* cmdFIS = reinterpret_cast<REGH2D*>(&cmdTable->cfis);
 			cmdFIS->fis = std::to_underlying(FIS::REGH2D);
 			cmdFIS->control = 1;
+			cmdFIS->c = 1;
 			cmdFIS->command = std::to_underlying(ATA::CMDREADDMAEX);
 			cmdFIS->lba0 = static_cast<u8>(sector & 0xFF);
 			cmdFIS->lba1 = static_cast<u8>(sector >> 8 & 0xFF);
@@ -142,25 +135,17 @@ export namespace driver
 			cmdFIS->lba4 = static_cast<u8>(sector >> 32 & 0xFF);
 			cmdFIS->lba5 = static_cast<u8>(sector >> 40 & 0xFF);
 			cmdFIS->count = (u16)sectorCount;
+			
+			while (port->tfd & std::to_underlying(ATA::BUSY) || port->tfd & std::to_underlying(ATA::DRQ))
+			{
+				cpuio::pause();
+			}
 			port->ci = 1 << slot;
-			u64 spin{};
-			while ((port->tfd & (std::to_underlying(ATA::BUSY) | std::to_underlying(ATA::DRQ))) && spin < 1000000)
+			while (port->ci & (1 << slot))
 			{
-				++spin;
-				if (port->tfd & (std::to_underlying(ATA::BUSY) | std::to_underlying(ATA::DRQ)))
-				{
-					console::printf(u8"Port is hung\n %llx", spin);
-					return false;
-				}
+				cpuio::pause();
 			}
-			if (spin == 1000000)
-			{
-				console::printf(u8"Port is hung\n");
-				return false;
-			}
-			console::printf(u8"%x c0\n", port->cmd);
-			console::printf(u8"%x c1\n"   , port->cmd);
-			while (true)
+			/*while (true)
 			{
 				if ((port->ci & (1 << slot)) == 0) break;
 				if (port->is & std::to_underlying(HBAPxISe::TFES))
@@ -168,14 +153,7 @@ export namespace driver
 					console::printf(u8"Read disk error\n");
 					return false;
 				}
-			}
-			if (port->is & std::to_underlying(HBAPxISe::TFES))
-			{
-				console::printf(u8"Read disk error\n");
-				return false;
-			}
-			console::printf(u8"%x c2\n", port->cmd);
-			//console::printf(u8"%x %x %x %x\n", port->ssts, port->sctl, port->sntf, port->serr);
+			}*/
 			return true;
 		}
 		i32 findSlot()
@@ -241,21 +219,25 @@ export namespace driver
 		{
 			console::puts(u8"AHCI Driver instance initialized\n");
 			memory::pageTableManager.mapMemory(baseAddress, baseAddress);
-			baseAddress->cmd.mse = 1;
-			baseAddress->cmd.bme = 1;
-			baseAddress->cmd.id = 0;
 			abar = reinterpret_cast<HBAMEM*>(static_cast<u64>(reinterpret_cast<pci::Header0*>(baseAddress)->bars[5]));
 			memory::pageTableManager.mapMemory(abar, abar);
-			//console::printf(u8"%x", abar->cap.sss);
+			baseAddress->cmd.bme = 1;
+			baseAddress->cmd.mse = 1;
+			baseAddress->cmd.id = 0;
+			abar->ghc.ae = 1;
+			/*abar->ghc.hr = 1;
+			while (abar->ghc.hr)
+			{
+				cpuio::iowait();
+			}
+			abar->ghc.ae = 1;*/
 			probePort();
-			abar->ghc.ae = 1;
-			abar->ghc.hr = 1;
-			abar->ghc.ae = 1;
-			abar->ghc.ie = 1;
 			for (size_t i = 0; i < portCount; i++)
 			{
 				Port* port = ports[i];
+				//console::printf(u8"%x %x %x %x\n", port->port->cmd.s = 0, port->port->cmd.cr = 0, port->port->cmd.fr = 0, port->port->cmd.fre = 0);
 				port->configure();
+				
 				ATAIDENTIFYDATA buf;
 
 				port->identify(&buf);
@@ -287,8 +269,11 @@ export namespace driver
 				port->buffer = (u8*)memory::allocator::allocBlocks(1);
 				memory::pageTableManager.mapMemory(port->buffer, port->buffer);
 				memory::set(port->buffer, 0, 0x1000);
-				if (port->read(0, 1, port->buffer))
+				port->buffer[0] = 5;
+				console::setOut(console::OUT::SERIAL);
+				if (port->read(0, 8, port->buffer))
 					console::puts(u8"Success\n");
+				
 				/*console::setOut(console::OUT::SERIAL);
 				console::puth(reinterpret_cast<u64*>(port->port->clb), 32 * sizeof(HBACMDHEADER));
 				console::puts(u8"\n");
@@ -298,7 +283,8 @@ export namespace driver
 				HBAFIS* dfis = reinterpret_cast<HBAFIS*>(port->port->fb);
 				console::printf(u8"%hx ", (u16)(dfis->rfis.error));*/
 				//console::printf(u8"%x \n", abar->ghc);
-				console::puth(port->buffer, 512);
+				console::puth(port->buffer, 0x1000);
+				console::setOut(console::OUT::TELETYPE);
 				/*for (size_t j = 0; j < 1024; j++)
 				{
 					console::puts(string::itos(port->buffer[j], 10));
@@ -318,7 +304,7 @@ export namespace driver
 				if (pi & 1)
 				{
 					AHCIDEV dt = getType(abar->ports[i]);
-					if (dt == AHCIDEV::SATA || dt == AHCIDEV::SATAPI)
+					if (dt == AHCIDEV::SATA)
 					{
 						ports[portCount] = new Port();
 						ports[portCount]->portType = dt;

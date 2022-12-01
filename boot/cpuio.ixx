@@ -18,4 +18,5 @@ export namespace cpuio
 	void halt();
 	void loop();
 	void iowait();
+	void pause();
 }
