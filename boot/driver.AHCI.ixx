@@ -127,33 +127,73 @@ export namespace driver
 			cmdFIS->control = 1;
 			cmdFIS->c = 1;
 			cmdFIS->command = std::to_underlying(ATA::CMDREADDMAEX);
-			cmdFIS->lba0 = static_cast<u8>(sector & 0xFF);
-			cmdFIS->lba1 = static_cast<u8>(sector >> 8 & 0xFF);
-			cmdFIS->lba2 = static_cast<u8>(sector >> 16 & 0xFF);
+			cmdFIS->lba0 = static_cast<u8>(sector);
+			cmdFIS->lba1 = static_cast<u8>(sector >> 8);
+			cmdFIS->lba2 = static_cast<u8>(sector >> 16);
 			cmdFIS->device = 1 << 6; //LBA Mode
-			cmdFIS->lba3 = static_cast<u8>(sector >> 24 & 0xFF);
-			cmdFIS->lba4 = static_cast<u8>(sector >> 32 & 0xFF);
-			cmdFIS->lba5 = static_cast<u8>(sector >> 40 & 0xFF);
+			cmdFIS->lba3 = static_cast<u8>(sector >> 24);
+			cmdFIS->lba4 = static_cast<u8>(sector >> 32);
+			cmdFIS->lba5 = static_cast<u8>(sector >> 40);
 			cmdFIS->count = (u16)sectorCount;
-			
-			while (port->tfd & std::to_underlying(ATA::BUSY) || port->tfd & std::to_underlying(ATA::DRQ))
-			{
-				cpuio::pause();
-			}
 			port->ci = 1 << slot;
-			while (port->ci & (1 << slot))
+			while (port->tfd & std::to_underlying(ATA::BUSY) || port->tfd & std::to_underlying(ATA::DRQ)) cpuio::pause();
+			while ((port->ci & (1 << slot))) cpuio::pause();
+			if (port->is & std::to_underlying(HBAPxISe::TFES))
 			{
-				cpuio::pause();
+				console::printf(u8"Read disk error2\n");
+				return false;
 			}
-			/*while (true)
+			return true;
+		}
+		bool write(const u64 sector, const u16 sectorCount, void* buffer)
+		{
+			port->is = 0xFFFFFFFF;
+			const i32 slot = findSlot();
+			if (slot == -1)
+				return false;
+			HBACMDHEADER* cmdHeaders = reinterpret_cast<HBACMDHEADER*>(port->clb);
+			cmdHeaders[slot].clf = sizeof(REGH2D) / sizeof(u32);
+			cmdHeaders[slot].w = 1;//write
+			cmdHeaders[slot].prdtl = ((sectorCount - 1) >> 4) + 1;
+
+			HBACMDTBL* cmdTable = reinterpret_cast<HBACMDTBL*>(cmdHeaders[slot].ctba);
+			memory::set(cmdTable, 0, sizeof(HBACMDTBL));
 			{
-				if ((port->ci & (1 << slot)) == 0) break;
-				if (port->is & std::to_underlying(HBAPxISe::TFES))
+				u16 count = sectorCount;
+				i64 i = 0;
+				for (; i < cmdHeaders[slot].prdtl - 1; i++)
 				{
-					console::printf(u8"Read disk error\n");
-					return false;
+					cmdTable->prdtEntry[i].dba = reinterpret_cast<u64>(buffer) + i * 0x2000;
+					cmdTable->prdtEntry[i].dbc = 0x2000 - 1;
+					cmdTable->prdtEntry[i].i = 0;
+					count -= 16;
 				}
-			}*/
+				cmdTable->prdtEntry[i].dba = reinterpret_cast<u64>(buffer) + i * 0x2000;
+				cmdTable->prdtEntry[i].dbc = (count << 9) - 1;
+				cmdTable->prdtEntry[i].i = 0;
+			}
+
+			REGH2D* cmdFIS = reinterpret_cast<REGH2D*>(&cmdTable->cfis);
+			cmdFIS->fis = std::to_underlying(FIS::REGH2D);
+			cmdFIS->control = 1;
+			cmdFIS->c = 1;
+			cmdFIS->command = std::to_underlying(ATA::CMDWRITEDMAEX);
+			cmdFIS->lba0 = static_cast<u8>(sector);
+			cmdFIS->lba1 = static_cast<u8>(sector >> 8);
+			cmdFIS->lba2 = static_cast<u8>(sector >> 16);
+			cmdFIS->device = 1 << 6; //LBA Mode
+			cmdFIS->lba3 = static_cast<u8>(sector >> 24);
+			cmdFIS->lba4 = static_cast<u8>(sector >> 32);
+			cmdFIS->lba5 = static_cast<u8>(sector >> 40);
+			cmdFIS->count = (u16)sectorCount;
+			port->ci = 1 << slot;
+			while (port->tfd & std::to_underlying(ATA::BUSY) || port->tfd & std::to_underlying(ATA::DRQ)) cpuio::pause();
+			while ((port->ci & (1 << slot))) cpuio::pause();
+			if (port->is & std::to_underlying(HBAPxISe::TFES))
+			{
+				console::printf(u8"Write disk error2\n");
+				return false;
+			}
 			return true;
 		}
 		i32 findSlot()
@@ -187,24 +227,9 @@ export namespace driver
 			cmdFIS->c = 1;
 			cmdFIS->device = 1 << 6;
 			cmdFIS->command = std::to_underlying(ATA::CMDIDENTIFYDEVICE);
-			u64 spin{};
-			while ((port->tfd & (std::to_underlying(ATA::BUSY) | std::to_underlying(ATA::DRQ))) && spin < 1000000)
-			{
-				++spin;
-			}
-			if (spin == 1000000)
-			{
-				return false;
-			}
+			while ((port->tfd & (std::to_underlying(ATA::BUSY) | std::to_underlying(ATA::DRQ)))) cpuio::pause();
 			port->ci = 1 << slot;
-			while (true)
-			{
-				if ((port->ci & 1 << slot) == 0) break;
-				if (port->is & std::to_underlying(HBAPxISe::TFES))
-				{
-					return false;
-				}
-			}
+			while ((port->ci & (1 << slot))) cpuio::pause();
 			if (port->is & std::to_underlying(HBAPxISe::TFES))
 			{
 				return false;
@@ -271,8 +296,10 @@ export namespace driver
 				memory::set(port->buffer, 0, 0x1000);
 				port->buffer[0] = 5;
 				console::setOut(console::OUT::SERIAL);
-				if (port->read(0, 8, port->buffer))
-					console::puts(u8"Success\n");
+				port->read(0, 8, port->buffer);
+				port->buffer[0] = 99;
+				port->write(0, 1, port->buffer);
+				port->read(0, 8, port->buffer);
 				
 				/*console::setOut(console::OUT::SERIAL);
 				console::puth(reinterpret_cast<u64*>(port->port->clb), 32 * sizeof(HBACMDHEADER));
