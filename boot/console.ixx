@@ -42,7 +42,7 @@ export namespace console
 		else
 			teletype::puts(str);
 	}
-	void printf_unsigned(u64 number, i32 radix, i64 width)
+	void printf_unsigned(u64 number, i32 radix, i64 width, bool skipfirst = false)
 	{
 		i8 buffer[32]{};
 		i8 pos = 0;
@@ -55,6 +55,7 @@ export namespace console
 		} while (number);
 		for (i8 i = 0; i < width - pos; i++)
 			putc('0');
+		pos -= skipfirst ? 1 : 0;
 		while (--pos >= 0)
 			putc(buffer[pos]);
 	}
@@ -64,16 +65,16 @@ export namespace console
 			putc('-'), -number;
 		printf_unsigned(number, radix, width);
 	}
-	void printf_f64(double number, u64 precision)
+	void printf_f64(f64 number, u64 precision)
 	{
 		if (number < 0)
 			putc(u8'-');
 		const f64 absnum = math::abs(number);
 		const u64 intnum = static_cast<u64>(absnum);
-		const u64 fracnum = static_cast<u64>((absnum - static_cast<f64>(intnum)) * precision);
+		const u64 fracnum = static_cast<u64>((absnum - static_cast<f64>(intnum) + 1.0) * precision);
 		printf_unsigned(intnum, 10, 0);
 		putc(u8'.');
-		printf_unsigned(fracnum, 10, 0);
+		printf_unsigned(fracnum, 10, 0, true);
 	}
 	enum class State
 	{
@@ -97,11 +98,32 @@ export namespace console
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
 		i64 width = 0;
-		i8 precision = 0;
+		i8 precision = 10;
 		i32 radix = 10;
 		bool sign{};
 		bool number{};
 		bool fp{};
+		i64 precisions[19] = {
+			10,
+			100,
+			1000,
+			10000,
+			100000,
+			1000000,
+			10000000,
+			100000000,
+			1000000000,
+			10000000000,
+			100000000000,
+			1000000000000,
+			10000000000000,
+			100000000000000,
+			1000000000000000,
+			10000000000000000,
+			100000000000000000,
+			1000000000000000000,
+			10000000000000000000,
+		};
 		while (*fmt)
 		{
 			switch (state)
@@ -231,13 +253,13 @@ export namespace console
 						case State::LENGTH_DEFAULT:
 						case State::LENGTH_INT:
 							if (fp)
-								printf_f64(va_arg(args, f64), 1000000000);
+								printf_f64(va_arg(args, f64), precisions[precision-1]);
 							else
 								printf_signed(va_arg(args, i32), radix, width);
 							break;
 						case State::LENGTH_LONG_LONG:
 							if (fp)
-								printf_f64(va_arg(args, f64), 1000000000);
+								printf_f64(va_arg(args, f64), precisions[precision-1]);
 							else
 								printf_signed(va_arg(args, i64), radix, width);
 							break;
@@ -263,6 +285,7 @@ export namespace console
 				length = State::LENGTH_DEFAULT;
 				width = 0;
 				radix = 10;
+				precision = 10;
 				sign = false;
 				number = false;
 				fp = false;
