@@ -4,9 +4,11 @@ public byteswapu32 as '?byteswap@math@@YAII@Z::<!math>'
 public byteswapu64 as '?byteswap@math@@YA_K_K@Z::<!math>'
 public absi32 as '?abs@math@@YAHH@Z::<!math>'
 public absi64 as '?abs@math@@YA_J_J@Z::<!math>'
+public absf32 as '?abs@math@@YAMM@Z::<!math>'
 public absf64 as '?abs@math@@YANN@Z::<!math>'
 
-public absf32 as '?abs@math@@YAMM@Z::<!math>'
+public lerpf32 as '?lerp@math@@YAMMMM@Z::<!math>'
+
 ;public cosf32 as '?cos@math@@YAMM@Z::<!math>'
 ;public sinf32 as '?sin@math@@YAMM@Z::<!math>'
 ;public tanf32 as '?tan@math@@YAMM@Z::<!math>'
@@ -14,7 +16,13 @@ public absf32 as '?abs@math@@YAMM@Z::<!math>'
 ;public asinf32 as '?asin@math@@YAMM@Z::<!math>'
 ;public atanf32 as '?atan@math@@YAMM@Z::<!math>'
 ;public atan2f32 as '?atan2@math@@YAMM@Z::<!math>'
+
+public lerpf64 as '?lerp@math@@YANNNN@Z::<!math>'
+
 public expf64 as '?exp@math@@YANN@Z::<!math>'
+
+public powf64 as '?pow@math@@YANNN@Z::<!math>'
+
 public cosf64 as '?cos@math@@YANN@Z::<!math>'
 public sinf64 as '?sin@math@@YANN@Z::<!math>'
 ;public tanf64 as '?tan@math@@YANN@Z::<!math>'
@@ -27,6 +35,7 @@ divcosss dq 2.0,24.0,720.0,40320.0,3628800.0,479001600.0,87178291200.0,209227898
 divsinss dq 6.0,120.0,5040.0,362880.0,39916800.0,6227020800.0,1307674368000.0,355687428096000.0,121645100408832000.0
 
 divexpsd dq 2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0,3628800.0,39916800.0,479001600.0,6227020800.0,87178291200.0,1307674368000.0,20922789888000.0
+expsd dq 1.0,2.718281828459045,7.38905609893065,20.085536923187668,54.598150033144236,720.0,5040.0,40320.0,362880.0,3628800.0,39916800.0,479001600.0,6227020800.0,87178291200.0,1307674368000.0,20922789888000.0
 
 divcossd dq 2.0,24.0,720.0,40320.0,3628800.0,479001600.0,87178291200.0,20922789888000.0,6402373705728000.0
 divsinsd dq 6.0,120.0,5040.0,362880.0,39916800.0,6227020800.0,1307674368000.0,355687428096000.0,121645100408832000.0
@@ -59,6 +68,12 @@ absf64:
 	xorps xmm1, xmm1
 	subps xmm1, xmm0
 	maxps xmm0, xmm1
+	ret
+
+lerpf32:
+	subss xmm1, xmm0
+	mulss xmm2, xmm1
+	addss xmm0, xmm2
 	ret
 ;cosf32:
 ;	sub rsp, 64
@@ -175,6 +190,11 @@ absf64:
 ;	movaps xmm9, [rsp]
 ;	add rsp, 64
 ;	ret
+lerpf64:
+	subsd xmm1, xmm0
+	mulsd xmm2, xmm1
+	addsd xmm0, xmm2
+	ret
 expf64:
 	sub rsp, 160
 	movapd [rsp+144], xmm6
@@ -263,6 +283,82 @@ expf64:
 	movapd xmm15, [rsp]
 	add rsp, 160
 	ret
+powf64:
+	; if(xmm0 == 1.0 || xmm1 == 0.0) return;
+	movapd xmm3, xmm0
+	mov rdx, 1.0
+	movq xmm2, rdx
+	cmpsd xmm3, xmm2, 0
+	movmskpd rax, xmm3
+	cmp rax, 1
+	je .be
+	
+	movapd xmm3, xmm1
+	mov rdx, 0.0
+	movq xmm2, rdx
+	cmpsd xmm3, xmm2, 0
+	movmskpd rax, xmm3
+	cmp rax, 1
+	je .be
+
+	;fabs(xmm1) save to xmm3
+	xorpd xmm3, xmm3
+	subsd xmm3, xmm1
+	maxpd xmm3, xmm1
+
+	;convert to integer part exp to rcx
+	cvttsd2si rcx, xmm3
+
+	;binarypower
+	movapd xmm5, xmm0
+	mov rdx, 1.0
+	movq xmm2, rdx
+	.while:
+		test rcx, 1
+		je ..skip
+		mulsd xmm2, xmm0
+		..skip:
+		mulsd xmm0, xmm0
+		shr rcx, 1
+		jnz .while
+	movapd xmm0, xmm2
+
+	;save fract part exp
+	cvttsd2si rcx, xmm3
+	cvtsi2sd xmm4, rcx
+	movsd xmm2, xmm3
+	subsd xmm2, xmm4
+	
+	;convert to integer value
+	movq rcx, xmm5
+	mov rdx, 4606853616395542500
+	sub rcx, rdx
+	cvtsi2sd xmm5, rcx
+	mulsd xmm2, xmm5
+	cvtsi2sd xmm5, rdx
+	addsd xmm2, xmm5
+	cvttsd2si rcx, xmm2
+	movq xmm2, rcx
+	mulsd xmm0, xmm2
+
+	movapd xmm3, xmm1
+	mov rdx, 0.0
+	movq xmm2, rdx
+	cmpsd xmm3, xmm2, 1
+	movmskpd rax, xmm3
+	cmp rax, 1
+	je .le
+	ret
+	.be:
+		mov rdx, 1.0
+		movq xmm0, rdx
+		ret
+	.le:
+		mov rdx, 1.0
+		movq xmm2, rdx
+		divsd xmm2, xmm0
+		movapd xmm0, xmm2
+		ret
 cosf64:
 	sub rsp, 64
 	movapd [rsp+48], xmm6
