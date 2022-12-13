@@ -1,6 +1,6 @@
 export module hash.sha;
 import types;
-import memory;
+import memory.utils;
 
 export namespace hash::sha
 {

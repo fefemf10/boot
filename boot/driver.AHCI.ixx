@@ -4,6 +4,9 @@ import pci.structures;
 import types;
 import console;
 import memory;
+import memory.utils;
+import memory.allocator;
+import memory.PageTableManager;
 import sl.utility;
 import string;
 import cpuio;
@@ -63,10 +66,7 @@ export namespace driver
 				cmdHeaders[i].prdtl = maxCountPRDTEntry;
 				cmdHeaders[i].ctba = reinterpret_cast<u64>(cmdTableAddress) + i * sizeof(HBACMDTBL);
 			}
-			
 			startCMD();
-			port->is = 0;
-			port->ie = 0xFFFFFFFF;
 		}
 		void startCMD()
 		{
@@ -96,11 +96,11 @@ export namespace driver
 		}
 		bool read(const u64 sector, const u16 sectorCount, void* buffer)
 		{
-			port->is = 0xFFFFFFFF;
 			const i32 slot = findSlot();
 			if (slot == -1)
 				return false;
 			HBACMDHEADER* cmdHeaders = reinterpret_cast<HBACMDHEADER*>(port->clb);
+			memory::set(cmdHeaders, 0, 32 * sizeof(HBACMDHEADER));
 			cmdHeaders[slot].clf = sizeof(REGH2D) / sizeof(u32);
 			cmdHeaders[slot].w = 0;//read
 			cmdHeaders[slot].prdtl = ((sectorCount - 1) >> 4) + 1;
@@ -147,7 +147,6 @@ export namespace driver
 		}
 		bool write(const u64 sector, const u16 sectorCount, void* buffer)
 		{
-			port->is = 0xFFFFFFFF;
 			const i32 slot = findSlot();
 			if (slot == -1)
 				return false;
@@ -243,13 +242,13 @@ export namespace driver
 		AHCI(pci::Header* baseAddress) : baseAddress(baseAddress)
 		{
 			console::puts(u8"AHCI Driver instance initialized\n");
-			memory::pageTableManager.mapMemory(baseAddress, baseAddress);
+			//memory::pageTableManager.mapMemory(baseAddress, baseAddress);
 			abar = reinterpret_cast<HBAMEM*>(static_cast<u64>(reinterpret_cast<pci::Header0*>(baseAddress)->bars[5]));
 			memory::pageTableManager.mapMemory(abar, abar);
-			baseAddress->cmd.bme = 1;
-			baseAddress->cmd.mse = 1;
-			baseAddress->cmd.id = 0;
-			abar->ghc.ae = 1;
+			//baseAddress->cmd.bme = 1;
+			//baseAddress->cmd.mse = 1;
+			//baseAddress->cmd.id = 0;
+			//abar->ghc.ae = 1;
 			/*abar->ghc.hr = 1;
 			while (abar->ghc.hr)
 			{
@@ -266,10 +265,10 @@ export namespace driver
 				ATAIDENTIFYDATA buf;
 
 				port->identify(&buf);
-				console::setOut(console::OUT::SERIAL);
-				console::puth(&buf, 512);
-				console::puts(u8"\n");
-				console::setOut(console::OUT::TELETYPE);
+				//console::setOut(console::OUT::SERIAL);
+				//console::puth(&buf, 512);
+				//console::puts(u8"\n");
+				//console::setOut(console::OUT::TELETYPE);
 				char8_t name[41]{};
 				{
 					for (size_t k = 0; k < 40; k += 2)
@@ -295,10 +294,10 @@ export namespace driver
 				memory::pageTableManager.mapMemory(port->buffer, port->buffer);
 				memory::set(port->buffer, 0, 0x1000);
 				port->buffer[0] = 5;
-				console::setOut(console::OUT::SERIAL);
+				////console::setOut(console::OUT::SERIAL);
 				port->read(0, 8, port->buffer);
 				port->buffer[0] = 99;
-				port->write(0, 1, port->buffer);
+				//port->write(0, 1, port->buffer);
 				port->read(0, 8, port->buffer);
 				
 				/*console::setOut(console::OUT::SERIAL);
@@ -310,13 +309,13 @@ export namespace driver
 				HBAFIS* dfis = reinterpret_cast<HBAFIS*>(port->port->fb);
 				console::printf(u8"%hx ", (u16)(dfis->rfis.error));*/
 				//console::printf(u8"%x \n", abar->ghc);
-				console::puth(port->buffer, 0x1000);
-				console::setOut(console::OUT::TELETYPE);
+				//console::puth(port->buffer, 0x1000);
+				//console::setOut(console::OUT::TELETYPE);
 				/*for (size_t j = 0; j < 1024; j++)
 				{
 					console::puts(string::itos(port->buffer[j], 10));
 				}*/
-				console::puts(u8"\n");
+				//console::puts(u8"\n");
 			}
 		};
 		~AHCI()

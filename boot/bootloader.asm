@@ -1,7 +1,7 @@
 format MS64 COFF
-READCOUNT equ 0x2
-COUNTSECTORS equ 0x7F
-SECONDLOADER equ 0x7e00
+READBLOCKCOUNT equ 0x2
+MAXCOUNTSECTORS equ 0x7f
+SECONDLOADER equ 0x8000
 KERNEL equ 0x100000
 section '.text$a' code readable executable
 use16
@@ -20,9 +20,11 @@ cli
 ;int 0x10
 ;jmp $
 push dx
+;; GET VESA
+
 
 ;; GET MEMORY MAP
-memory_entries equ 0x27A00; 2:7a00
+memory_entries equ 0x27C00; 2:7a00
 getMemoryMap:
 	mov ax, ((memory_entries and 0xFF0000) shr 4)
 	mov es, ax
@@ -75,17 +77,24 @@ getMemoryMap:
 	mov [es:di], bp
 	clc
 
-;read 0x7F + 0x7F SECTORS
+;read 0x7F SECTORS
 pop dx
+mov bx, dx
 xor ax, ax
-mov es, ax
+mov ds, ax
 mov ah, 0x42
-mov si, readPacket
+mov si, readPacket0
 int 0x13
-add [readPacket + 4], word 0xFE00 ; COUNTSECTORS*512
-add [readPacket + 6], word 0x1000
-add [readPacket + 8], dword COUNTSECTORS
+mov cx, READBLOCKCOUNT
+.diskread:
+mov dx, bx
+mov ah, 0x42
+mov si, readPacket1
 int 0x13
+loop .diskread
+
+call setVESA
+
 jmp enterProtectedMode
 
 gdt_nulldesc:
@@ -143,6 +152,7 @@ enterProtectedMode:
 
 	jmp codeseg:startProtectedMode
 
+
 use32
 pageTableEntry equ 0x1000
 setupIndentityPaging:
@@ -171,14 +181,6 @@ setupIndentityPaging:
 		add edi, 8
 		loop .setEntry
 	
-	;mov ecx, 512
-	;
-	;.setEntry1:
-	;	mov [edi], dword ebx
-	;	add ebx, 0x1000
-	;	add edi, 8
-	;	loop .setEntry1
-
 	; Enable PAE
 	mov eax, cr4
 	or eax, (1 shl 5)
@@ -215,16 +217,62 @@ use64
 startLongMode:
 	mov rsi, SECONDLOADER
 	mov rdi, KERNEL + 0x460
-	mov rcx, (COUNTSECTORS * READCOUNT * 0x200 / 8)
+	mov rcx, (MAXCOUNTSECTORS * READBLOCKCOUNT * 0x200 / 8)
 	rep movsq
 	call KERNEL + 0x460
-readPacket:
+
+readPacket0:
 	db 0x10
 	db 0
-	dw COUNTSECTORS
-	dw SECONDLOADER
+	dw 1
+	dw 0x7E00
 	dw 0
 	dd 1
 	dd 0
+readPacket1:
+	db 0x10
+	db 0
+	dw MAXCOUNTSECTORS
+	dw SECONDLOADER
+	dw 0
+	dd 2
+	dd 0
 times 510-($-$$) db 0
 dw 0xaa55
+
+use16
+vesa equ 0x27A00
+vesaModes equ 0x27C00
+vesaMaxCountModes equ 20
+vesaModesSizeof equ 256
+setVESA:
+	.getVESAInfo:
+		mov ax, ((vesa and 0xFF0000) shr 4)
+		mov es, ax
+		mov di, (vesa and 0xFFFF)
+		mov ax, 0x4F00
+		int 0x10
+	
+	.findVESAModes:
+		..loop:
+			mov cx, word [.vesaModesAddr]
+			cmp cx, 0xFFFF
+			je ..getVESAModesInfo
+			add [.vesaModesAddr], 2
+			mov edi, [.vesaModesAddrStruct]
+			mov ax, 0x4F01
+			int 0x10
+			add [.vesaModesAddrStruct], vesaModesSizeof
+			jmp ..loop
+			
+		..getVESAModesInfo:
+			ret
+	.setVESAMode:
+		mov ax, 0x4F02
+		xor bx, bx
+		or bx, 1 shl 14
+		int 0x10
+	ret
+.vesaModesAddr dd vesa + 14
+.vesaModesAddrStruct dd vesaModes
+times 1024-($-$$) db 0

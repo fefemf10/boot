@@ -98,7 +98,7 @@ export namespace console
 		State state = State::STATE_NORMAL;
 		State length = State::LENGTH_DEFAULT;
 		i64 width = 0;
-		i8 precision = 10;
+		i8 precision = 15;
 		i32 radix = 10;
 		bool sign{};
 		bool number{};
@@ -285,7 +285,7 @@ export namespace console
 				length = State::LENGTH_DEFAULT;
 				width = 0;
 				radix = 10;
-				precision = 10;
+				precision = 15;
 				sign = false;
 				number = false;
 				fp = false;

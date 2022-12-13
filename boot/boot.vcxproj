@@ -270,6 +270,9 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="driver.AHCI.ixx" />
     <ClCompile Include="driver.Driver.ixx" />
     <ClCompile Include="driver.ixx" />
+    <ClCompile Include="memory.Heap.ixx" />
+    <ClCompile Include="memory.PageIndex.ixx" />
+    <ClCompile Include="memory.SMAP.ixx" />
     <ClCompile Include="pci.structures.ixx" />
     <ClCompile Include="PIT.ixx" />
     <ClCompile Include="sl.compare.ixx" />
@@ -288,7 +291,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="kernel.ixx" />
     <ClCompile Include="keyboard.ixx" />
     <ClCompile Include="math.ixx" />
-    <ClCompile Include="memory-allocator.ixx" />
+    <ClCompile Include="memory.allocator.ixx" />
     <ClCompile Include="memory.utils.ixx" />
     <ClCompile Include="memory.ixx" />
     <ClCompile Include="pci.ixx" />
@@ -298,6 +301,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="sl.initializer_list.ixx" />
     <ClCompile Include="sl.iterator.ixx" />
     <ClCompile Include="sl.memory.ixx" />
+    <ClCompile Include="sl.numbers.ixx" />
     <ClCompile Include="sl.numeric_limits.ixx" />
     <ClCompile Include="sl.ratio.ixx" />
     <ClCompile Include="sl.source_location.ixx" />
@@ -314,6 +318,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PreprocessToFile>
     </ClCompile>
     <ClCompile Include="vec.ixx" />
+    <ClCompile Include="VESA.ixx" />
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -345,6 +350,11 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sl.bit.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="memory.PageTableManager.ixx">
       <FileType>Document</FileType>
     </ClCompile>
   </ItemGroup>

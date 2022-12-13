@@ -19,6 +19,9 @@
     <Filter Include="Исходные файлы\driver">
       <UniqueIdentifier>{17ae28ec-bc7c-439e-97a8-43d2c7be5e1e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\memory">
+      <UniqueIdentifier>{c9c01d0d-e23f-45ea-bebf-b71cbb1eddfd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vec.ixx">
@@ -58,15 +61,6 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="PIC.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="memory.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="memory-allocator.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="memory.utils.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="serial.ixx">
@@ -164,6 +158,33 @@
     </ClCompile>
     <ClCompile Include="sl.bit.ixx">
       <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.numbers.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.utils.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.allocator.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.PageIndex.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.SMAP.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.Heap.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.PageTableManager.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="VESA.ixx">
+      <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
