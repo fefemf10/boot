@@ -1,0 +1,132 @@
+export module memory.Heap;
+import types;
+import memory.allocator;
+import memory.PageTableManager;
+export namespace memory
+{
+	struct HeapSegment;
+	HeapSegment* lastHS;
+	PageTable* PLM4;
+#pragma pack(8)
+	struct HeapSegment
+	{
+		u64 size;
+		HeapSegment* next;
+		HeapSegment* last;
+		bool free;
+		void combineForward()
+		{
+			if (!next) return;
+			if (!next->free) return;
+			if (next == lastHS) lastHS = this;
+			if (next->next != nullptr)
+				next->next->last = this;
+			size = size + next->size + sizeof(HeapSegment);
+			next = next->next;
+		}
+		void combineBackward()
+		{
+			if (last && last->free) last->combineForward();
+		}
+		HeapSegment* split(u64 size)
+		{
+			if (size < 0x10) return nullptr;
+			i64 splitSize = this->size - size - sizeof(HeapSegment);
+			if (splitSize < 0x10) return nullptr;
+			HeapSegment* newSplit = reinterpret_cast<HeapSegment*>(reinterpret_cast<u64>(this) + size + sizeof(HeapSegment));
+			next->last = newSplit;
+			newSplit->next = next;
+			next = newSplit;
+			newSplit->last = this;
+			newSplit->size = splitSize;
+			newSplit->free = free;
+			this->size = size;
+			if (lastHS == this) lastHS = newSplit;
+			return newSplit;
+		}
+	};
+	void* heapStart;
+	void* heapEnd;
+
+	void initializeHeap(PageTable* PLM4, void* address, u64 size)
+	{
+		PLM4 = PLM4;
+		void* pos = address;
+		PageTableManager pageTableManager(PLM4);
+		for (size_t i = 0; i < size; ++i)
+		{
+			pageTableManager.mapMemory(pos, memory::allocator::allocBlocks(1));
+			pos = reinterpret_cast<void*>(reinterpret_cast<u64>(pos) + 0x1000);
+		}
+		u64 heapSize = size * 0x1000;
+		heapStart = address;
+		heapEnd = reinterpret_cast<void*>(reinterpret_cast<u64>(heapStart) + heapSize);
+		HeapSegment* startSegment = reinterpret_cast<HeapSegment*>(address);
+		startSegment->size = heapSize - sizeof(HeapSegment);
+		startSegment->next = nullptr;
+		startSegment->last = nullptr;
+		startSegment->free = true;
+		lastHS = startSegment;
+	}
+	void extendMap(u64 size)
+	{
+		if (size % 0x1000)
+		{
+			size -= size % 0x1000;
+			size += 0x1000;
+		}
+		u64 pages = size / 0x1000;
+		HeapSegment* newSegment = reinterpret_cast<HeapSegment*>(heapEnd);
+		PageTableManager pageTableManager(PLM4);
+		for (size_t i = 0; i < pages; ++i)
+		{
+			pageTableManager.mapMemory(heapEnd, allocator::allocBlocks(1));
+			heapEnd = reinterpret_cast<void*>(reinterpret_cast<u64>(heapEnd) + 0x1000);
+		}
+		newSegment->free = true;
+		newSegment->last = lastHS;
+		lastHS->next = newSegment;
+		lastHS = newSegment;
+		newSegment->next = nullptr;
+		newSegment->size = size - sizeof(HeapSegment);
+		newSegment->combineBackward();
+	}
+	__declspec(allocator) void* alloc(u64 size)
+	{
+		if (size % 0x10 > 0)
+		{
+			size -= (size % 0x10);
+			size += 0x10;
+		}
+		if (!size) return nullptr;
+		HeapSegment* currentSegment = reinterpret_cast<HeapSegment*>(heapStart);
+		while (true)
+		{
+			if (currentSegment->free)
+			{
+				if (currentSegment->size > size)
+				{
+					currentSegment->split(size);
+					currentSegment->free = false;
+					return reinterpret_cast<void*>(reinterpret_cast<u64>(currentSegment) + sizeof(HeapSegment));
+				}
+				if (currentSegment->size == size)
+				{
+					currentSegment->free = false;
+					return reinterpret_cast<void*>(reinterpret_cast<u64>(currentSegment) + sizeof(HeapSegment));
+				}
+			}
+			if (!currentSegment->next) break;
+			currentSegment = currentSegment->next;
+		}
+		extendMap(size);
+		return alloc(size);
+	}
+	void free(void* address)
+	{
+		HeapSegment* segment = reinterpret_cast<HeapSegment*>(address) - 1;
+		segment->free = true;
+		segment->combineForward();
+		segment->combineBackward();
+	}
+}
