@@ -11,7 +11,6 @@ import cpuio;
 export namespace memory
 {
 	constexpr u64 KERNELSIZE = 0x1000 * 64;//64 pages for kernel
-	PageTable* PLM4;
 	PageTableManager pageTableManager;
 	extern "C" void loadGDT(PageTable * plm4);
 	void initializeHeap(void* address, u64 size);

@@ -133,8 +133,8 @@ export namespace std
 
 	template <class... Traits> inline constexpr bool conjunction_v = conjunction<Traits...>::value;
 
-	template <class Trait> inline constexpr bool negation_v = negation<Trait>::value;
 	template <class Trait> struct negation : bool_constant<!static_cast<bool>(Trait::value)> {};
+	template <class Trait> inline constexpr bool negation_v = negation<Trait>::value;
 
 	template <class T> inline constexpr bool is_void_v = is_same_v<remove_cv_t<T>, void>;
 	template <class T> struct is_void : bool_constant<is_void_v<T>> {};
@@ -163,12 +163,14 @@ export namespace std
 		using _Lvalue = T&;
 		using _Rvalue = T&&;
 	};
+	template <class>
+	inline constexpr bool _Always_false = false;
 
 	template <class T> struct add_lvalue_reference { using type = typename Add_reference<T>::_Lvalue; };
 	template <class T> using add_lvalue_reference_t = typename Add_reference<T>::_Lvalue;
 	template <class T> struct add_rvalue_reference { using type = typename Add_reference<T>::_Rvalue; };
 	template <class T> using add_rvalue_reference_t = typename Add_reference<T>::_Rvalue;
-	template <class T> add_rvalue_reference_t<T> declval() noexcept { static_assert(Always_false<T>, "Calling declval is ill-formed, see N4892 [declval]/2."); }
+	template <class T> add_rvalue_reference_t<T> declval() noexcept { static_assert(_Always_false<T>, "Calling declval is ill-formed, see N4892 [declval]/2."); }
 
 	template <class T> struct remove_extent { using type = T; };
 	template <class T, size_t _Ix> struct remove_extent<T[_Ix]> { using type = T; };
@@ -256,8 +258,8 @@ export namespace std
 	template <class T> inline constexpr bool is_compound_v = !is_fundamental_v<T>;
 	template <class T> struct is_compound : bool_constant<!is_fundamental_v<T>> {};
 
-	template <class T> inline constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_cv_t<T>>::_Bool_type::value;
 	template <class T> struct _Is_memfunptr { using _Bool_type = false_type; };
+	template <class T> inline constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_cv_t<T>>::_Bool_type::value;
 	template <class T> struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<T>> {};
 
 	template <class T> inline constexpr bool is_const_v = false;
