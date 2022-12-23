@@ -6,6 +6,7 @@ import ISR;
 import IRQ;
 import pci;
 import memory;
+import memory.allocator;
 import console;
 import sl;
 import ACPI;
@@ -23,7 +24,12 @@ extern "C" void kernel_start()
 	console::initialize();
 	memory::initialize();
 	VESA::initialize();
-	console::puth(VESA::vesaModesInfo, sizeof(VESA::VESAModeInfo));
+	for (size_t i = 0; i < VESA::countModes; i++)
+	{
+		console::printf(u8"%hu %hu %hu %hu %u\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].pitch, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
+	}
+	console::printf(u8"%hx %x\n", VESA::currentMode,0);
+	//VESA::drawPixel(0,0,255,255,255);
 	//memory::printSMAP();
 	PIT::setDivisor(65535);
 	ACPI::RSDP* rsdp = ACPI::RSDP::find();
@@ -45,11 +51,16 @@ extern "C" void kernel_start()
 	double c = 3.14;*/
 	console::printf(u8"%f\n", 0.999999682931834620);
 	console::printf(u8"%f %f %f %f %f %f %f %f\n", a, b, c, d, e, f, g, h);
-	console::setOut(console::OUT::SERIAL);
-	for (size_t i = 0; i < 100000; i++)
-	{
-		console::printf(u8"%lli %f\n", i, math::pow((f64)i, 0.5));
-	}
+	u64* code = reinterpret_cast<u64*>(memory::allocator::allocBlocks(1));
+	*code = 0xC3C889C1FF;
+	int (*compiledFun)(int) = reinterpret_cast<int(*)(int)>(code);
+	//int n = compiledFun(0);
+	//console::printf(u8"n = %i", n);
+	//console::setOut(console::OUT::SERIAL);
+	//for (size_t i = 0; i < 100000; i++)
+	//{
+	//	console::printf(u8"%lli %f\n", i, math::pow((f64)i, 0.5));
+	//}
 	/*double x = 2.0;
 	double es[] = { 0.0,1.0,2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0,3628800.0,39916800.0,479001600.0,6227020800.0,87178291200.0,1307674368000.0,20922789888000.0 };
 	double s[17]{};

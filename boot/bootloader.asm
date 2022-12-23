@@ -93,7 +93,7 @@ mov si, readPacket1
 int 0x13
 loop .diskread
 
-call setVESA
+;call setVESA
 
 jmp enterProtectedMode
 
@@ -252,27 +252,57 @@ setVESA:
 		mov di, (vesa and 0xFFFF)
 		mov ax, 0x4F00
 		int 0x10
-	
 	.findVESAModes:
+		mov ax, (((vesa + 16) and 0xFF0000) shr 4)
+		mov fs, ax
+		mov ax, ((vesa + 14) and 0xFFFF)
+		mov si, ax
+		mov edi, vesaModes + 6
+		xor dx, dx
+		xor bx, bx
 		..loop:
-			mov cx, word [.vesaModesAddr]
+			mov cx, word [fs:si]
 			cmp cx, 0xFFFF
 			je ..getVESAModesInfo
-			add [.vesaModesAddr], 2
-			mov edi, [.vesaModesAddrStruct]
+			add si, 2
+			inc dx
 			mov ax, 0x4F01
 			int 0x10
-			add [.vesaModesAddrStruct], vesaModesSizeof
+			mov ax, word [di]
+			test ax, (1 shl 7)
+			jne ...skip
+			mov al, byte [di + 25]
+			cmp al, [.bpp]
+			jne ...skip
+			mov ax, word [di + 18]
+			cmp ax, [.width]
+			jb ...widthMin
+			mov [.width], ax
+			mov [.currentMode], dx
+			dec [.currentMode]
+			mov bx, cx
+			...widthMin:
+			...skip:
+			add edi, vesaModesSizeof
 			jmp ..loop
 			
 		..getVESAModesInfo:
-			ret
+			mov ax, ((vesaModes and 0xFF0000) shr 4)
+			mov es, ax
+			mov di, (vesaModes and 0xFFFF)
+			mov [di], edx
 	.setVESAMode:
 		mov ax, 0x4F02
-		xor bx, bx
 		or bx, 1 shl 14
 		int 0x10
+		mov ax, (((vesaModes + 4) and 0xFF0000) shr 4)
+		mov es, ax
+		mov di, ((vesaModes + 4) and 0xFFFF)
+		mov ax, [.currentMode]
+		mov [di], ax
 	ret
-.vesaModesAddr dd vesa + 14
-.vesaModesAddrStruct dd vesaModes
+.width dw 0
+.height dw 0
+.bpp db 8
+.currentMode dw 0
 times 1024-($-$$) db 0

@@ -22,20 +22,19 @@ export namespace VESA
 #pragma pack(1)
 	struct VESAModeInfo
 	{
-		u16 attributes;
-		u16 window;
-		u16 granularity;
-		u16 window_size;
-		u16 segmenta;
-		u16 segmentb;
-		u32 winfunc;
-		u16 pitch;
-		u16 width;
-		u16 height;
-		u8 wchar;
-		u8 ychar;
-		u8 planes;
-		u8 bpp;
+		u16 attributes;//0
+		u16 window;//2
+		u16 granularity;//4
+		u16 window_size;//6
+		u32 segment;//8
+		u32 winfunc;//12
+		u16 pitch;//16
+		u16 width;//18
+		u16 height;//20
+		u8 wchar;//22
+		u8 ychar;//23
+		u8 planes;//24
+		u8 bpp;//25
 		u8 banks;
 		u8 memory_model;
 		u8 bankSize;
@@ -58,9 +57,20 @@ export namespace VESA
 	};
 	VESAInfo* vesaInfo;
 	VESAModeInfo* vesaModesInfo;
+	u32 countModes;
+	u16 currentMode;
 	void initialize()
 	{
 		vesaInfo = reinterpret_cast<VESAInfo*>(VESAInfo::address);
-		vesaModesInfo = reinterpret_cast<VESAModeInfo*>(VESAModeInfo::address);
+		countModes = *reinterpret_cast<u32*>(VESAModeInfo::address);
+		currentMode = *reinterpret_cast<u16*>(VESAModeInfo::address + 4);
+		vesaModesInfo = reinterpret_cast<VESAModeInfo*>(VESAModeInfo::address + 6);
+	}
+	void drawPixel(u16 x, u16 y, u8 r, u8 g, u8 b)
+	{
+		u32 pixel_offset = y * vesaModesInfo[currentMode].pitch + (x * (vesaModesInfo[currentMode].bpp / 8)) + vesaModesInfo[currentMode].framebuffer;
+		reinterpret_cast<u8*>(pixel_offset)[0] = r;
+		reinterpret_cast<u8*>(pixel_offset)[1] = g;
+		reinterpret_cast<u8*>(pixel_offset)[2] = b;
 	}
 }
