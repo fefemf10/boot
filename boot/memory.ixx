@@ -5,6 +5,7 @@ import memory.PageIndex;
 import memory.PageTableManager;
 import memory.Heap;
 import memory.SMAP;
+import VESA;
 import types;
 import cpuio;
 
@@ -31,6 +32,7 @@ export namespace memory
 		allocator::unsetRegion(reinterpret_cast<u64*>(0x40000), allocator::maxBlocks >> allocator::BLOCKSPERBYTE);
 		allocator::unsetRegion(reinterpret_cast<u64*>(0), 0x7C00);
 		allocator::unsetRegion(reinterpret_cast<u64*>(SMAP::address), sizeof(SMAP::size) + SMAP::size * sizeof(SMAP));
+		allocator::unsetRegion(reinterpret_cast<u64*>(VESA::VESAInfo::address), 0x10000);
 		allocator::unsetRegion(reinterpret_cast<u64*>(0x100000), KERNELSIZE);
 		PLM4 = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
 		set(PLM4, 0, sizeof(PageTable));

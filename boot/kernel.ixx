@@ -16,7 +16,7 @@ import math;
 import driver.AHCI.structures;
 extern "C" void kernel_start()
 {
-	console::setOut(console::OUT::TELETYPE);
+	console::setOut(console::OUT::SERIAL);
 	IDT::initialize();
 	ISR::initialize();
 	IRQ::initialize();
@@ -26,10 +26,14 @@ extern "C" void kernel_start()
 	VESA::initialize();
 	for (size_t i = 0; i < VESA::countModes; i++)
 	{
-		console::printf(u8"%hu %hu %hu %hu %u\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].pitch, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
+		console::printf(u8"%hu %hu %hu %hu %hu\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].pitch, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
 	}
 	console::printf(u8"%hx %x\n", VESA::currentMode,0);
-	//VESA::drawPixel(0,0,255,255,255);
+	for (size_t i = 0; i < VESA::vesaModesInfo[VESA::currentMode].width ; i++)
+	{
+		VESA::drawPixel(0, i, 0, 255, 255);
+	}
+	
 	//memory::printSMAP();
 	PIT::setDivisor(65535);
 	ACPI::RSDP* rsdp = ACPI::RSDP::find();

@@ -93,7 +93,7 @@ mov si, readPacket1
 int 0x13
 loop .diskread
 
-;call setVESA
+call setVESA
 
 jmp enterProtectedMode
 
@@ -247,19 +247,22 @@ vesaMaxCountModes equ 20
 vesaModesSizeof equ 256
 setVESA:
 	.getVESAInfo:
-		mov ax, ((vesa and 0xFF0000) shr 4)
-		mov es, ax
-		mov di, (vesa and 0xFFFF)
+		mov edi, vesa
 		mov ax, 0x4F00
 		int 0x10
 	.findVESAModes:
-		mov ax, (((vesa + 16) and 0xFF0000) shr 4)
-		mov fs, ax
-		mov ax, ((vesa + 14) and 0xFFFF)
+		mov edi, vesa + 14
+		mov ax, [es:di]
 		mov si, ax
+		add di, 2
+		mov ax, [es:di]
+		mov fs, ax
 		mov edi, vesaModes + 6
+		mov ax, (((vesaModes + 6) and 0xFF0000) shr 4)
+		mov ds, ax
 		xor dx, dx
 		xor bx, bx
+		mov ds, dx
 		..loop:
 			mov cx, word [fs:si]
 			cmp cx, 0xFFFF
@@ -268,14 +271,18 @@ setVESA:
 			inc dx
 			mov ax, 0x4F01
 			int 0x10
-			mov ax, word [di]
-			test ax, (1 shl 7)
-			jne ...skip
-			mov al, byte [di + 25]
+			mov ax, word [es:di]
+			bt ax, 7
+			jnc ...skip
+			add di, 25
+			mov al, byte [es:di]
 			cmp al, [.bpp]
+			sub di, 25
 			jne ...skip
-			mov ax, word [di + 18]
+			add di, 18
+			mov ax, word [es:di]
 			cmp ax, [.width]
+			sub di, 18
 			jb ...widthMin
 			mov [.width], ax
 			mov [.currentMode], dx
@@ -287,22 +294,19 @@ setVESA:
 			jmp ..loop
 			
 		..getVESAModesInfo:
-			mov ax, ((vesaModes and 0xFF0000) shr 4)
-			mov es, ax
-			mov di, (vesaModes and 0xFFFF)
-			mov [di], edx
+			mov edi, vesaModes
+			mov [es:di], dx
 	.setVESAMode:
 		mov ax, 0x4F02
 		or bx, 1 shl 14
 		int 0x10
-		mov ax, (((vesaModes + 4) and 0xFF0000) shr 4)
-		mov es, ax
-		mov di, ((vesaModes + 4) and 0xFFFF)
 		mov ax, [.currentMode]
-		mov [di], ax
+		mov [di+4], ax
 	ret
 .width dw 0
 .height dw 0
-.bpp db 8
+.bpp db 32
 .currentMode dw 0
+.vesaModesAddrSegment dw 0
+.vesaModesAddrOffset dw 0
 times 1024-($-$$) db 0
