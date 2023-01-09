@@ -62,7 +62,7 @@ export namespace console
 	void printf_signed(i64 number, i32 radix, i64 width)
 	{
 		if (number < 0)
-			putc('-'), -number;
+			putc('-'), number = -number;
 		printf_unsigned(number, radix, width);
 	}
 	void printf_f64(f64 number, u64 precision)
