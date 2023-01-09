@@ -360,7 +360,7 @@ powf64:
 		movapd xmm0, xmm2
 		ret
 cosf64:
-	sub rsp, 64
+	sub rsp, 72
 	movapd [rsp+48], xmm6
 	movapd [rsp+32], xmm7
 	movapd [rsp+16], xmm8
@@ -416,10 +416,10 @@ cosf64:
 	movapd xmm7, [rsp+32]
 	movapd xmm8, [rsp+16]
 	movapd xmm9, [rsp]
-	add rsp, 64
+	add rsp, 72
 	ret
 sinf64:
-	sub rsp, 64
+	sub rsp, 72
 	movapd [rsp+48], xmm6
 	movapd [rsp+32], xmm7
 	movapd [rsp+16], xmm8
@@ -474,5 +474,5 @@ sinf64:
 	movapd xmm7, [rsp+32]
 	movapd xmm8, [rsp+16]
 	movapd xmm9, [rsp]
-	add rsp, 64
+	add rsp, 72
 	ret
