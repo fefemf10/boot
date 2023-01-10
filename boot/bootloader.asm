@@ -6,22 +6,17 @@ KERNEL equ 0x100000
 section '.text$a' code readable executable
 use16
 org 0x7c00
-xor ax, ax  ; set up segments
+xor ax, ax
 mov ds, ax
 mov es, ax
 mov fs, ax
 mov gs, ax
-mov ss, ax   ; setup stack
+mov ss, ax
 mov sp, 0x7C00
 cld
 cli
-;mov al, 'G'
-;mov ah, 0x0e
-;int 0x10
-;jmp $
-push dx
-;; GET VESA
 
+push dx
 
 ;; GET MEMORY MAP
 memory_entries equ 0x27C00; 2:7a00
@@ -216,10 +211,10 @@ startProtectedMode:
 use64
 startLongMode:
 	mov rsi, SECONDLOADER
-	mov rdi, KERNEL + 0x460
+	mov rdi, KERNEL + 0x660
 	mov rcx, (MAXCOUNTSECTORS * READBLOCKCOUNT * 0x200 / 8)
 	rep movsq
-	call KERNEL + 0x460
+	call KERNEL + 0x660
 
 readPacket0:
 	db 0x10
@@ -273,23 +268,27 @@ setVESA:
 			int 0x10
 			mov ax, word [es:di]
 			bt ax, 7
-			jnc ...skip
+			jnc ...skip3
 			add di, 25
 			mov al, byte [es:di]
 			cmp al, [.bpp]
+			jne ...skip1
 			sub di, 25
-			jne ...skip
 			add di, 18
 			mov ax, word [es:di]
 			cmp ax, [.width]
+			jb ...skip2
 			sub di, 18
-			jb ...widthMin
 			mov [.width], ax
 			mov [.currentMode], dx
 			dec [.currentMode]
 			mov bx, cx
-			...widthMin:
-			...skip:
+			...skip1:
+			sub di, 25
+			jmp ...skip3
+			...skip2:
+			sub di, 18
+			...skip3:
 			add edi, vesaModesSizeof
 			jmp ..loop
 			
@@ -298,10 +297,10 @@ setVESA:
 			mov [es:di], dx
 	.setVESAMode:
 		mov ax, 0x4F02
-		or bx, 1 shl 14
+		;or bx, 1 shl 14
 		int 0x10
 		mov ax, [.currentMode]
-		mov [di+4], ax
+		mov [es:di+4], ax
 	ret
 .width dw 0
 .height dw 0

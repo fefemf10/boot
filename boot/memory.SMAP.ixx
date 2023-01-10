@@ -1,5 +1,7 @@
 export module memory.SMAP;
 import types;
+import console;
+import memory.allocator;
 export namespace memory
 {
 	struct SMAP
@@ -19,18 +21,16 @@ export namespace memory
 	};
 	u32 SMAP::size;
 	SMAP* SMAP::smap;
-	/*void printSMAP()
+	void printSMAP()
 	{
-		u32 size = *reinterpret_cast<u32*>(0x27A00);
-		SMAP* smap = reinterpret_cast<SMAP*>(0x27A04);
-		for (u64 i = 0; i < size; i++)
+		for (u64 i = 0; i < SMAP::size; i++)
 		{
 			console::printf(u8"Region: %x ", i);
-			console::printf(u8"base: %llx ", smap[i].base);
-			console::printf(u8"length: %llx ", smap[i].length);
-			console::printf(u8"type: %x ", smap[i].type);
-			console::printf(u8"acpi: %x ", smap[i].acpi);
-			switch (smap[i].type)
+			console::printf(u8"base: %llx ", SMAP::smap[i].base);
+			console::printf(u8"length: %llx ", SMAP::smap[i].length);
+			console::printf(u8"type: %x ", SMAP::smap[i].type);
+			console::printf(u8"acpi: %x ", SMAP::smap[i].acpi);
+			switch (SMAP::smap[i].type)
 			{
 			case 1: console::puts(u8" (Available)\n"); break;
 			case 2: console::puts(u8" (Reserved)\n"); break;
@@ -39,9 +39,9 @@ export namespace memory
 			default: console::puts(u8" (Reserved)\n"); break;
 			}
 		}
-		console::printf(u8"Total RAM: %llx\n", reinterpret_cast<u64>(smap[size - 1].base) + smap[size - 1].length - 1);
+		console::printf(u8"Total RAM: %llx\n", reinterpret_cast<u64>(SMAP::smap[SMAP::size - 1].base) + SMAP::smap[SMAP::size - 1].length - 1);
 		console::printf(u8"Total 4KB blocks: %x\n", allocator::maxBlocks);
 		console::printf(u8"Used blocks: %x\n", allocator::usedBlocks);
 		console::printf(u8"Free blocks: %x\n", allocator::maxBlocks - allocator::usedBlocks);
-	}*/
+	}
 }

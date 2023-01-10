@@ -7,6 +7,7 @@ import IRQ;
 import pci;
 import memory;
 import memory.allocator;
+import memory.SMAP;
 import console;
 import sl;
 import ACPI;
@@ -16,48 +17,53 @@ import math;
 import driver.AHCI.structures;
 extern "C" void kernel_start()
 {
-	console::setOut(console::OUT::SERIAL);
 	IDT::initialize();
 	ISR::initialize();
 	IRQ::initialize();
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
+	console::setOut(console::OUT::SERIAL);
 	memory::initialize();
 	VESA::initialize();
+	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
+		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
+	console::setOut(console::OUT::SERIAL);
+	console::puts(u8"SERIAL\n");
+	console::printf(u8"%i\n", VESA::countModes);
 	for (size_t i = 0; i < VESA::countModes; i++)
 	{
-		console::printf(u8"%hu %hu %hu %hu %hu\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].pitch, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
+		console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].pitch, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
 	}
-	console::printf(u8"%hx %x\n", VESA::currentMode,0);
+	console::printf(u8"%hx %x\n\n", VESA::currentMode,0);
 	for (size_t i = 0; i < VESA::vesaModesInfo[VESA::currentMode].width ; i++)
 	{
-		VESA::drawPixel(0, i, 0, 255, 255);
+		VESA::drawPixel(0, i, 0, 0, 0);
 	}
 	
 	//memory::printSMAP();
-	PIT::setDivisor(65535);
-	ACPI::RSDP* rsdp = ACPI::RSDP::find();
-	ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
-	pci::enumeratePCI(mcfg);
+	//PIT::setDivisor(65535);
+	//ACPI::RSDP* rsdp = ACPI::RSDP::find();
+	//ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
+	//pci::enumeratePCI(mcfg);
 	/*u64* pcie = reinterpret_cast<u64*>(static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x60)) | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x62)) << 16u | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x64)) << 32u | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x66)) << 48u);
 	memory::pageTableManager.mapMemory(pcie, pcie);
 	console::printf(u8"%llx\n", *pcie);*/
-	double a = math::sin(3.14 / 4.0);
-	double b = math::sin(3.14 / 2.0);
-	double c = math::sin(3.14 / 6.0);
-	double d = math::sin(3.14 / 12.0);
-	double e = math::sin(3.0 * 3.14 / 4.0);
-	double f = math::sin(5.0 * 3.14 / 6.0);
-	double g = math::sin(3.0);
-	double h = math::sin(3.1);
+	//double a = math::sin(3.14 / 4.0);
+	//double b = math::sin(3.14 / 2.0);
+	//double c = math::sin(3.14 / 6.0);
+	//double d = math::sin(3.14 / 12.0);
+	//double e = math::sin(3.0 * 3.14 / 4.0);
+	//double f = math::sin(5.0 * 3.14 / 6.0);
+	//double g = math::sin(3.0);
+	//double h = math::sin(3.1);
 	/*double a = 3.14 / 4.0;
 	double b = 3.14 / 2.0;
 	double c = 3.14;*/
-	console::printf(u8"%f\n", 0.999999682931834620);
-	console::printf(u8"%f %f %f %f %f %f %f %f\n", a, b, c, d, e, f, g, h);
-	u64* code = reinterpret_cast<u64*>(memory::allocator::allocBlocks(1));
+	//console::printf(u8"%f\n", 0.999999682931834620);
+	//console::printf(u8"%f %f %f %f %f %f %f %f\n", a, b, c, d, e, f, g, h);
+	/*u64* code = reinterpret_cast<u64*>(memory::allocator::allocBlocks(1));
 	*code = 0xC3C889C1FF;
-	int (*compiledFun)(int) = reinterpret_cast<int(*)(int)>(code);
+	int (*compiledFun)(int) = reinterpret_cast<int(*)(int)>(code);*/
 	//int n = compiledFun(0);
 	//console::printf(u8"n = %i", n);
 	//console::setOut(console::OUT::SERIAL);

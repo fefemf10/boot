@@ -5,7 +5,7 @@ import memory.PageIndex;
 import memory.PageTableManager;
 import memory.Heap;
 import memory.SMAP;
-import VESA;
+import VESA.structures;
 import types;
 import cpuio;
 

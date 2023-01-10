@@ -15,8 +15,6 @@ export namespace PIC
 	};
 	void initialize()
 	{
-		/*u8 mask1 = cpuio::inb(PIC1_D);
-		u8 mask2 = cpuio::inb(PIC2_D);*/
 		//ICW1
 		cpuio::outb(ICW1 | ICW4, PIC1_C);
 		cpuio::outb(ICW1 | ICW4, PIC2_C);
@@ -29,9 +27,6 @@ export namespace PIC
 		//ICW4
 		cpuio::outb(ICW_8086, PIC1_D);
 		cpuio::outb(ICW_8086, PIC2_D);
-		////Restore mask
-		//cpuio::outb(mask1, PIC1_D);
-		//cpuio::outb(mask2, PIC2_D);
 		//Masking all interrupt
 		cpuio::outb(0xFF, PIC1_D);
 		cpuio::outb(0xFF, PIC2_D);
