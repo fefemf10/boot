@@ -13,7 +13,6 @@ import sl;
 import ACPI;
 import PIT;
 import VESA;
-import math;
 import driver.AHCI.structures;
 extern "C" void kernel_start()
 {
@@ -28,18 +27,23 @@ extern "C" void kernel_start()
 	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
 		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
 	console::setOut(console::OUT::SERIAL);
-	console::puts(u8"SERIAL\n");
-	console::printf(u8"%i\n", VESA::countModes);
-	for (size_t i = 0; i < VESA::countModes; i++)
+	console::puth(VESA::vesaModesInfo, sizeof(VESA::VESAModeInfo) * VESA::countModes);
+	size_t i = 0;
+	for (; i < VESA::countModes; i++)
 	{
-		console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].pitch, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
+		console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
 	}
-	console::printf(u8"%hx %x\n\n", VESA::currentMode,0);
-	for (size_t i = 0; i < VESA::vesaModesInfo[VESA::currentMode].width ; i++)
+	i = VESA::currentMode;
+	console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
+	console::printf(u8"%hx\n", VESA::currentMode);
+	for (size_t i = 0; i < VESA::vesaMode.height; i++)
 	{
-		VESA::drawPixel(0, i, 0, 0, 0);
+		for (size_t j = 0; j < VESA::vesaMode.width; j++)
+		{
+			VESA::drawPixel(i, j, 255, 255, 255);
+		}
 	}
-	
+
 	//memory::printSMAP();
 	//PIT::setDivisor(65535);
 	//ACPI::RSDP* rsdp = ACPI::RSDP::find();

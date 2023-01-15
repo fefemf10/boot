@@ -10,7 +10,7 @@ export namespace memory
 		u64 length;
 		u32 type;
 		u32 acpi;
-		constexpr static u64 address = 0x27C00;
+		constexpr static u64 address = 0x27A00;
 		static u32 size;
 		static SMAP* smap;
 		static void initialize()

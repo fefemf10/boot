@@ -1,6 +1,7 @@
 export module memory.allocator;
 import memory.utils;
 import types;
+import console;
 export namespace memory::allocator
 {
 	u64* memoryMap{};

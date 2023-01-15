@@ -19,7 +19,7 @@ cli
 push dx
 
 ;; GET MEMORY MAP
-memory_entries equ 0x27C00; 2:7a00
+memory_entries equ 0x27A00; 2:7a00
 getMemoryMap:
 	mov ax, ((memory_entries and 0xFF0000) shr 4)
 	mov es, ax
@@ -236,8 +236,8 @@ times 510-($-$$) db 0
 dw 0xaa55
 
 use16
-vesa equ 0x27A00
-vesaModes equ 0x27C00
+vesa equ 0x27C00
+vesaModes equ 0x27E00
 vesaMaxCountModes equ 20
 vesaModesSizeof equ 256
 setVESA:
@@ -277,7 +277,7 @@ setVESA:
 			add di, 18
 			mov ax, word [es:di]
 			cmp ax, [.width]
-			jb ...skip2
+			jne ...skip2
 			sub di, 18
 			mov [.width], ax
 			mov [.currentMode], dx
@@ -297,14 +297,14 @@ setVESA:
 			mov [es:di], dx
 	.setVESAMode:
 		mov ax, 0x4F02
-		;or bx, 1 shl 14
+		or bx, (1 shl 14)
 		int 0x10
 		mov ax, [.currentMode]
 		mov [es:di+4], ax
 	ret
-.width dw 0
+.width dw 1600
 .height dw 0
-.bpp db 32
+.bpp db 24
 .currentMode dw 0
 .vesaModesAddrSegment dw 0
 .vesaModesAddrOffset dw 0

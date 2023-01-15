@@ -17,7 +17,7 @@ export namespace VESA
 		u32 productRevision;
 		u8 rsv[222];
 		u8 oemData[256];
-		constexpr static u64 address = 0x27A00;
+		constexpr static u64 address = 0x27C00;
 	};
 #pragma pack(1)
 	struct VESAModeInfo
@@ -53,6 +53,14 @@ export namespace VESA
 		u32 offScreenMemoryOff;
 		u16 offScreenMemorySize;
 		u8 reserved1[206];
-		constexpr static u64 address = 0x27C00;
+		constexpr static u64 address = 0x27E00;
+	};
+	struct Framebuffer
+	{
+		u16 width;
+		u16 height;
+		u32 address;
+		u16 pitch;
+		u8 bpp;
 	};
 }
