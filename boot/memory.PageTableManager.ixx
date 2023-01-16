@@ -86,5 +86,14 @@ export namespace memory
 			PDE.readWrite = true;
 			PT->entries[index.p] = PDE;
 		}
+		void mapMemory(void* virtualMemory, void* physicalMemory, u64 size)
+		{
+			u8* virt = reinterpret_cast<u8*>(virtualMemory);
+			u8* phys = reinterpret_cast<u8*>(physicalMemory);
+			for (; phys < reinterpret_cast<u8*>(physicalMemory) + size; virt += 0x1000, phys += 0x1000)
+			{
+				mapMemory(virt, phys);
+			}
+		}
 	};
 }

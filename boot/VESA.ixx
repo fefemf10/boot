@@ -17,20 +17,16 @@ export namespace VESA
 		countModes = *reinterpret_cast<u32*>(VESAModeInfo::address);
 		currentMode = *reinterpret_cast<u16*>(VESAModeInfo::address + 4);
 		vesaModesInfo = reinterpret_cast<VESAModeInfo*>(VESAModeInfo::address + 6);
+		memory::pageTableManager.mapMemory(vesaModesInfo, vesaModesInfo);
 		vesaMode = vesaModesInfo[currentMode];
-		u8* phys = reinterpret_cast<u8*>(vesaMode.framebuffer);
 		u32 size = vesaMode.height * vesaMode.pitch;
-		for (; phys < reinterpret_cast<u8*>(vesaMode.framebuffer + size); phys += 0x1000)
-		{
-			memory::pageTableManager.mapMemory(phys, phys);
-		}
-		
+		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(vesaMode.framebuffer), reinterpret_cast<void*>(vesaMode.framebuffer), size);
 	}
 	void drawPixel(u16 x, u16 y, u8 r, u8 g, u8 b)
 	{
 		u32 pixel_offset = y * vesaMode.pitch + x * vesaMode.bpp / 8;
-		reinterpret_cast<u8*>(vesaMode.framebuffer)[0] = r;
-		reinterpret_cast<u8*>(vesaMode.framebuffer)[1] = g;
-		reinterpret_cast<u8*>(vesaMode.framebuffer)[2] = b;
+		reinterpret_cast<u8*>(vesaMode.framebuffer)[pixel_offset + 0] = b;
+		reinterpret_cast<u8*>(vesaMode.framebuffer)[pixel_offset + 1] = g;
+		reinterpret_cast<u8*>(vesaMode.framebuffer)[pixel_offset + 2] = r;
 	}
 }

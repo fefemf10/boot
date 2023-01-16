@@ -268,27 +268,19 @@ setVESA:
 			int 0x10
 			mov ax, word [es:di]
 			bt ax, 7
-			jnc ...skip3
-			add di, 25
-			mov al, byte [es:di]
+			jnc ...skip
+			mov al, byte [es:di+25]
 			cmp al, [.bpp]
-			jne ...skip1
-			sub di, 25
-			add di, 18
-			mov ax, word [es:di]
+			jb ...skip
+			mov [.bpp], al
+			mov ax, word [es:di+18]
 			cmp ax, [.width]
-			jne ...skip2
-			sub di, 18
+			jb ...skip
 			mov [.width], ax
 			mov [.currentMode], dx
 			dec [.currentMode]
 			mov bx, cx
-			...skip1:
-			sub di, 25
-			jmp ...skip3
-			...skip2:
-			sub di, 18
-			...skip3:
+			...skip:
 			add edi, vesaModesSizeof
 			jmp ..loop
 			
@@ -302,9 +294,9 @@ setVESA:
 		mov ax, [.currentMode]
 		mov [es:di+4], ax
 	ret
-.width dw 1600
+.width dw 0
 .height dw 0
-.bpp db 24
+.bpp db 0
 .currentMode dw 0
 .vesaModesAddrSegment dw 0
 .vesaModesAddrOffset dw 0

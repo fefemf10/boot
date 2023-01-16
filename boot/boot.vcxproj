@@ -200,7 +200,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <Optimization>MinSpace</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
       <WholeProgramOptimization>true</WholeProgramOptimization>

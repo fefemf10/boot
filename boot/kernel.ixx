@@ -27,7 +27,6 @@ extern "C" void kernel_start()
 	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
 		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
 	console::setOut(console::OUT::SERIAL);
-	console::puth(VESA::vesaModesInfo, sizeof(VESA::VESAModeInfo) * VESA::countModes);
 	size_t i = 0;
 	for (; i < VESA::countModes; i++)
 	{
@@ -40,7 +39,7 @@ extern "C" void kernel_start()
 	{
 		for (size_t j = 0; j < VESA::vesaMode.width; j++)
 		{
-			VESA::drawPixel(i, j, 255, 255, 255);
+			VESA::drawPixel(j, i, 255, 0, 0);
 		}
 	}
 
