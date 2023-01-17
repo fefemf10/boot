@@ -35,13 +35,7 @@ extern "C" void kernel_start()
 	i = VESA::currentMode;
 	console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
 	console::printf(u8"%hx\n", VESA::currentMode);
-	for (size_t i = 0; i < VESA::vesaMode.height; i++)
-	{
-		for (size_t j = 0; j < VESA::vesaMode.width; j++)
-		{
-			VESA::drawPixel(j, i, 255, 0, 0);
-		}
-	}
+	VESA::drawLine(0,0, VESA::vesaMode.width, VESA::vesaMode.height, 255, 255, 0);
 
 	//memory::printSMAP();
 	//PIT::setDivisor(65535);
