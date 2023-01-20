@@ -68,8 +68,20 @@ export namespace VESA
 			}
 		}
 	}
-	void drawRectangle()
+	void drawRectangle(u16 x, u16 y, u16 width, u16 height, u8 r, u8 g, u8 b)
 	{
-
+		const u8 bpp = vesaMode.bpp >> 3;
+		u32 offset = y * vesaMode.pitch + x * bpp;
+		for (u16 i = 0; i < height; i++)
+		{
+			for (u16 j = 0; j < width; j++)
+			{
+				offset += bpp;
+				reinterpret_cast<u8*>(vesaMode.framebuffer)[offset + 0] = b;
+				reinterpret_cast<u8*>(vesaMode.framebuffer)[offset + 1] = g;
+				reinterpret_cast<u8*>(vesaMode.framebuffer)[offset + 2] = r;
+			}
+			offset += vesaMode.pitch - width * bpp;
+		} 
 	}
 }
