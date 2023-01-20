@@ -270,6 +270,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="driver.AHCI.ixx" />
     <ClCompile Include="driver.Driver.ixx" />
     <ClCompile Include="driver.ixx" />
+    <ClCompile Include="glm.ixx" />
+    <ClCompile Include="glm.mat.ixx" />
     <ClCompile Include="memory.Heap.ixx" />
     <ClCompile Include="memory.PageIndex.ixx" />
     <ClCompile Include="memory.SMAP.ixx" />
@@ -317,7 +319,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</PreprocessToFile>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PreprocessToFile>
     </ClCompile>
-    <ClCompile Include="vec.ixx" />
+    <ClCompile Include="glm.vec.ixx" />
     <ClCompile Include="VESA.ixx" />
   </ItemGroup>
   <ItemGroup>

@@ -14,6 +14,8 @@ import ACPI;
 import PIT;
 import VESA;
 import driver.AHCI.structures;
+import glm;
+import glm.vec;
 extern "C" void kernel_start()
 {
 	IDT::initialize();
@@ -35,8 +37,44 @@ extern "C" void kernel_start()
 	i = VESA::currentMode;
 	console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
 	console::printf(u8"%hx\n", VESA::currentMode);
-	VESA::drawRectangle(0, 0, 100, 100, 255, 255, 0);
-
+	glm::f32vec3 vertex[8] =
+	{
+		{0, 0, 0},
+		{0, 110, 0},
+		{175, 110, 0},
+		{175, 0, 0},
+		{0, 0, 150},
+		{0, 110, 150},
+		{175, 110, 150},
+		{175, 0, 150}
+	};
+	glm::u8vec2 edge[12] =
+	{
+		{0, 1},
+		{1, 2},
+		{2, 3},
+		{3, 0},
+		{4, 5},
+		{5, 6},
+		{6, 7},
+		{7, 4},
+		{0, 4},
+		{1, 5},
+		{2, 6},
+		{3, 7}
+	};
+	while (true)
+	{
+		for (size_t i = 0; i < 12; i++)
+		{
+			int x0 = vertex[edge[i].x].x + 320;
+			int y0 = 240 - vertex[edge[i].x].y;
+			int x1 = vertex[edge[i].y].x + 320;
+			int y1 = 240 - vertex[edge[i].y].y;
+			VESA::drawLine(x0, y0, x1, y1, 128, 255, 255);
+		}
+		PIT::sleep(16);
+	}
 	//memory::printSMAP();
 	//PIT::setDivisor(65535);
 	//ACPI::RSDP* rsdp = ACPI::RSDP::find();

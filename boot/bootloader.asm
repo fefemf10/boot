@@ -1,4 +1,5 @@
 format MS64 COFF
+public _fltused
 READBLOCKCOUNT equ 0x2
 MAXCOUNTSECTORS equ 0x7f
 SECONDLOADER equ 0x8000
@@ -300,4 +301,5 @@ setVESA:
 .currentMode dw 0
 .vesaModesAddrSegment dw 0
 .vesaModesAddrOffset dw 0
+_fltused dw 0
 times 1024-($-$$) db 0

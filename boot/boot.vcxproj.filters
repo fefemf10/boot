@@ -22,11 +22,11 @@
     <Filter Include="Исходные файлы\memory">
       <UniqueIdentifier>{c9c01d0d-e23f-45ea-bebf-b71cbb1eddfd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\glm">
+      <UniqueIdentifier>{5f2318e2-a401-4b5b-8b32-93904050d461}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="vec.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="disk.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -188,6 +188,15 @@
     </ClCompile>
     <ClCompile Include="VESA.structures.ixx">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.vec.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.mat.ixx">
+      <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
