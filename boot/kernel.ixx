@@ -15,7 +15,8 @@ import PIT;
 import VESA;
 import driver.AHCI.structures;
 import glm;
-import glm.vec;
+import glm.vec2;
+import glm.vec3;
 extern "C" void kernel_start()
 {
 	IDT::initialize();

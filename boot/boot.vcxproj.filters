@@ -198,6 +198,21 @@
     <ClCompile Include="glm.mat.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
+    <ClCompile Include="glm.vec2.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.setup.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.vec3.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.vec4.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.vec1.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
