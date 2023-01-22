@@ -122,16 +122,16 @@ export namespace glm
 		friend constexpr type operator<< (T scalar, const type& v) { return type(scalar << v.x, scalar << v.y, scalar << v.z, scalar << v.w); }
 		friend constexpr type operator>> (T scalar, const type& v) { return type(scalar >> v.x, scalar >> v.y, scalar >> v.z, scalar >> v.w); }
 		
-		friend constexpr type operator+ (const type& v1, const vec<1, T> v2) { return type(v1.x + v2.x, v1.y + v2.x, v.z + v2.x, v.w + v2.x); }
-		friend constexpr type operator- (const type& v1, const vec<1, T> v2) { return type(v1.x - v2.x, v1.y - v2.x, v.z - v2.x, v.w - v2.x); }
-		friend constexpr type operator* (const type& v1, const vec<1, T> v2) { return type(v1.x * v2.x, v1.y * v2.x, v.z * v2.x, v.w * v2.x); }
-		friend constexpr type operator/ (const type& v1, const vec<1, T> v2) { return type(v1.x / v2.x, v1.y / v2.x, v.z / v2.x, v.w / v2.x); }
-		friend constexpr type operator% (const type& v1, const vec<1, T> v2) { return type(v1.x % v2.x, v1.y % v2.x, v.z % v2.x, v.w % v2.x); }
-		friend constexpr type operator& (const type& v1, const vec<1, T> v2) { return type(v1.x & v2.x, v1.y & v2.x, v.z & v2.x, v.w & v2.x); }
-		friend constexpr type operator| (const type& v1, const vec<1, T> v2) { return type(v1.x | v2.x, v1.y | v2.x, v.z | v2.x, v.w | v2.x); }
-		friend constexpr type operator^ (const type& v1, const vec<1, T> v2) { return type(v1.x ^ v2.x, v1.y ^ v2.x, v.z ^ v2.x, v.w ^ v2.x); }
-		friend constexpr type operator<< (const type& v1, const vec<1, T> v2) { return type(v1.x << v2.x, v1.y << v2.x, v.z << v2.x, v.w << v2.x); }
-		friend constexpr type operator>> (const type& v1, const vec<1, T> v2) { return type(v1.x >> v2.x, v1.y >> v2.x, v.z >> v2.x, v.w >> v2.x); }
+		friend constexpr type operator+ (const type& v1, const vec<1, T> v2) { return type(v1.x + v2.x, v1.y + v2.x, v1.z + v2.x, v1.w + v2.x); }
+		friend constexpr type operator- (const type& v1, const vec<1, T> v2) { return type(v1.x - v2.x, v1.y - v2.x, v1.z - v2.x, v1.w - v2.x); }
+		friend constexpr type operator* (const type& v1, const vec<1, T> v2) { return type(v1.x * v2.x, v1.y * v2.x, v1.z * v2.x, v1.w * v2.x); }
+		friend constexpr type operator/ (const type& v1, const vec<1, T> v2) { return type(v1.x / v2.x, v1.y / v2.x, v1.z / v2.x, v1.w / v2.x); }
+		friend constexpr type operator% (const type& v1, const vec<1, T> v2) { return type(v1.x % v2.x, v1.y % v2.x, v1.z % v2.x, v1.w % v2.x); }
+		friend constexpr type operator& (const type& v1, const vec<1, T> v2) { return type(v1.x & v2.x, v1.y & v2.x, v1.z & v2.x, v1.w & v2.x); }
+		friend constexpr type operator| (const type& v1, const vec<1, T> v2) { return type(v1.x | v2.x, v1.y | v2.x, v1.z | v2.x, v1.w | v2.x); }
+		friend constexpr type operator^ (const type& v1, const vec<1, T> v2) { return type(v1.x ^ v2.x, v1.y ^ v2.x, v1.z ^ v2.x, v1.w ^ v2.x); }
+		friend constexpr type operator<< (const type& v1, const vec<1, T> v2) { return type(v1.x << v2.x, v1.y << v2.x, v1.z << v2.x, v1.w << v2.x); }
+		friend constexpr type operator>> (const type& v1, const vec<1, T> v2) { return type(v1.x >> v2.x, v1.y >> v2.x, v1.z >> v2.x, v1.w >> v2.x); }
 		friend constexpr type operator+ (const vec<1, T> v1, const type& v2) { return type(v1.x + v2.x, v1.x + v2.y, v1.x + v2.z, v1.x + v2.w); }
 		friend constexpr type operator- (const vec<1, T> v1, const type& v2) { return type(v1.x - v2.x, v1.x - v2.y, v1.x - v2.z, v1.x - v2.w); }
 		friend constexpr type operator* (const vec<1, T> v1, const type& v2) { return type(v1.x * v2.x, v1.x * v2.y, v1.x * v2.z, v1.x * v2.w); }
