@@ -95,21 +95,7 @@ export namespace glm
 	using u64mat4x3 = mat<4, 3, u64>;
 	using u64mat4x4 = mat<4, 4, u64>;
 
-	template<typename T>
-	struct mat<2, 2, T>
-	{
-		using col_type = vec<2, T>;
-		using row_type = vec<2, T>;
-		using type = mat<2, 2, T>;
-		using transpose_type = mat<2, 2, T>;
-		using value_type = T;
-		constexpr static size_t length() { return 2; }
-		col_type& operator[](size_t i) { return value[i]; }
-		constexpr const col_type& operator[](size_t i) const { return value[i]; }
-		constexpr mat() : value{col_type(1, 0), col_type(0, 1)} {};
-	private:
-		col_type value[2];
-	};
+	
 
 	template<typename T>
 	struct mat<2, 3, T>

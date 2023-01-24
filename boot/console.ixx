@@ -103,7 +103,7 @@ export namespace console
 		bool sign{};
 		bool number{};
 		bool fp{};
-		i64 precisions[19] = {
+		u64 precisions[19] = {
 			10,
 			100,
 			1000,

@@ -213,6 +213,9 @@
     <ClCompile Include="glm.vec1.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
+    <ClCompile Include="glm.mat2x2.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
