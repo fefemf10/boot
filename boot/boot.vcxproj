@@ -273,6 +273,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="glm.ixx" />
     <ClCompile Include="glm.mat.ixx" />
     <ClCompile Include="glm.mat2x2.ixx" />
+    <ClCompile Include="glm.matrix.ixx" />
     <ClCompile Include="glm.setup.ixx" />
     <ClCompile Include="glm.vec1.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

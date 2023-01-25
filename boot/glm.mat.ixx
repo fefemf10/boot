@@ -1,6 +1,6 @@
 export module glm.mat;
 import types;
-import glm.vec;
+export import glm.vec;
 export namespace glm
 {
 	template<size_t C, size_t R, typename T> struct mat;
@@ -97,7 +97,7 @@ export namespace glm
 
 	
 
-	template<typename T>
+	/*template<typename T>
 	struct mat<2, 3, T>
 	{
 		using col_type = vec<3, T>;
@@ -125,5 +125,5 @@ export namespace glm
 		constexpr const col_type& operator[](size_t i) const { return value[i]; }
 	private:
 		col_type value[2];
-	};
+	};*/
 }

@@ -17,6 +17,7 @@ import driver.AHCI.structures;
 import glm;
 import glm.vec2;
 import glm.vec3;
+import glm.mat2x2;
 extern "C" void kernel_start()
 {
 	IDT::initialize();
@@ -64,6 +65,10 @@ extern "C" void kernel_start()
 		{2, 6},
 		{3, 7}
 	};
+	glm::f32mat2x2 s(1, 2, 3, 4);
+	glm::f32mat2x2 f = s.transpose<f32>();
+	console::printf(u8"%u %u %u %u\n", s[0][0], s[0][1], s[1][0], s[1][1]);
+	console::printf(u8"%u %u %u %u\n", f[0][0], f[0][1], f[1][0], f[1][1]);
 	while (true)
 	{
 		for (size_t i = 0; i < 12; i++)

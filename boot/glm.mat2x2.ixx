@@ -1,5 +1,6 @@
-export module glm;
+export module glm.mat2x2;
 export import glm.mat;
+import sl.concepts;
 export namespace glm
 {
 	template<typename T>
@@ -87,7 +88,7 @@ export namespace glm
 		}
 		friend constexpr mat<4, 2, T> operator* (const type& m1, const mat<4, 2, T>& m2)
 		{
-			return mat<4, 2, T, Q>(
+			return mat<4, 2, T>(
 				m1[0][0] * m2[0][0] + m1[1][0] * m2[0][1],
 				m1[0][1] * m2[0][0] + m1[1][1] * m2[0][1],
 				m1[0][0] * m2[1][0] + m1[1][0] * m2[1][1],
@@ -100,6 +101,12 @@ export namespace glm
 		friend constexpr typename type::col_type operator/ (const type& m, const typename type::row_type& v) { return inverse(m) * v; }
 		friend constexpr typename type::row_type operator/ (const typename type::col_type& v, const type& m) { return v * inverse(m); }
 		friend constexpr type operator/ (const type& m1, const type& m2) { type m1_copy(m1); return m1_copy /= m2; }
+		
+		constexpr typename type::transpose_type transpose()
+		{
+			typename type::transpose_type result(value[0][0], value[1][0], value[0][1], value[1][1]);
+			return result;
+		}
 	private:
 		col_type value[2];
 	};
