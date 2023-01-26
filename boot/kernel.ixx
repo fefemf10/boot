@@ -66,7 +66,7 @@ extern "C" void kernel_start()
 		{3, 7}
 	};
 	glm::f32mat2x2 s(1, 2, 3, 4);
-	glm::f32mat2x2 f = s.transpose<f32>();
+	glm::f32mat2x2 f = s.transpose();
 	console::printf(u8"%u %u %u %u\n", s[0][0], s[0][1], s[1][0], s[1][1]);
 	console::printf(u8"%u %u %u %u\n", f[0][0], f[0][1], f[1][0], f[1][1]);
 	while (true)

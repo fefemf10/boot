@@ -273,6 +273,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="glm.ixx" />
     <ClCompile Include="glm.mat.ixx" />
     <ClCompile Include="glm.mat2x2.ixx" />
+    <ClCompile Include="glm.mat2x3.ixx" />
+    <ClCompile Include="glm.mat2x4.ixx" />
     <ClCompile Include="glm.matrix.ixx" />
     <ClCompile Include="glm.setup.ixx" />
     <ClCompile Include="glm.vec1.ixx">
