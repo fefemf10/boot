@@ -225,6 +225,9 @@
     <ClCompile Include="glm.mat2x4.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
+    <ClCompile Include="glm.mat3x2.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

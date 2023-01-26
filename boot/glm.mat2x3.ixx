@@ -22,7 +22,7 @@ export namespace glm
 		constexpr mat(T x1, T y1, T z1, T x2, T y2, T z2) : value{ col_type(x1, y1, z1), col_type(x2, y2, z2) } {}
 		constexpr mat(const col_type& v1, const col_type& v2) : value{ v1, v2 } {}
 
-		template <class X1, class Y1, class Z1, class X2, class Y2, class Z2> constexpr mat(const X1& x1, const Y1& y1, const Z1& z1, const X2& x2, const Y2& y2, const Z2& z2) : value{ col_type(x1, y1, z1), col_type(x2, y2, z2) } {}
+		template <class X1, class Y1, class Z1, class X2, class Y2, class Z2> constexpr mat(X1 x1, Y1 y1, Z1 z1, X2 x2, Y2 y2, Z2 z2) : value{ col_type(x1, y1, z1), col_type(x2, y2, z2) } {}
 		template <class V1, class V2> constexpr mat(const vec<3, V1>& v1, const vec<3, V2>& v2) : value{ col_type(v1), col_type(v2) } {}
 
 
