@@ -73,16 +73,16 @@ export namespace glm
 		constexpr type operator+ () { return *this; }
 		constexpr type operator- () { return type(-x, -y); }
 		
-		constexpr type operator+ (const type& v) { return type(x + v.x, y + v.y); }
-		constexpr type operator- (const type& v) { return type(x - v.x, y - v.y); }
-		constexpr type operator* (const type& v) { return type(x * v.x, y * v.y); }
-		constexpr type operator/ (const type& v) { return type(x / v.x, y / v.y); }
-		constexpr type operator% (const type& v) { return type(x % v.x, y % v.y); }
-		constexpr type operator& (const type& v) { return type(x & v.x, y & v.y); }
-		constexpr type operator| (const type& v) { return type(x | v.x, y | v.y); }
-		constexpr type operator^ (const type& v) { return type(x ^ v.x, y ^ v.y); }
-		constexpr type operator<< (const type& v) { return type(x << v.x, y << v.y); }
-		constexpr type operator>> (const type& v) { return type(x >> v.x, y >> v.y); }
+		constexpr type operator+ (const type& v) const { return type(x + v.x, y + v.y); }
+		constexpr type operator- (const type& v) const { return type(x - v.x, y - v.y); }
+		constexpr type operator* (const type& v) const { return type(x * v.x, y * v.y); }
+		constexpr type operator/ (const type& v) const { return type(x / v.x, y / v.y); }
+		constexpr type operator% (const type& v) const { return type(x % v.x, y % v.y); }
+		constexpr type operator& (const type& v) const { return type(x & v.x, y & v.y); }
+		constexpr type operator| (const type& v) const { return type(x | v.x, y | v.y); }
+		constexpr type operator^ (const type& v) const { return type(x ^ v.x, y ^ v.y); }
+		constexpr type operator<< (const type& v) const { return type(x << v.x, y << v.y); }
+		constexpr type operator>> (const type& v) const { return type(x >> v.x, y >> v.y); }
 		friend constexpr type operator+ (const type& v, T scalar) { return type(v.x + scalar, v.y + scalar); }
 		friend constexpr type operator- (const type& v, T scalar) { return type(v.x - scalar, v.y - scalar); }
 		friend constexpr type operator* (const type& v, T scalar) { return type(v.x * scalar, v.y * scalar); }

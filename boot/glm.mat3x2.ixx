@@ -18,11 +18,11 @@ export namespace glm
 		constexpr mat() = default;
 		constexpr mat(const type& m) = default;
 
-		constexpr explicit mat(T scalar) : value{ col_type(scalar, 0), col_type(0, scalar), col_type(0, 0) } {}
+		constexpr explicit mat(T scalar) : value{ col_type(scalar, 0), col_type(0, scalar), col_type(0) } {}
 		constexpr mat(T x1, T y1, T x2, T y2, T x3, T y3) : value{ col_type(x1, y1), col_type(x2, y2), col_type(x3, y3) } {}
 		constexpr mat(const col_type& v1, const col_type& v2, const col_type& v3) : value{ v1, v2, v3 } {}
 
-		template <class X1, class Y1, class X2, class Y2, class X3, class Y3> constexpr mat(X1 x1, Y1 y1, X2 x2, Y2 y2, X2 x3, Y2 y3) : value{ col_type(x1, y1), col_type(x2, y2), col_type(x3, y3) } {}
+		template <class X1, class Y1, class X2, class Y2, class X3, class Y3> constexpr mat(X1 x1, Y1 y1, X2 x2, Y2 y2, X3 x3, Y3 y3) : value{ col_type(x1, y1), col_type(x2, y2), col_type(x3, y3) } {}
 		template <class V1, class V2, class V3> constexpr mat(const vec<2, V1>& v1, const vec<2, V2>& v2, const vec<2, V3>& v3) : value{ col_type(v1), col_type(v2), col_type(v3) } {}
 
 

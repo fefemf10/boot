@@ -23,12 +23,12 @@ export namespace glm
 		constexpr mat(const col_type& v1, const col_type& v2, const col_type& v3) : value{ v1, v2, v3 } {}
 
 		template <class X1, class Y1, class Z1, class X2, class Y2, class Z2, class X3, class Y3, class Z3> constexpr mat(X1 x1, Y1 y1, Z1 z1, X2 x2, Y2 y2, Z2 z2, X2 x3, Y2 y3, Z3 z3) : value{ col_type(x1, y1, z1), col_type(x2, y2, z2), col_type(x3, y3, z3) } {}
-		template <class V1, class V2, class V3> constexpr mat(const vec<2, V1>& v1, const vec<2, V2>& v2, const vec<2, V3>& v3) : value{ col_type(v1), col_type(v2), col_type(v3) } {}
+		template <class V1, class V2, class V3> constexpr mat(const vec<3, V1>& v1, const vec<3, V2>& v2, const vec<3, V3>& v3) : value{ col_type(v1), col_type(v2), col_type(v3) } {}
 
 
-		template <class U> constexpr explicit mat(const mat<2, 2, U>& m) : value{ col_type(m[0], 0), col_type(m[1], 0), col_type(m[2], 0) } {}
-		template <class U> constexpr explicit mat(const mat<2, 3, T>& m) : value{ col_type(m[0]), col_type(m[1]), col_type(m[2]) } {}
-		template <class U> constexpr explicit mat(const mat<2, 4, T>& m) : value{ col_type(m[0]), col_type(m[1]), col_type(m[2]) } {}
+		template <class U> constexpr explicit mat(const mat<2, 2, U>& m) : value{ col_type(m[0], 0), col_type(m[1], 0), col_type(0) } {}
+		template <class U> constexpr explicit mat(const mat<2, 3, T>& m) : value{ col_type(m[0]), col_type(m[1]), col_type(0) } {}
+		template <class U> constexpr explicit mat(const mat<2, 4, T>& m) : value{ col_type(m[0]), col_type(m[1]), col_type(0) } {}
 		template <class U> constexpr explicit mat(const mat<3, 2, T>& m) : value{ col_type(m[0], 0), col_type(m[1], 0), col_type(m[2], 0) } {}
 		template <class U> constexpr explicit mat(const mat<3, 3, T>& m) : value{ col_type(m[0]), col_type(m[1]), col_type(m[2]) } {}
 		template <class U> constexpr explicit mat(const mat<3, 4, T>& m) : value{ col_type(m[0]), col_type(m[1]), col_type(m[2]) } {}
@@ -144,15 +144,15 @@ export namespace glm
 		{
 			T det = static_cast<T>(1) / (value[0][0] * (value[1][1] * value[2][2] - value[2][1] * value[1][2]) - value[1][0] * (value[0][1] * value[2][2] - value[2][1] * value[0][2]) + value[2][0] * (value[0][1] * value[1][2] - value[1][1] * value[0][2]));
 			type inv;
-			inv[0][0] = +(value[1][1] * value[2][2] - value[2][1] * value[1][2]) * det;
+			inv[0][0] = (value[1][1] * value[2][2] - value[2][1] * value[1][2]) * det;
 			inv[1][0] = -(value[1][0] * value[2][2] - value[2][0] * value[1][2]) * det;
-			inv[2][0] = +(value[1][0] * value[2][1] - value[2][0] * value[1][1]) * det;
+			inv[2][0] = (value[1][0] * value[2][1] - value[2][0] * value[1][1]) * det;
 			inv[0][1] = -(value[0][1] * value[2][2] - value[2][1] * value[0][2]) * det;
-			inv[1][1] = +(value[0][0] * value[2][2] - value[2][0] * value[0][2]) * det;
+			inv[1][1] = (value[0][0] * value[2][2] - value[2][0] * value[0][2]) * det;
 			inv[2][1] = -(value[0][0] * value[2][1] - value[2][0] * value[0][1]) * det;
-			inv[0][2] = +(value[0][1] * value[1][2] - value[1][1] * value[0][2]) * det;
+			inv[0][2] = (value[0][1] * value[1][2] - value[1][1] * value[0][2]) * det;
 			inv[1][2] = -(value[0][0] * value[1][2] - value[1][0] * value[0][2]) * det;
-			inv[2][2] = +(value[0][0] * value[1][1] - value[1][0] * value[0][1]) * det;
+			inv[2][2] = (value[0][0] * value[1][1] - value[1][0] * value[0][1]) * det;
 			return inv;
 		}
 	private:

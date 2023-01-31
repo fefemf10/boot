@@ -59,16 +59,16 @@ export namespace glm
 		constexpr type operator+ () { return *this; }
 		constexpr type operator- () { return type(-x); }
 		
-		constexpr type operator+ (const type& v) { return type(x + v.x); }
-		constexpr type operator- (const type& v) { return type(x - v.x); }
-		constexpr type operator* (const type& v) { return type(x * v.x); }
-		constexpr type operator/ (const type& v) { return type(x / v.x); }
-		constexpr type operator% (const type& v) { return type(x % v.x); }
-		constexpr type operator& (const type& v) { return type(x & v.x); }
-		constexpr type operator| (const type& v) { return type(x | v.x); }
-		constexpr type operator^ (const type& v) { return type(x ^ v.x); }
-		constexpr type operator<< (const type& v) { return type(x << v.x); }
-		constexpr type operator>> (const type& v) { return type(x >> v.x); }
+		constexpr type operator+ (const type& v) const { return type(x + v.x); }
+		constexpr type operator- (const type& v) const { return type(x - v.x); }
+		constexpr type operator* (const type& v) const { return type(x * v.x); }
+		constexpr type operator/ (const type& v) const { return type(x / v.x); }
+		constexpr type operator% (const type& v) const { return type(x % v.x); }
+		constexpr type operator& (const type& v) const { return type(x & v.x); }
+		constexpr type operator| (const type& v) const { return type(x | v.x); }
+		constexpr type operator^ (const type& v) const { return type(x ^ v.x); }
+		constexpr type operator<< (const type& v) const { return type(x << v.x); }
+		constexpr type operator>> (const type& v) const { return type(x >> v.x); }
 		friend constexpr type operator+ (const type& v, T scalar) { return type(v.x + scalar); }
 		friend constexpr type operator- (const type& v, T scalar) { return type(v.x - scalar); }
 		friend constexpr type operator* (const type& v, T scalar) { return type(v.x * scalar); }

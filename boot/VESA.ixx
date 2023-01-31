@@ -2,8 +2,9 @@ export module VESA;
 import VESA.structures;
 import types;
 import memory;
+import memory.allocator;
 import console;
-import math;
+import sl.math;
 export namespace VESA
 {
 	VESAInfo* vesaInfo;
@@ -11,7 +12,11 @@ export namespace VESA
 	VESAModeInfo vesaMode;
 	u32 countModes;
 	u16 currentMode;
-	
+	u32* fb1;
+	u32* fb2;
+	u32* cfb;
+	u32* bfb;
+	bool fb{false};
 	void initialize()
 	{
 		vesaInfo = reinterpret_cast<VESAInfo*>(VESAInfo::address);
@@ -20,20 +25,66 @@ export namespace VESA
 		vesaModesInfo = reinterpret_cast<VESAModeInfo*>(VESAModeInfo::address + 6);
 		memory::pageTableManager.mapMemory(vesaModesInfo, vesaModesInfo);
 		vesaMode = vesaModesInfo[currentMode];
-		u32 size = vesaMode.height * vesaMode.pitch;
+		i32 size = vesaMode.height * vesaMode.pitch;
+		fb1 = reinterpret_cast<u32*>(memory::allocator::allocBlocks(((size - 1) >> 12) + 1));
+		fb2 = reinterpret_cast<u32*>(memory::allocator::allocBlocks(((size - 1) >> 12) + 1));
+		cfb = fb1;
+		bfb = fb2;
+		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(fb1), reinterpret_cast<void*>(fb1), size);
+		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(fb2), reinterpret_cast<void*>(fb2), size);
 		memory::pageTableManager.mapMemory(reinterpret_cast<void*>(vesaMode.framebuffer), reinterpret_cast<void*>(vesaMode.framebuffer), size);
 	}
-	void drawPixel(u16 x, u16 y, u8 r, u8 g, u8 b)
+	void copy()
 	{
-		u32 pixel_offset = y * vesaMode.pitch + x * vesaMode.bpp / 8;
-		reinterpret_cast<u8*>(vesaMode.framebuffer)[pixel_offset + 0] = b;
-		reinterpret_cast<u8*>(vesaMode.framebuffer)[pixel_offset + 1] = g;
-		reinterpret_cast<u8*>(vesaMode.framebuffer)[pixel_offset + 2] = r;
+		const u8 bpp = vesaMode.bpp >> 3;
+		u32 offset = 0;
+		for (u16 i = 0; i < vesaMode.height; i++)
+		{
+			for (u16 j = 0; j < vesaMode.width; j++)
+			{
+				reinterpret_cast<u32*>(vesaMode.framebuffer)[offset] = reinterpret_cast<u32*>(bfb)[offset];
+				offset++;
+			}
+			offset += (vesaMode.pitch >> 2) - vesaMode.width;
+		}
 	}
-	void drawLine(i32 x0, i32 y0, i32 x1, i32 y1, u8 r, u8 g, u8 b)
+	void swap()
+	{
+		if (fb)
+		{
+			cfb = fb2;
+			bfb = fb1;
+		}
+		else
+		{
+			cfb = fb1;
+			bfb = fb2;
+		}
+		copy();
+	}
+	void clear()
+	{
+		const u8 bpp = vesaMode.bpp >> 3;
+		u32 offset = 0;
+		for (u16 i = 0; i < vesaMode.height; i++)
+		{
+			for (u16 j = 0; j < vesaMode.width; j++)
+			{
+				reinterpret_cast<u32*>(bfb)[offset] = 0;
+				offset++;
+			}
+			offset += (vesaMode.pitch >> 2) - vesaMode.width;
+		}
+	}
+	void drawPixel(u16 x, u16 y, u32 argb)
+	{
+		u32 pixel_offset = (y * vesaMode.pitch + x * 4) >> 2;
+		reinterpret_cast<u32*>(bfb)[pixel_offset] = argb;
+	}
+	void drawLine(i32 x0, i32 y0, i32 x1, i32 y1, u32 argb)
 	{
 		bool step{};
-		if (math::abs(x0-x1) < math::abs(y0-y1))
+		if (std::abs(x0-x1) < std::abs(y0-y1))
 		{
 			i32 t = x0;
 			x0 = y0;
@@ -54,12 +105,12 @@ export namespace VESA
 		}
 		i32 dx = x1 - x0;
 		i32 dy = y1 - y0;
-		i32 derror2 = math::abs(dy) * 2;
+		i32 derror2 = std::abs(dy) * 2;
 		i32 error2 = 0;
 		i32 y = y0;
 		for (i32 i = x0; i <= x1; i++)
 		{
-			(step) ? drawPixel(y, i, r, g, b) : drawPixel(i, y, r, g, b);
+			(step) ? drawPixel(y, i, argb) : drawPixel(i, y, argb);
 			error2 += derror2;
 			if (error2 > dx)
 			{
@@ -68,20 +119,18 @@ export namespace VESA
 			}
 		}
 	}
-	void drawRectangle(u16 x, u16 y, u16 width, u16 height, u8 r, u8 g, u8 b)
+	void drawRectangle(u16 x, u16 y, u16 width, u16 height, u32 argb)
 	{
 		const u8 bpp = vesaMode.bpp >> 3;
-		u32 offset = y * vesaMode.pitch + x * bpp;
+		u32 offset = y * vesaMode.width + x;
 		for (u16 i = 0; i < height; i++)
 		{
 			for (u16 j = 0; j < width; j++)
 			{
-				offset += bpp;
-				reinterpret_cast<u8*>(vesaMode.framebuffer)[offset + 0] = b;
-				reinterpret_cast<u8*>(vesaMode.framebuffer)[offset + 1] = g;
-				reinterpret_cast<u8*>(vesaMode.framebuffer)[offset + 2] = r;
+				reinterpret_cast<u32*>(bfb)[offset] = argb;
+				offset++;
 			}
-			offset += vesaMode.pitch - width * bpp;
+			offset += (vesaMode.pitch >> 2) - width;
 		}
 	}
 }

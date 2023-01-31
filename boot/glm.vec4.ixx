@@ -91,16 +91,16 @@ export namespace glm
 		constexpr type operator+ () { return *this; }
 		constexpr type operator- () { return type(-x, -y, -z, -w); }
 		
-		constexpr type operator+ (const type& v) { return type(x + v.x, y + v.y, z + v.z, w + v.w); }
-		constexpr type operator- (const type& v) { return type(x - v.x, y - v.y, z - v.z, w - v.w); }
-		constexpr type operator* (const type& v) { return type(x * v.x, y * v.y, z * v.z, w * v.w); }
-		constexpr type operator/ (const type& v) { return type(x / v.x, y / v.y, z / v.z, w / v.w); }
-		constexpr type operator% (const type& v) { return type(x % v.x, y % v.y, z % v.z, w % v.w); }
-		constexpr type operator& (const type& v) { return type(x & v.x, y & v.y, z & v.z, w & v.w); }
-		constexpr type operator| (const type& v) { return type(x | v.x, y | v.y, z | v.z, w | v.w); }
-		constexpr type operator^ (const type& v) { return type(x ^ v.x, y ^ v.y, z ^ v.z, w ^ v.w); }
-		constexpr type operator<< (const type& v) { return type(x << v.x, y << v.y, z << v.z, w << v.w); }
-		constexpr type operator>> (const type& v) { return type(x >> v.x, y >> v.y, z >> v.z, w >> v.w); }
+		constexpr type operator+ (const type& v) const { return type(x + v.x, y + v.y, z + v.z, w + v.w); }
+		constexpr type operator- (const type& v) const { return type(x - v.x, y - v.y, z - v.z, w - v.w); }
+		constexpr type operator* (const type& v) const { return type(x * v.x, y * v.y, z * v.z, w * v.w); }
+		constexpr type operator/ (const type& v) const { return type(x / v.x, y / v.y, z / v.z, w / v.w); }
+		constexpr type operator% (const type& v) const { return type(x % v.x, y % v.y, z % v.z, w % v.w); }
+		constexpr type operator& (const type& v) const { return type(x & v.x, y & v.y, z & v.z, w & v.w); }
+		constexpr type operator| (const type& v) const { return type(x | v.x, y | v.y, z | v.z, w | v.w); }
+		constexpr type operator^ (const type& v) const { return type(x ^ v.x, y ^ v.y, z ^ v.z, w ^ v.w); }
+		constexpr type operator<< (const type& v) const { return type(x << v.x, y << v.y, z << v.z, w << v.w); }
+		constexpr type operator>> (const type& v) const { return type(x >> v.x, y >> v.y, z >> v.z, w >> v.w); }
 		friend constexpr type operator+ (const type& v, T scalar) { return type(v.x + scalar, v.y + scalar, v.z + scalar, v.w + scalar); }
 		friend constexpr type operator- (const type& v, T scalar) { return type(v.x - scalar, v.y - scalar, v.z - scalar, v.w - scalar); }
 		friend constexpr type operator* (const type& v, T scalar) { return type(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar); }

@@ -4,7 +4,7 @@ import teletype;
 import serial;
 import cpuio;
 import types;
-import math;
+import sl.math;
 import sl.bit;
 export namespace console
 {
@@ -69,7 +69,7 @@ export namespace console
 	{
 		if (number < 0)
 			putc(u8'-');
-		const f64 absnum = math::abs(number);
+		const f64 absnum = std::abs(number);
 		const u64 intnum = static_cast<u64>(absnum);
 		const u64 fracnum = static_cast<u64>((absnum - static_cast<f64>(intnum) + 1.0) * precision);
 		printf_unsigned(intnum, 10, 0);

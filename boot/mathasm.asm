@@ -1,38 +1,42 @@
 format MS64 COFF
-public byteswapu16 as '?byteswap@math@@YAGG@Z::<!math>'
-public byteswapu32 as '?byteswap@math@@YAII@Z::<!math>'
-public byteswapu64 as '?byteswap@math@@YA_K_K@Z::<!math>'
-public absi32 as '?abs@math@@YAHH@Z::<!math>'
-public absi64 as '?abs@math@@YA_J_J@Z::<!math>'
-public absf32 as '?abs@math@@YAMM@Z::<!math>'
-public absf64 as '?abs@math@@YANN@Z::<!math>'
+public byteswapu16 as '?byteswap@std@@YAGG@Z::<!sl.math>'
+public byteswapu32 as '?byteswap@std@@YAII@Z::<!sl.math>'
+public byteswapu64 as '?byteswap@std@@YA_K_K@Z::<!sl.math>'
+public absi32 as '?abs@std@@YAHH@Z::<!sl.math>'
+public absi64 as '?abs@std@@YA_J_J@Z::<!sl.math>'
+public absf32 as '?abs@std@@YAMM@Z::<!sl.math>'
+public absf64 as '?abs@std@@YANN@Z::<!sl.math>'
 
-public lerpf32 as '?lerp@math@@YAMMMM@Z::<!math>'
+public lerpf32 as '?lerp@std@@YAMMMM@Z::<!sl.math>'
 
-;public cosf32 as '?cos@math@@YAMM@Z::<!math>'
-;public sinf32 as '?sin@math@@YAMM@Z::<!math>'
-;public tanf32 as '?tan@math@@YAMM@Z::<!math>'
-;public acosf32 as '?acos@math@@YAMM@Z::<!math>'
-;public asinf32 as '?asin@math@@YAMM@Z::<!math>'
-;public atanf32 as '?atan@math@@YAMM@Z::<!math>'
-;public atan2f32 as '?atan2@math@@YAMM@Z::<!math>'
+;public expf64 as '?exp@std@@YANN@Z::<!sl.math>'
 
-public lerpf64 as '?lerp@math@@YANNNN@Z::<!math>'
+public powf32 as '?pow@std@@YAMMM@Z::<!sl.math>'
 
-public expf64 as '?exp@math@@YANN@Z::<!math>'
+public cosf32 as '?cos@std@@YAMM@Z::<!sl.math>'
+public sinf32 as '?sin@std@@YAMM@Z::<!sl.math>'
+;public tanf32 as '?tan@std@@YAMM@Z::<!sl.math>'
+;public acosf32 as '?acos@std@@YAMM@Z::<!sl.math>'
+;public asinf32 as '?asin@std@@YAMM@Z::<!sl.math>'
+;public atanf32 as '?atan@std@@YAMM@Z::<!sl.math>'
+;public atan2f32 as '?atan2@std@@YAMM@Z::<!sl.math>'
 
-public powf64 as '?pow@math@@YANNN@Z::<!math>'
+public lerpf64 as '?lerp@std@@YANNNN@Z::<!sl.math>'
 
-public cosf64 as '?cos@math@@YANN@Z::<!math>'
-public sinf64 as '?sin@math@@YANN@Z::<!math>'
-;public tanf64 as '?tan@math@@YANN@Z::<!math>'
-;public acosf64 as '?acos@math@@YANN@Z::<!math>'
-;public asinf64 as '?asin@math@@YANN@Z::<!math>'
-;public atanf64 as '?atan@math@@YANN@Z::<!math>'
-;public atan2f64 as '?atan2@math@@YANN@Z::<!math>'
+public expf64 as '?exp@std@@YANN@Z::<!sl.math>'
+
+public powf64 as '?pow@std@@YANNN@Z::<!sl.math>'
+
+public cosf64 as '?cos@std@@YANN@Z::<!sl.math>'
+public sinf64 as '?sin@std@@YANN@Z::<!sl.math>'
+;public tanf64 as '?tan@std@@YANN@Z::<!sl.math>'
+;public acosf64 as '?acos@std@@YANN@Z::<!sl.math>'
+;public asinf64 as '?asin@std@@YANN@Z::<!sl.math>'
+;public atanf64 as '?atan@std@@YANN@Z::<!sl.math>'
+;public atan2f64 as '?atan2@std@@YANN@Z::<!sl.math>'
 section '.text$mn' code readable executable
-divcosss dq 2.0,24.0,720.0,40320.0,3628800.0,479001600.0,87178291200.0,20922789888000.0,6402373705728000.0
-divsinss dq 6.0,120.0,5040.0,362880.0,39916800.0,6227020800.0,1307674368000.0,355687428096000.0,121645100408832000.0
+divcosss dd 2.0,24.0,720.0,40320.0,3628800.0,479001600.0,87178291200.0,20922789888000.0,6402373705728000.0
+divsinss dd 6.0,120.0,5040.0,362880.0,39916800.0,6227020800.0,1307674368000.0,355687428096000.0,121645100408832000.0
 
 divexpsd dq 2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0,3628800.0,39916800.0,479001600.0,6227020800.0,87178291200.0,1307674368000.0,20922789888000.0
 expsd dq 1.0,2.718281828459045,7.38905609893065,20.085536923187668,54.598150033144236,720.0,5040.0,40320.0,362880.0,3628800.0,39916800.0,479001600.0,6227020800.0,87178291200.0,1307674368000.0,20922789888000.0
@@ -75,128 +79,42 @@ lerpf32:
 	mulss xmm2, xmm1
 	addss xmm0, xmm2
 	ret
-;cosf32:
-;	sub rsp, 64
-;	movaps [rsp+48], xmm6
-;	movaps [rsp+32], xmm7
-;	movaps [rsp+16], xmm8
-;	movaps [rsp], xmm9
-;	movaps xmm1, xmm0
-;	mulss xmm0, xmm1
-;	movaps xmm2, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm3, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm4, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm5, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm6, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm7, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm8, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm9, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	divss xmm0, [divcosss+64]
-;	divss xmm9, [divcosss+56]
-;	divss xmm8, [divcosss+48]
-;	divss xmm7, [divcosss+40]
-;	divss xmm6, [divcosss+32]
-;	divss xmm5, [divcosss+24]
-;	divss xmm4, [divcosss+16]
-;	divss xmm3, [divcosss+8]
-;	divss xmm2, [divcosss]
-;	mov rax,1.0
-;	movq xmm1,rax
-;	subss xmm1, xmm2
-;	addss xmm1, xmm3
-;	subss xmm1, xmm4
-;	addss xmm1, xmm5
-;	subss xmm1, xmm6
-;	addss xmm1, xmm7
-;	subss xmm1, xmm8
-;	addss xmm1, xmm9
-;	subss xmm1, xmm0
-;	movaps xmm0, xmm1
-;	movaps xmm6, [rsp+48]
-;	movaps xmm7, [rsp+32]
-;	movaps xmm8, [rsp+16]
-;	movaps xmm9, [rsp]
-;	add rsp, 64
-;	ret
-;sinf32:
-;	sub rsp, 64
-;	movaps [rsp+48], xmm6
-;	movaps [rsp+32], xmm7
-;	movaps [rsp+16], xmm8
-;	movaps [rsp], xmm9
-;	movaps xmm1, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm2, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm3, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm4, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm5, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm6, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm7, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm8, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	movaps xmm9, xmm0
-;	mulss xmm0, xmm1
-;	mulss xmm0, xmm1
-;	divss xmm0, [divsinss+64]
-;	divss xmm7, [divsinss+40]
-;	divss xmm6, [divsinss+32]
-;	divss xmm5, [divsinss+24]
-;	divss xmm4, [divsinss+16]
-;	divss xmm3, [divsinss+8]
-;	divss xmm2, [divsinss]
-;	subss xmm1, xmm2
-;	addss xmm1, xmm3
-;	subss xmm1, xmm4
-;	addss xmm1, xmm5
-;	subss xmm1, xmm6
-;	addss xmm1, xmm7
-;	subss xmm1, xmm8
-;	addss xmm1, xmm9
-;	subss xmm1, xmm0
-;	movaps xmm0, xmm1
-;	movaps xmm6, [rsp+48]
-;	movaps xmm7, [rsp+32]
-;	movaps xmm8, [rsp+16]
-;	movaps xmm9, [rsp]
-;	add rsp, 64
-;	ret
+powf32:
+	sub rsp, 8
+	cvtss2sd xmm3, xmm0
+	movapd xmm0, xmm3
+	cvtss2sd xmm3, xmm1
+	movapd xmm1, xmm3
+	call powf64
+	cvtsd2ss xmm3, xmm0
+	movaps xmm0, xmm3
+	add rsp, 8
+	ret
+cosf32:
+	sub rsp, 8
+	cvtss2sd xmm3, xmm0
+	movapd xmm0, xmm3
+	call cosf64
+	cvtsd2ss xmm3, xmm0
+	movaps xmm0, xmm3
+	add rsp, 8
+	ret
+sinf32:
+	sub rsp, 8
+	cvtss2sd xmm3, xmm0
+	movapd xmm0, xmm3
+	call sinf64
+	cvtsd2ss xmm3, xmm0
+	movaps xmm0, xmm3
+	add rsp, 8
+	ret
 lerpf64:
 	subsd xmm1, xmm0
 	mulsd xmm2, xmm1
 	addsd xmm0, xmm2
 	ret
 expf64:
-	sub rsp, 160
+	sub rsp, 168
 	movapd [rsp+144], xmm6
 	movapd [rsp+128], xmm7
 	movapd [rsp+112], xmm8
@@ -281,7 +199,7 @@ expf64:
 	movapd xmm13, [rsp+32]
 	movapd xmm14, [rsp+16]
 	movapd xmm15, [rsp]
-	add rsp, 160
+	add rsp, 168
 	ret
 powf64:
 	; if(xmm0 == 1.0 || xmm1 == 0.0) return;
@@ -315,9 +233,9 @@ powf64:
 	movq xmm2, rdx
 	.while:
 		test rcx, 1
-		je ..skip
+		je @f
 		mulsd xmm2, xmm0
-		..skip:
+		@@:
 		mulsd xmm0, xmm0
 		shr rcx, 1
 		jnz .while

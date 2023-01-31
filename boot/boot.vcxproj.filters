@@ -25,6 +25,9 @@
     <Filter Include="Исходные файлы\glm">
       <UniqueIdentifier>{5f2318e2-a401-4b5b-8b32-93904050d461}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\SMBIOS">
+      <UniqueIdentifier>{078ed1ed-6fef-436f-a83b-bdb78a1d6abc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.ixx">
@@ -76,9 +79,6 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="hash-crc.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="math.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="intrinsic.ixx">
@@ -231,6 +231,39 @@
     <ClCompile Include="glm.mat3x3.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
+    <ClCompile Include="glm.mat3x4.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.mat4x2.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.mat4x3.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.mat4x4.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.transform.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.math.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.print.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.geometric.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="glm.vectorize.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="SMBIOS.ixx">
+      <Filter>Исходные файлы\SMBIOS</Filter>
+    </ClCompile>
+    <ClCompile Include="SMBIOS.structures.ixx">
+      <Filter>Исходные файлы\SMBIOS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -249,7 +282,7 @@
       <Filter>Исходные файлы</Filter>
     </FASM>
     <FASM Include="mathasm.asm">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Исходные файлы\std</Filter>
     </FASM>
   </ItemGroup>
   <ItemGroup>

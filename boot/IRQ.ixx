@@ -51,7 +51,7 @@ export namespace IRQ
 	}
 	void initialize()
 	{
-		IDT::set(32, irq0); PIC::setMask(0, 1);
+		IDT::set(32, irq0); PIC::setMask(0, 0);
 		IDT::set(33, irq1); PIC::setMask(1, 0);
 		IDT::set(34, irq2);
 		IDT::set(35, irq3);

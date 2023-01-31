@@ -244,7 +244,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <MapExports>false</MapExports>
       <ForceFileOutput>
       </ForceFileOutput>
-      <TurnOffAssemblyGeneration>false</TurnOffAssemblyGeneration>
+      <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
       <CreateHotPatchableImage>
       </CreateHotPatchableImage>
       <MergeSections>
@@ -270,6 +270,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="driver.AHCI.ixx" />
     <ClCompile Include="driver.Driver.ixx" />
     <ClCompile Include="driver.ixx" />
+    <ClCompile Include="glm.geometric.ixx" />
     <ClCompile Include="glm.ixx" />
     <ClCompile Include="glm.mat.ixx" />
     <ClCompile Include="glm.mat2x2.ixx" />
@@ -277,8 +278,13 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="glm.mat2x4.ixx" />
     <ClCompile Include="glm.mat3x2.ixx" />
     <ClCompile Include="glm.mat3x3.ixx" />
+    <ClCompile Include="glm.mat3x4.ixx" />
+    <ClCompile Include="glm.mat4x2.ixx" />
+    <ClCompile Include="glm.mat4x3.ixx" />
+    <ClCompile Include="glm.mat4x4.ixx" />
     <ClCompile Include="glm.matrix.ixx" />
     <ClCompile Include="glm.setup.ixx" />
+    <ClCompile Include="glm.transform.ixx" />
     <ClCompile Include="glm.vec1.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
@@ -286,6 +292,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="glm.vec2.ixx" />
     <ClCompile Include="glm.vec3.ixx" />
     <ClCompile Include="glm.vec4.ixx" />
+    <ClCompile Include="glm.vectorize.ixx" />
     <ClCompile Include="memory.Heap.ixx" />
     <ClCompile Include="memory.PageIndex.ixx" />
     <ClCompile Include="memory.SMAP.ixx" />
@@ -306,7 +313,6 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="ISR.ixx" />
     <ClCompile Include="kernel.ixx" />
     <ClCompile Include="keyboard.ixx" />
-    <ClCompile Include="math.ixx" />
     <ClCompile Include="memory.allocator.ixx" />
     <ClCompile Include="memory.utils.ixx" />
     <ClCompile Include="memory.ixx" />
@@ -316,9 +322,11 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="sl.allocator.ixx" />
     <ClCompile Include="sl.initializer_list.ixx" />
     <ClCompile Include="sl.iterator.ixx" />
+    <ClCompile Include="sl.math.ixx" />
     <ClCompile Include="sl.memory.ixx" />
     <ClCompile Include="sl.numbers.ixx" />
     <ClCompile Include="sl.numeric_limits.ixx" />
+    <ClCompile Include="sl.print.ixx" />
     <ClCompile Include="sl.ratio.ixx" />
     <ClCompile Include="sl.source_location.ixx" />
     <ClCompile Include="sl.span.ixx" />
@@ -326,6 +334,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="sl.utility.ixx" />
     <ClCompile Include="sl.vector.ixx" />
     <ClCompile Include="sl.ixx" />
+    <ClCompile Include="SMBIOS.ixx" />
+    <ClCompile Include="SMBIOS.structures.ixx" />
     <ClCompile Include="string.ixx" />
     <ClCompile Include="teletype.ixx" />
     <ClCompile Include="types.ixx" />

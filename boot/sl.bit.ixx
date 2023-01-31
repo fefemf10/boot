@@ -1,7 +1,7 @@
 export module sl.bit;
 import sl.type;
 import sl.typetraits;
-import math;
+import sl.math;
 export namespace std
 {
 	enum class endian
@@ -21,7 +21,7 @@ export namespace std
 			return static_cast<unsigned short>((value << 8) | (value >> 8));
 		}
 		else {
-			return math::byteswap(value);
+			return std::byteswap(value);
 		}
 	}
 
@@ -31,7 +31,7 @@ export namespace std
 			return (value << 24) | ((value << 8) & 0x00FF'0000) | ((value >> 8) & 0x0000'FF00) | (value >> 24);
 		}
 		else {
-			return math::byteswap(value);
+			return std::byteswap(value);
 		}
 	}
 
@@ -43,7 +43,7 @@ export namespace std
 				| ((value >> 24) & 0x0000'0000'00FF'0000) | ((value >> 40) & 0x0000'0000'0000'FF00) | (value >> 56);
 		}
 		else {
-			return math::byteswap(value);
+			return std::byteswap(value);
 		}
 	}
 	template <class T>
