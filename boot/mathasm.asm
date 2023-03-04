@@ -12,6 +12,7 @@ public lerpf32 as '?lerp@std@@YAMMMM@Z::<!sl.math>'
 ;public expf64 as '?exp@std@@YANN@Z::<!sl.math>'
 
 public powf32 as '?pow@std@@YAMMM@Z::<!sl.math>'
+public sqrtf32 as '?sqrt@std@@YAMM@Z::<!sl.math>'
 
 public cosf32 as '?cos@std@@YAMM@Z::<!sl.math>'
 public sinf32 as '?sin@std@@YAMM@Z::<!sl.math>'
@@ -26,6 +27,7 @@ public lerpf64 as '?lerp@std@@YANNNN@Z::<!sl.math>'
 public expf64 as '?exp@std@@YANN@Z::<!sl.math>'
 
 public powf64 as '?pow@std@@YANNN@Z::<!sl.math>'
+public sqrtf64 as '?sqrt@std@@YANN@Z::<!sl.math>'
 
 public cosf64 as '?cos@std@@YANN@Z::<!sl.math>'
 public sinf64 as '?sin@std@@YANN@Z::<!sl.math>'
@@ -89,6 +91,10 @@ powf32:
 	cvtsd2ss xmm3, xmm0
 	movaps xmm0, xmm3
 	add rsp, 8
+	ret
+sqrtf32:
+	movaps xmm1, xmm0
+	sqrtss xmm0, xmm1
 	ret
 cosf32:
 	sub rsp, 8
@@ -277,6 +283,10 @@ powf64:
 		divsd xmm2, xmm0
 		movapd xmm0, xmm2
 		ret
+sqrtf64:
+	movapd xmm1, xmm0
+	sqrtsd xmm0, xmm1
+	ret
 cosf64:
 	sub rsp, 72
 	movapd [rsp+48], xmm6

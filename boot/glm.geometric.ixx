@@ -12,7 +12,7 @@ export namespace glm
 	template <size_t L, class T>
 	constexpr T length(const vec<L, T>& v)
 	{
-		return std::pow(dot(v, v), static_cast<T>(0.5));
+		return std::sqrt(dot(v, v));
 	}
 	template <class T>
 	constexpr T distance(T a, T b)
@@ -73,22 +73,22 @@ export namespace glm
 	template <class T>
 	constexpr vec<1, T> sqrt(const vec<1, T>& v)
 	{
-		return pow(v, static_cast<T>(-0.5));
+		return vec<1, T>(std::sqrt(v.x));
 	}
 	template <class T>
 	constexpr vec<2, T> sqrt(const vec<2, T>& v)
 	{
-		return pow(v, static_cast<T>(-0.5));
+		return vec<2, T>(std::sqrt(v.x), std::sqrt(v.y));
 	}
 	template <class T>
 	constexpr vec<3, T> sqrt(const vec<3, T>& v)
 	{
-		return pow(v, static_cast<T>(-0.5));
+		return vec<2, T>(std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z));
 	}
 	template <class T>
 	constexpr vec<4, T> sqrt(const vec<4, T>& v)
 	{
-		return pow(v, static_cast<T>(-0.5));
+		return vec<2, T>(std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z), std::sqrt(v.w));
 	}
 	template <class T>
 	constexpr vec<1, T> pow(const vec<1, T>& v, T x)
