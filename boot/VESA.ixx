@@ -16,7 +16,7 @@ export namespace VESA
 	u32* fb1;
 	u32* bfb;
 	u32 sizeInDW;
-	bool fb{true};
+	bool fb{ true };
 	void initialize()
 	{
 		vesaInfo = reinterpret_cast<VESAInfo*>(VESAInfo::address);
@@ -64,7 +64,7 @@ export namespace VESA
 	void drawLine(i32 x0, i32 y0, i32 x1, i32 y1, u32 argb)
 	{
 		bool step{};
-		if (std::abs(x0-x1) < std::abs(y0-y1))
+		if (std::abs(x0 - x1) < std::abs(y0 - y1))
 		{
 			i32 t = x0;
 			x0 = y0;
@@ -108,5 +108,35 @@ export namespace VESA
 		for (u32 i = 0; i < height; ++i, offset += m)
 			for (u32 j = 0; j < width; ++j, ++offset)
 				bfb[offset] = argb;
+	}
+	void drawCircle(i32 x, i32 y, i32 r, u32 argb)
+	{
+		int dx = 0;
+		int dy = r;
+		int delta = 1 - 2 * r;
+		int error = 0;
+		while (dy >= dx)
+		{
+			drawPixel(x + dx, y + dy, argb);
+			drawPixel(x + dx, y - dy, argb);
+			drawPixel(x - dx, y + dy, argb);
+			drawPixel(x - dx, y - dy, argb);
+			drawPixel(x + dy, y + dx, argb);
+			drawPixel(x + dy, y - dx, argb);
+			drawPixel(x - dy, y + dx, argb);
+			drawPixel(x - dy, y - dx, argb);
+			error = 2 * (delta + dy) - 1;
+			if ((delta < 0) && (error <= 0))
+			{
+				delta += 2 * ++dx + 1;
+				continue;
+			}
+			if ((delta > 0) && (error > 0))
+			{
+				delta -= 2 * --dy + 1;
+				continue;
+			}
+			delta += 2 * (++dx - --dy);
+		}
 	}
 }
