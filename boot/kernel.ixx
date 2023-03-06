@@ -45,7 +45,7 @@ extern "C" void kernel_start()
 	i = VESA::currentMode;
 	console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
 	console::printf(u8"%hx\n", VESA::currentMode);*/
-	SMBIOS::SMBIOS* smbios = SMBIOS::SMBIOS::find();
+	/*SMBIOS::SMBIOS* smbios = SMBIOS::SMBIOS::find();
 	if (smbios)
 	{
 		SMBIOS::SMBIOSHeaderStruct* header = reinterpret_cast<SMBIOS::SMBIOSHeaderStruct*>(smbios->V2.structureTableAddress);
@@ -53,9 +53,8 @@ extern "C" void kernel_start()
 		{
 			header = reinterpret_cast<SMBIOS::SMBIOSHeaderStruct*>(smbios->V2.structureTableAddress)
 		}
-		console::printf(u8"%x\n", );
 		console::printf(u8"%hx\n", smbios->V2.numberOfStructures);
-	}
+	}*/
 	glm::f32vec3 vertex[8] =
 	{
 		{0, 0, 0},
@@ -82,26 +81,13 @@ extern "C" void kernel_start()
 		{2, 6},
 		{3, 7}
 	};
-	glm::f32mat2x2 s(1, 2, 3, 4);
-	glm::f32mat2x2 f = s.transpose();
 	
 	PIT::setDivisor(65535);
-	double a = std::sin(3.14f / 4.0f);
-	double b = std::sin(3.14f / 2.0f);
-	double c = std::sin(3.14f / 6.0f);
-	double d = std::sin(3.14f / 12.0f);
-	double e = std::sin(3.0f * 3.14f / 4.0f);
-	double k = std::sin(5.0f * 3.14f / 6.0f);
-	double g = std::sin(3.0f);
-	double h = std::sin(3.1f);
-	//console::printf(u8"%f %f %f %f %f %f %f %f\n", a, b, c, d, e, k, g, h);
-	glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 0.f, 0.f)));
-	glm::f32mat4x4 r1 = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(0.f, 1.f, 0.f)));
-	glm::f32mat4x4 r2 = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(0.f, 0.f, 1.f)));
+	glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 1.f, 1.f)));
 	double dt = 0;
 	while (true)
 	{
-		double start = PIT::timeSinceBoot;
+		//double start = PIT::timeSinceBoot;
 		VESA::clear();
 		for (size_t i = 0; i < 12; i++)
 		{
@@ -111,14 +97,15 @@ extern "C" void kernel_start()
 			int y1 = 440 - vertex[edge[i].y].y;
 			VESA::drawLine(x0, y0, x1, y1, 0xFF00FF00);
 		}
+		VESA::drawRectangle(20, 20, 100, 100, 0xFF00FF00);
 		for (size_t i = 0; i < 8; i++)
 		{
-			vertex[i] = glm::f32vec3(r * r1 * r2 * glm::f32vec4(vertex[i], 1.f));
+			vertex[i] = glm::f32vec3(r * glm::f32vec4(vertex[i], 1.f));
 		}
 		VESA::swap();
-		double end = PIT::timeSinceBoot;
+		/*double end = PIT::timeSinceBoot;
 		dt = end - start;
-		//console::printf(u8"%f\n", dt);
+		console::printf(u8"%f\n", dt);*/
 	}
 	//memory::printSMAP();
 	

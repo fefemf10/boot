@@ -298,6 +298,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="memory.SMAP.ixx" />
     <ClCompile Include="pci.structures.ixx" />
     <ClCompile Include="PIT.ixx" />
+    <ClCompile Include="sl.algorithm.ixx" />
     <ClCompile Include="sl.compare.ixx" />
     <ClCompile Include="sl.concepts.ixx" />
     <ClCompile Include="console.ixx" />
