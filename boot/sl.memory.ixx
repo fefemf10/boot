@@ -168,6 +168,15 @@ namespace std
 	struct _Is_default_allocator<allocator<T>, void_t<typename allocator<T>::_From_primary>>
 		: is_same<typename allocator<T>::_From_primary, allocator<T>>::type {};
 
+	template <class _Void, class... _Types>
+	struct _Has_no_allocator_construct : true_type {};
+
+	template <class _Alloc, class _Ptr, class... _Args>
+	struct _Has_no_allocator_construct<
+		void_t<decltype(std::declval<_Alloc&>().construct(std::declval<_Ptr>(), std::declval<_Args>()...))>, _Alloc, _Ptr, _Args...> : false_type {};
+
+	
+
 	template <class _Alloc>
 	struct allocator_traits;
 	template <class T>
@@ -225,6 +234,10 @@ namespace std
 
 export namespace std
 {
+	template <class _Alloc, class _Ptr, class... _Args>
+	using _Uses_default_construct =
+		disjunction<_Is_default_allocator<_Alloc>, _Has_no_allocator_construct<void, _Alloc, _Ptr, _Args...>>;
+
 	template <class T>
 	struct allocator_traits : conditional_t<_Is_default_allocator<T>::value, _Default_allocator_traits<T>,
 		_Normal_allocator_traits<T>> {};
@@ -237,4 +250,16 @@ export namespace std
 
 	template <class T>
 	const T* addressof(const T&&) = delete;
+
+	template <class _Ptrty>
+	[[nodiscard]] constexpr auto _Unfancy(_Ptrty _Ptr) noexcept
+	{
+		return addressof(*_Ptr);
+	}
+
+	template <class T>
+	[[nodiscard]] constexpr T* _Unfancy(T* _Ptr) noexcept
+	{
+		return _Ptr;
+	}
 }

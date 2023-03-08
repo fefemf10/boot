@@ -48,6 +48,15 @@ export namespace std
 		}
 		constexpr vector(vector&& other) noexcept;
 		constexpr vector(vector&& other, const Allocator& alloc);
+		/*template <class... U>
+		constexpr T& emplace_back(U&&... value)
+		{
+			return emplace_one_at_back(std::forward(value)...);
+		}
+		constexpr void push_back(const T& value)
+		{
+			emplace_one_at_back(value);
+		}*/
 		[[nodiscard]] constexpr T* data() noexcept
 		{
 			return m_first;
@@ -71,6 +80,13 @@ export namespace std
 		[[nodiscard]] constexpr size_t max_size() const noexcept
 		{
 			return numeric_limits<size_t>::max();
+		}
+		constexpr void reserve(const size_type capacity)
+		{
+			if (capacity > static_cast<size_t>(m_end - m_first))
+			{ 
+				reallocateExactly(capacity);
+			}
 		}
 		[[nodiscard]] constexpr void clear() noexcept
 		{
@@ -132,8 +148,75 @@ export namespace std
 			const size_t geometric = capacity() + capacity() / 2;
 			return (geometric < newSize) ? newSize : geometric;
 		}
+		constexpr void reallocateExactly(const size_type capacity)
+		{
+			T* newVector = alloc.allocate(capacity);
+			size_type newSize = size();
+			for (size_t i = 0; i < newSize; i++)
+				newVector[i] = m_first[i];
+			alloc.deallocate(m_first, this->capacity());
+			m_first = newVector;
+			m_last = m_first + newSize;
+			m_end = m_first + capacity;
+		}
+		//template <class... U>
+		//constexpr T& emplace_one_at_back(U&&... value)
+		//{
+		//	if (m_last != m_end)
+		//		return emplace_back_with_unused_capacity(std::forward<U>(value)...);
+		//	return *emplace_reallocate(m_last, std::forward<U>(value)...);
+		//}
+		//template <class... U>
+		//constexpr T& emplace_back_with_unused_capacity(U&&... value)
+		//{
+		//	if constexpr (conjunction_v<is_nothrow_constructible<T, U...>, _Uses_default_construct<Allocator, T*, U...>>)
+		//		_Construct_in_place(*m_last, std::forward<U>(value)...);
+		//	else
+		//		allocator_traits<Allocator>::construct(alloc, _Unfancy(m_last), std::forward<U>(value)...);
+		//	T& result = *m_last;
+		//	++m_last;
+		//	return result;
+		//}
+		//template <class... U>
+		//constexpr pointer emplace_reallocate(const pointer _Whereptr, U&&... value)
+		//{
+		//	const auto _Whereoff = static_cast<size_type>(_Whereptr - m_first);
+
+		//	const size_type newsize = size() + 1;
+		//	const size_type newcapacity = calculateGrow(newsize);
+
+		//	const pointer newvec = alloc.allocate(newcapacity);
+		//	const pointer _Constructed_last = newvec + _Whereoff + 1;
+		//	pointer _Constructed_first = _Constructed_last;
+
+		//	allocator_traits<Allocator>::construct(alloc, _Unfancy(newvec + _Whereoff), std::forward<U>(value)...);
+		//	_Constructed_first = newvec + _Whereoff;
+
+		//	//if (_Whereptr == m_last)
+		//	//{ // at back, provide strong guarantee
+		//	//	if constexpr (is_nothrow_move_constructible_v<T> || !is_copy_constructible_v<T>) {
+		//	//		_Uninitialized_move(_Myfirst, _Mylast, newvec, _Al);
+		//	//	}
+		//	//	else {
+		//	//		_Uninitialized_copy(_Myfirst, _Mylast, newvec, _Al);
+		//	//	}
+		//	//}
+		//	//else { // provide basic guarantee
+		//	//	_Uninitialized_move(_Myfirst, _Whereptr, newvec, _Al);
+		//	//	_Constructed_first = newvec;
+		//	//	_Uninitialized_move(_Whereptr, _Mylast, newvec + _Whereoff + 1, _Al);
+		//	//}
+		//	//	_Destroy_range(_Constructed_first, _Constructed_last, _Al);
+		//	//_Al.deallocate(newvec, newcapacity);
+		//	//_RERAISE;
+		//	//_CATCH_END
+
+		//	//	_Change_array(newvec, newsize, newcapacity);
+		//	return newvec + _Whereoff;
+		//}
 		T* m_first{};
 		T* m_last{};
 		T* m_end{};
+		Allocator alloc;
 	};
 }

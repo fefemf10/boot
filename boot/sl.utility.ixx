@@ -1,5 +1,6 @@
 export module sl.utility;
 import sl.typetraits;
+import sl.bit;
 import sl.type;
 namespace std
 {
@@ -264,5 +265,26 @@ export namespace std
 	[[nodiscard]] constexpr underlying_type_t<T> to_underlying(T value) noexcept
 	{
 		return static_cast<underlying_type_t<T>>(value);
+	}
+
+	template <class _Iter>
+	[[nodiscard]] constexpr void* _Voidify_iter(_Iter _It) noexcept {
+		if constexpr (is_pointer_v<_Iter>)
+			return const_cast<void*>(static_cast<const volatile void*>(_It));
+		else
+			return const_cast<void*>(static_cast<const volatile void*>(std::addressof(*_It)));
+	}
+
+	template <class _Ty, class... _Types, class = void_t<decltype(::new(std::declval<void*>()) _Ty(std::declval<_Types>()...))>>
+		constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(noexcept(::new(_Voidify_iter(_Location)) _Ty(std::forward<_Types>(_Args)...)))
+	{
+		[[msvc::constexpr]] return ::new (_Voidify_iter(_Location)) _Ty(std::forward<_Types>(_Args)...);
+	}
+	template <class _Ty, class... _Types>
+	constexpr void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
+		is_nothrow_constructible_v<_Ty, _Types...>) {
+		if (std::is_constant_evaluated()) {
+			std::construct_at(std::addressof(_Obj), std::forward<_Types>(_Args)...);
+		}
 	}
 }

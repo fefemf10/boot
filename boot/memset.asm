@@ -1,6 +1,9 @@
 format MS64 COFF
 section '.text$mn' code readable executable align 16
+public memset as '?set@memory@@YAXPEAXE_K@Z::<!memory.utils>'
 public memset
+;extrn __favor:dword
+__FAVOR_ENFSTRG equ 1
 memset_repstos:
 	push rdi
 	mov eax, edx
@@ -24,7 +27,7 @@ memset:
 
 	add rcx, r8
 	mov r9, SetSmall
-	jmp qword [r9 + r8*4]
+	jmp qword [r9 + r8*8]
 	SetSmall15:
 		mov [rcx-15], r11
 	SetSmall7:
@@ -99,18 +102,19 @@ memset:
 		SSE_LEN_BIT equ 4
 		SSE_STEP_LEN equ 1 SHL SSE_LEN_BIT
 		SSE_LOOP_LEN equ SSE_STEP_LEN*8
-		cmp r8, SSE_LOOP_LEN ; jbe 128 byte set
-		jbe SetWithXMM
-
+		KB equ 1024
+		FAST_STRING_SSE_THRESHOLD equ 2 * KB
+		cmp r8, FAST_STRING_SSE_THRESHOLD ; jbe 128 byte set
+		jmp SetWithXMM
+		
 	; set blocks between 16 and 32 bytes in length
-		jnz memset_repstos
+		jmp memset_repstos
 	
 	SetWithXMM:
 		mov r9, rcx
 		and r9, SSE_STEP_LEN-1
 		sub r9, SSE_STEP_LEN
 		sub rcx, r9
-		
 		sub rdx, r9
 		add r8, r9
 		cmp r8, SSE_LOOP_LEN
@@ -132,7 +136,7 @@ memset:
 		sub r8, SSE_LOOP_LEN
 		cmp r8, SSE_LOOP_LEN
 		jae XmmLoop
-
+		
 	; set up to 128 bytes using SSE stores
 	SetUpTo128WithXMM:
 		lea r9, [r8 + SSE_STEP_LEN-1]
@@ -140,22 +144,22 @@ memset:
 		mov r11, r9
 		shr r11, SSE_LEN_BIT
 		mov r9, SetSmallXmm
-		mov r11, [r9 + r11*4]
+		mov r11, [r9 + r11*8]
 		jmp r11
 	Set8XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 8], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 8], xmm0
 	Set7XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 7], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 7], xmm0
 	Set6XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 6], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 6], xmm0
 	Set5XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 5], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 5], xmm0
 	Set4XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 4], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 4], xmm0
 	Set3XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 3], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 3], xmm0
 	Set2XmmBlocks:
-		movdqu [rcx + r9 - SSE_STEP_LEN * 2], xmm0
+		movdqu [rcx + r8 - SSE_STEP_LEN * 2], xmm0
 	Set1XmmBlocks:
 		movdqu [rcx + r8 - SSE_STEP_LEN * 1], xmm0
 	Set0XmmBlocks:
@@ -180,12 +184,12 @@ SetSmall:
 	dq SetSmall14
 	dq SetSmall15
 SetSmallXmm:
-	dq Set8XmmBlocks
-	dq Set7XmmBlocks
-	dq Set6XmmBlocks
-	dq Set5XmmBlocks
-	dq Set4XmmBlocks
-	dq Set3XmmBlocks
-	dq Set2XmmBlocks
-	dq Set1XmmBlocks
 	dq Set0XmmBlocks
+	dq Set1XmmBlocks
+	dq Set2XmmBlocks
+	dq Set3XmmBlocks
+	dq Set4XmmBlocks
+	dq Set5XmmBlocks
+	dq Set6XmmBlocks
+	dq Set7XmmBlocks
+	dq Set8XmmBlocks

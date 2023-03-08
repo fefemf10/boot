@@ -270,6 +270,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="driver.AHCI.ixx" />
     <ClCompile Include="driver.Driver.ixx" />
     <ClCompile Include="driver.ixx" />
+    <ClCompile Include="fs.exFAT.MainBootStructure.ixx" />
+    <ClCompile Include="fs.exFAT.Volume.ixx" />
     <ClCompile Include="glm.geometric.ixx" />
     <ClCompile Include="glm.ixx" />
     <ClCompile Include="glm.mat.ixx" />
@@ -331,6 +333,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="sl.ratio.ixx" />
     <ClCompile Include="sl.source_location.ixx" />
     <ClCompile Include="sl.span.ixx" />
+    <ClCompile Include="sl.string.ixx" />
     <ClCompile Include="sl.type.ixx" />
     <ClCompile Include="sl.utility.ixx" />
     <ClCompile Include="sl.vector.ixx" />
@@ -346,6 +349,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     </ClCompile>
     <ClCompile Include="glm.vec.ixx" />
     <ClCompile Include="VESA.ixx" />
+    <ClCompile Include="vfs.file.ixx" />
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -359,7 +363,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <FASM Include="IRQasm.asm" />
     <FASM Include="ISRasm.asm" />
     <FASM Include="mathasm.asm" />
-    <FASM Include="memoryasm.asm" />
+    <FASM Include="memcpy.asm" />
+    <FASM Include="memset.asm" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.sata.ixx">

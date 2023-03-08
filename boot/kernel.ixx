@@ -23,6 +23,7 @@ import glm.mat4x4;
 import glm.transform;
 import sl.math;
 import sl.numbers;
+import sl.vector;
 import SMBIOS;
 extern "C" void kernel_start()
 {
@@ -37,6 +38,13 @@ extern "C" void kernel_start()
 	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
 		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
 	console::setOut(console::OUT::SERIAL);
+	//std::vector<int> a;
+	////a.reserve(8);
+	//console::printf(u8"%llx %i %i\n", a.data(), a[0], a[1]);
+	//console::puth(a.data(), sizeof(int) * a.capacity());
+	//a.reserve(16);
+	//console::printf(u8"%llx %i %i\n", a.data(), a[0], a[1]);
+	//console::puth(a.data(), sizeof(int) * a.capacity());
 	/*size_t i = 0;
 	for (; i < VESA::countModes; i++)
 	{
@@ -85,6 +93,7 @@ extern "C" void kernel_start()
 	PIT::setDivisor(65535);
 	glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 1.f, 1.f)));
 	double dt = 0;
+	console::printf(u8"%hi\n", VESA::vesaMode.pitch);
 	while (true)
 	{
 		//double start = PIT::timeSinceBoot;
@@ -98,9 +107,11 @@ extern "C" void kernel_start()
 			VESA::drawLine(x0, y0, x1, y1, 0xFF00FF00);
 		}
 		VESA::drawRectangle(20, 20, 100, 100, 0xFF00FF00);
+		VESA::drawCircle(200, 200, 100, 0xFF0000FF);
 		for (size_t i = 0; i < 8; i++)
 		{
-			vertex[i] = glm::f32vec3(r * glm::f32vec4(vertex[i], 1.f));
+			glm::f32vec4 m = r * glm::f32vec4(vertex[i], 1.f);
+			vertex[i] = glm::f32vec3(m);
 		}
 		VESA::swap();
 		/*double end = PIT::timeSinceBoot;
@@ -109,39 +120,11 @@ extern "C" void kernel_start()
 	}
 	//memory::printSMAP();
 	
-	//ACPI::RSDP* rsdp = ACPI::RSDP::find();
-	//ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
-	//pci::enumeratePCI(mcfg);
+	/*ACPI::RSDP* rsdp = ACPI::RSDP::find();
+	ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
+	pci::enumeratePCI(mcfg);*/
 	/*u64* pcie = reinterpret_cast<u64*>(static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x60)) | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x62)) << 16u | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x64)) << 32u | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x66)) << 48u);
 	memory::pageTableManager.mapMemory(pcie, pcie);
 	console::printf(u8"%llx\n", *pcie);*/
-	
-	/*double a = 3.14 / 4.0;
-	double b = 3.14 / 2.0;
-	double c = 3.14;*/
-	//console::printf(u8"%f\n", 0.999999682931834620);
-	
-	/*u64* code = reinterpret_cast<u64*>(memory::allocator::allocBlocks(1));
-	*code = 0xC3C889C1FF;
-	int (*compiledFun)(int) = reinterpret_cast<int(*)(int)>(code);*/
-	//int n = compiledFun(0);
-	//console::printf(u8"n = %i", n);
-	//console::setOut(console::OUT::SERIAL);
-	
-	/*double x = 2.0;
-	double es[] = { 0.0,1.0,2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0,3628800.0,39916800.0,479001600.0,6227020800.0,87178291200.0,1307674368000.0,20922789888000.0 };
-	double s[17]{};
-	double n = 0.0;
-	for (size_t i = 1; i < 16; i++)
-	{
-		double t = 1.0;
-		for (size_t j = 0; j < i; j++)
-		{
-			t *= x;
-		}
-		s[i] = t / es[i];
-		n += s[i];
-	}
-	console::printf(u8"%f ", cexp(9, 12));*/
 	cpuio::loop();
 }

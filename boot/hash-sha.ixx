@@ -22,7 +22,7 @@ export namespace hash::sha
 		u8* d8 = new u8[newSize];
 		u32* d32 = reinterpret_cast<u32*>(d8);
 		u64* d64 = reinterpret_cast<u64*>(d8);
-		memory::copy(data, d8, size);
+		memory::copy(d8, data, size);
 		d8[size] = 1 << 7;
 		*reinterpret_cast<u64*>(d8 + newSize - 8) = size << 3;
 		return sha256_t();

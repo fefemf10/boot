@@ -3,6 +3,7 @@ import VESA.structures;
 import types;
 import memory;
 import memory.allocator;
+import memory.utils;
 import console;
 import sl.math;
 import sl.algorithm;
@@ -34,11 +35,20 @@ export namespace VESA
 	}
 	void copy()
 	{
-		u32 offset = 0;
+		/*u32 offset = 0;
 		const u32 m = (vesaMode.pitch >> 2) - vesaMode.width;
 		for (i32 i = 0; i < vesaMode.height; ++i, offset += m)
 			for (i32 j = 0; j < vesaMode.width; ++j, ++offset)
-				reinterpret_cast<u32*>(vesaMode.framebuffer)[offset] = bfb[offset];
+				reinterpret_cast<u32*>(vesaMode.framebuffer)[offset] = bfb[offset];*/
+		//memory::move(reinterpret_cast<u32*>(vesaMode.framebuffer), bfb, vesaMode.height * vesaMode.pitch);
+		u32 offset = 0;
+		const u32 m = (vesaMode.pitch >> 2) - vesaMode.width;
+		for (i32 i = 0; i < vesaMode.height; ++i)
+		{
+			memory::move(reinterpret_cast<u32*>(vesaMode.framebuffer) + offset, bfb + offset, vesaMode.pitch);
+			offset += m + vesaMode.width;
+		}
+		//memory::move(reinterpret_cast<u32*>(vesaMode.framebuffer) + offset, bfb + offset, vesaMode.height * vesaMode.pitch);
 	}
 	void swap()
 	{
@@ -46,11 +56,16 @@ export namespace VESA
 	}
 	void clear()
 	{
+		//memory::set(reinterpret_cast<u32*>(vesaMode.framebuffer), 0xff, vesaMode.height * vesaMode.pitch);
 		u32 offset = 0;
 		const u32 m = (vesaMode.pitch >> 2) - vesaMode.width;
-		for (i32 i = 0; i < vesaMode.height; ++i, offset += m)
-			for (i32 j = 0; j < vesaMode.width; ++j, ++offset)
-				bfb[offset] = 0;
+		for (i32 i = 0; i < vesaMode.height; ++i)
+		{
+			memory::set(bfb + offset, 0xFF, vesaMode.pitch);
+			offset += m + vesaMode.width;
+			/*for (i32 j = 0; j < vesaMode.width; ++j, ++offset)
+				bfb[offset] = 0;*/
+		}
 	}
 	inline void drawPixel(u32 offset, u32 argb)
 	{

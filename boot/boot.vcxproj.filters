@@ -28,6 +28,15 @@
     <Filter Include="Исходные файлы\SMBIOS">
       <UniqueIdentifier>{078ed1ed-6fef-436f-a83b-bdb78a1d6abc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\vfs">
+      <UniqueIdentifier>{8d1f0272-abb6-47cb-bc1b-d5d86937e2b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\fs">
+      <UniqueIdentifier>{1f010baf-6d2d-41ba-9da1-03497bf37088}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\fs\exFAT">
+      <UniqueIdentifier>{1f52f8cf-d18c-4916-8de3-5d460eb1ccf2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.ixx">
@@ -216,9 +225,6 @@
     <ClCompile Include="glm.mat2x2.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
-    <ClCompile Include="glm.matrix.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="glm.mat2x3.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
@@ -267,6 +273,21 @@
     <ClCompile Include="sl.algorithm.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
+    <ClCompile Include="glm.matrix.ixx">
+      <Filter>Исходные файлы\glm</Filter>
+    </ClCompile>
+    <ClCompile Include="vfs.file.ixx">
+      <Filter>Исходные файлы\vfs</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.string.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="fs.exFAT.Volume.ixx">
+      <Filter>Исходные файлы\fs\exFAT</Filter>
+    </ClCompile>
+    <ClCompile Include="fs.exFAT.MainBootStructure.ixx">
+      <Filter>Исходные файлы\fs\exFAT</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -281,11 +302,14 @@
     <FASM Include="IOasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
-    <FASM Include="memoryasm.asm">
+    <FASM Include="memset.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
     <FASM Include="mathasm.asm">
       <Filter>Исходные файлы\std</Filter>
+    </FASM>
+    <FASM Include="memcpy.asm">
+      <Filter>Исходные файлы</Filter>
     </FASM>
   </ItemGroup>
   <ItemGroup>
