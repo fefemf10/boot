@@ -26,4 +26,35 @@ export namespace fs::exFAT
 		u8 bootCode[390];
 		u8 bootSignature[2];
 	};
+	struct ExtendedBoot
+	{
+		u8 extendedBootCode[1];
+		u32 extendedBootSignature;
+	};
+	struct GenericParameters
+	{
+		u8 parametersGuid[16];
+		u8 rsv[32];
+	};
+	struct NullParameters
+	{
+		u8 parametersGuid[16];
+		u8 rsv[16];
+	};
+	struct FlashParameters
+	{
+		u8 parametersGuid[16];
+		u32 eraseBlockSize;
+		u32 pageSize;
+		u32 spareSection;
+		u32 randomAccessTime;
+		u32 programmingTime;
+		u32 readCycle;
+		u32 writeCycle;
+		u32 rsv;
+	};
+	struct OEMParameters
+	{
+		GenericParameters parameters[10];
+	};
 }

@@ -49,7 +49,7 @@
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -188,7 +188,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
@@ -244,7 +244,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <MapExports>false</MapExports>
       <ForceFileOutput>
       </ForceFileOutput>
-      <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
+      <TurnOffAssemblyGeneration>false</TurnOffAssemblyGeneration>
       <CreateHotPatchableImage>
       </CreateHotPatchableImage>
       <MergeSections>
@@ -270,7 +270,7 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="driver.AHCI.ixx" />
     <ClCompile Include="driver.Driver.ixx" />
     <ClCompile Include="driver.ixx" />
-    <ClCompile Include="fs.exFAT.MainBootStructure.ixx" />
+    <ClCompile Include="fs.exFAT.structures.ixx" />
     <ClCompile Include="fs.exFAT.Volume.ixx" />
     <ClCompile Include="glm.geometric.ixx" />
     <ClCompile Include="glm.ixx" />

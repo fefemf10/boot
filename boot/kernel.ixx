@@ -25,6 +25,7 @@ import sl.math;
 import sl.numbers;
 import sl.vector;
 import SMBIOS;
+import memory.utils;
 extern "C" void kernel_start()
 {
 	IDT::initialize();
@@ -93,7 +94,6 @@ extern "C" void kernel_start()
 	PIT::setDivisor(65535);
 	glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 1.f, 1.f)));
 	double dt = 0;
-	console::printf(u8"%hi\n", VESA::vesaMode.pitch);
 	while (true)
 	{
 		//double start = PIT::timeSinceBoot;

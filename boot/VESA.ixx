@@ -71,7 +71,7 @@ export namespace VESA
 	{
 		bfb[offset] = argb;
 	}
-	inline void drawPixel(u16 x, u16 y, u32 argb)
+	inline void drawPixel(i32 x, i32 y, u32 argb)
 	{
 		u32 pixel_offset = (y * vesaMode.pitch + x * 4) >> 2;
 		bfb[pixel_offset] = argb;

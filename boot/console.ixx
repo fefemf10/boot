@@ -297,6 +297,10 @@ export namespace console
 	}
 	void puth(const void* data, u64 size)
 	{
+		/*for (size_t i = 0; i < size; i++)
+		{
+			serial::write(reinterpret_cast<const u8*>(data)[i]);
+		}*/
 		for (size_t i = 1; i <= size / 8; i++)
 		{
 			printf((i % 4 == 0) ? u8"%016llx\n" : u8"%016llx ", std::byteswap(reinterpret_cast<const u64*>(data)[i - 1]));

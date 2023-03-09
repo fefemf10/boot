@@ -285,7 +285,7 @@
     <ClCompile Include="fs.exFAT.Volume.ixx">
       <Filter>Исходные файлы\fs\exFAT</Filter>
     </ClCompile>
-    <ClCompile Include="fs.exFAT.MainBootStructure.ixx">
+    <ClCompile Include="fs.exFAT.structures.ixx">
       <Filter>Исходные файлы\fs\exFAT</Filter>
     </ClCompile>
   </ItemGroup>
