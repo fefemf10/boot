@@ -75,12 +75,34 @@ export namespace ISR
 	};
 	extern "C" void isrHandler(const cpuio::regs& regs)
 	{
+		console::printf(u8"%s\n", errors[regs.interruptCode]);
+		if (regs.interruptCode == 0xC && regs.errorCode != 0)
+		{
+			if ((regs.errorCode & 0x1)) console::puts(u8"(EXTERNAL)");
+			if ((regs.errorCode & 0x6) == 0) console::puts(u8"(GDT)");
+			if ((regs.errorCode & 0x6) == 2) console::puts(u8"(IDT)");
+			if ((regs.errorCode & 0x6) == 4) console::puts(u8"(LDT)");
+			if ((regs.errorCode & 0x6) == 6) console::puts(u8"(IDT)");
+			console::printf(u8" SELECTOR: %llx\n", regs.errorCode & 0xfff8);
+		}
+		if (regs.interruptCode == 0xE)
+		{
+			u8 notPresent = !(regs.errorCode & 0x1);
+			u8 access = regs.errorCode & 0x2;
+			u8 supervisor = regs.errorCode & 0x4;
+			u8 reservedBits = regs.errorCode & 0x8;
+			u8 instructionFetch = regs.errorCode & 0x10;
+			console::printf(u8"CR3: %llx\n", cpuio::cr3());
+			console::printf(u8"ADDRESS: %llx\n", cpuio::cr2());
+			console::printf(u8"REASON: ");
+			if (notPresent) console::puts(u8"(NOT PRESET)");
+			if (access) console::puts(u8"(READ-ONLY)");
+			if (supervisor) console::puts(u8"(SUPERVISOR)");
+			if (reservedBits) console::puts(u8"(RESERVED WRITE)");
+			if (instructionFetch) console::puts(u8"(INSTRUCTION FETCH)");
+			console::puts(u8"\n");
+		}
 		console::putregs(regs);
-		//teletype::puth(regs.interruptCode);
-		//teletype::puth(errors);
-		//teletype::puth(errors[0]);
-		//teletype::puts(errors[regs.interruptCode]);
-		console::puts(errors[regs.interruptCode]);
 		cpuio::halt();
 	}
 	void initialize()

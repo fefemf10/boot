@@ -33,12 +33,22 @@ extern "C" void kernel_start()
 	IRQ::initialize();
 	IDT::loadIDTR(&IDT::idtr);
 	console::initialize();
+	/*int a = 5;
+	int b = 0;
+	console::printf(u8"%i\n", a / b);*/
+	//console::printf(u8"%i\n", *(reinterpret_cast<int*>(0x5994646154)));
 	console::setOut(console::OUT::SERIAL);
 	memory::initialize();
-	VESA::initialize();
+	//VESA::initialize();
 	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
 		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
-	console::setOut(console::OUT::SERIAL);
+	console::setOut(console::OUT::TELETYPE);
+	/*u8 bit16[] = { 0x00, 0xD8, 0x67, 0x66, 0x01, 0x15, 0x50, 0x50, 0x55, 0x00, 0x03, 0x2E,
+	0x55, 0x55, 0xC3 };
+	u8 bit64[128]{};
+	size_t s{};
+	translator(bit16, bit64, s);
+	console::puth(bit64, 128);*/
 	//std::vector<int> a;
 	////a.reserve(8);
 	//console::printf(u8"%llx %i %i\n", a.data(), a[0], a[1]);
@@ -92,32 +102,32 @@ extern "C" void kernel_start()
 	};
 	
 	PIT::setDivisor(65535);
-	glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 1.f, 1.f)));
-	double dt = 0;
-	while (true)
-	{
-		//double start = PIT::timeSinceBoot;
-		VESA::clear();
-		for (size_t i = 0; i < 12; i++)
-		{
-			int x0 = vertex[edge[i].x].x + 520;
-			int y0 = 440 - vertex[edge[i].x].y;
-			int x1 = vertex[edge[i].y].x + 520;
-			int y1 = 440 - vertex[edge[i].y].y;
-			VESA::drawLine(x0, y0, x1, y1, 0xFF00FF00);
-		}
-		VESA::drawRectangle(20, 20, 100, 100, 0xFF00FF00);
-		VESA::drawCircle(200, 200, 100, 0xFF0000FF);
-		for (size_t i = 0; i < 8; i++)
-		{
-			glm::f32vec4 m = r * glm::f32vec4(vertex[i], 1.f);
-			vertex[i] = glm::f32vec3(m);
-		}
-		VESA::swap();
-		/*double end = PIT::timeSinceBoot;
-		dt = end - start;
-		console::printf(u8"%f\n", dt);*/
-	}
+	//glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 1.f, 1.f)));
+	//double dt = 0;
+	//while (true)
+	//{
+	//	//double start = PIT::timeSinceBoot;
+	//	VESA::clear();
+	//	for (size_t i = 0; i < 12; i++)
+	//	{
+	//		int x0 = vertex[edge[i].x].x + 520;
+	//		int y0 = 440 - vertex[edge[i].x].y;
+	//		int x1 = vertex[edge[i].y].x + 520;
+	//		int y1 = 440 - vertex[edge[i].y].y;
+	//		VESA::drawLine(x0, y0, x1, y1, 0xFF00FF00);
+	//	}
+	//	VESA::drawRectangle(20, 20, 100, 100, 0xFF00FF00);
+	//	VESA::drawCircle(200, 200, 100, 0xFF0000FF);
+	//	for (size_t i = 0; i < 8; i++)
+	//	{
+	//		glm::f32vec4 m = r * glm::f32vec4(vertex[i], 1.f);
+	//		vertex[i] = glm::f32vec3(m);
+	//	}
+	//	VESA::swap();
+	//	/*double end = PIT::timeSinceBoot;
+	//	dt = end - start;
+	//	console::printf(u8"%f\n", dt);*/
+	//}
 	//memory::printSMAP();
 	
 	/*ACPI::RSDP* rsdp = ACPI::RSDP::find();

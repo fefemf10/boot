@@ -4,7 +4,6 @@ import types;
 import memory;
 import memory.allocator;
 import memory.utils;
-import console;
 import sl.math;
 import sl.algorithm;
 export namespace VESA

@@ -89,7 +89,7 @@ mov si, readPacket1
 int 0x13
 loop .diskread
 
-call setVESA
+;call setVESA
 
 jmp enterProtectedMode
 

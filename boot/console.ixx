@@ -137,6 +137,9 @@ export namespace console
 				case u8'\n':
 					puts(u8"\n");
 					break;
+				case u8'\t':
+					puts(u8"    ");
+					break;
 				default:
 					putc(*fmt);
 					break;
@@ -297,34 +300,30 @@ export namespace console
 	}
 	void puth(const void* data, u64 size)
 	{
-		/*for (size_t i = 0; i < size; i++)
+		for (size_t i = 0; i < size; i++)
 		{
 			serial::write(reinterpret_cast<const u8*>(data)[i]);
-		}*/
-		for (size_t i = 1; i <= size / 8; i++)
+		}
+		/*for (size_t i = 1; i <= size / 8; i++)
 		{
 			printf((i % 4 == 0) ? u8"%016llx\n" : u8"%016llx ", std::byteswap(reinterpret_cast<const u64*>(data)[i - 1]));
-		}
+		}*/
 	}
 	void putregs(const cpuio::regs& regs)
 	{
-		printf(u8"RAX: %08llx\n", regs.rax);
-		printf(u8"RBX: %08llx\n", regs.rbx);
-		printf(u8"RCX: %08llx\n", regs.rcx);
-		printf(u8"RDX: %08llx\n", regs.rdx);
-		printf(u8"RSI: %08llx\n", regs.rsi);
-		printf(u8"RDI: %08llx\n", regs.rdi);
-		printf(u8"RSP: %08llx\n", regs.rsp);
-		printf(u8"RBP: %08llx\n", regs.rbp);
-		printf(u8"R8:  %08llx\n", regs.r8);
-		printf(u8"R9:  %08llx\n", regs.r9);
-		printf(u8"R10: %08llx\n", regs.r10);
-		printf(u8"R11: %08llx\n", regs.r11);
-		printf(u8"R12: %08llx\n", regs.r12);
-		printf(u8"R13: %08llx\n", regs.r13);
-		printf(u8"R14: %08llx\n", regs.r14);
-		printf(u8"R15: %08llx\n", regs.r15);
-		printf(u8"INC: %08llx\n", regs.interruptCode);
-		printf(u8"ERC: %08llx\n", regs.errorCode);
+		printf(u8"RAX: %016llx\tRBX: %016llx\n", regs.rax, regs.rbx);
+		printf(u8"RCX: %016llx\tRDX: %016llx\n", regs.rcx, regs.rdx);
+		printf(u8"RSI: %016llx\tRDI: %016llx\n", regs.rsi, regs.rdi);
+		printf(u8"RSP: %016llx\tRBP: %016llx\n", regs.rsp, regs.rbp);
+		printf(u8"R8:  %016llx\tR9:  %016llx\n", regs.r8, regs.r9);
+		printf(u8"R10: %016llx\tR11: %016llx\n", regs.r10, regs.r11);
+		printf(u8"R12: %016llx\tR13: %016llx\n", regs.r12, regs.r13);
+		printf(u8"R14: %016llx\tR15: %016llx\n", regs.r14, regs.r15);
+		printf(u8"INC: %016llx\tERC: %016llx\n", regs.interruptCode, regs.errorCode);
+		printf(u8"RIP: %016llx\n", regs.rip);
+		printf(u8"CS: %016llx\n", regs.cs);
+		printf(u8"SS: %016llx\n", regs.ss);
+		printf(u8"USERESP: %016llx\n", regs.useresp);
+		printf(u8"RFLAGS: %016llx\n", regs.rflags);
 	}
 }

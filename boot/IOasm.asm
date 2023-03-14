@@ -10,6 +10,8 @@ public halt as '?halt@cpuio@@YAXXZ::<!cpuio>'
 public loopp as '?loop@cpuio@@YAXXZ::<!cpuio>'
 public iowait as '?iowait@cpuio@@YAXXZ::<!cpuio>'
 public pausee as '?pause@cpuio@@YAXXZ::<!cpuio>'
+public cr22 as '?cr2@cpuio@@YA_KXZ::<!cpuio>'
+public cr33 as '?cr3@cpuio@@YA_KXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
 public loadGDT
 
@@ -73,4 +75,11 @@ loadIDTR:
 loadGDT:
 	mov rdi, rcx
 	mov cr3, rdi
+	ret
+
+cr22:
+	mov rax, cr2
+	ret
+cr33:
+	mov rax, cr3
 	ret
