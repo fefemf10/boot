@@ -55,6 +55,8 @@ enum class STATE
 	PREFIX = 0x0,
 	OPCODE = 0x1,
 	MODRM = 0x2,
+	ENDOPCODE = 0x3,
+	ENDJUMP = 0x4
 };
 enum class MODRM16 : u8
 {

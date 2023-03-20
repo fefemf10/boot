@@ -38,40 +38,74 @@ constexpr u8 putSIB(u8 ss, MODSIB64 index, MODSIBBASE64 base)
 {
 	return (ss & 0b11) << 6 | (std::to_underlying(index) & 0b111) << 3 | (std::to_underlying(base) & 0b111);
 }
+size_t search(int* cmd, int size, int value)
+{
+	size_t i;
+	for (i = 0; i < size; i++)
+		if (cmd[i] == value)
+			break;
+	return i;
+}
+i64 functionMap64[100]{};
+i64 functionMap16[100]{};
+i64 functionMapOffset{};
 void translator(void* address, void* destination, u64& size)
 {
+	functionMap16[functionMapOffset] = reinterpret_cast<i64>(address);
+	functionMap64[functionMapOffset] = reinterpret_cast<i64>(destination);
+	++functionMapOffset;
 	u8* src = reinterpret_cast<u8*>(address);
 	u8* dst = reinterpret_cast<u8*>(destination);
 	i64 srcoffset = 0;
 	i64 dstoffset = 0;
 	u8 operandSize = 8;
 	u8 addressSize = 8;
+	bool repeatPrefix = false;
 	STATE st = STATE::PREFIX;
 	bool ret = false;
+	int cmd16[1000]{};
+	int cmd64[1000]{};
+	int cmdJump[100]{};
+	int cmdOffset{};
+	int cmdJumpOffset{};
+	cmd16[cmdOffset] = srcoffset;
+	cmd64[cmdOffset] = dstoffset;
+	++cmdOffset;
 	while (!ret)
 	{
 		switch (st)
 		{
 		case STATE::PREFIX:
+			PREFIX_LABEL:
 			switch (static_cast<PREFIX>(src[srcoffset]))
 			{
 			case PREFIX::OPSIZEOVERRIDE:
 				st = STATE::PREFIX;
 				operandSize = 32;
 				++srcoffset;
+				goto PREFIX_LABEL;
 				break;
 			case PREFIX::ADDRESSSIZEOVERRIDE:
 				st = STATE::PREFIX;
 				addressSize = 32;
 				++srcoffset;
+				goto PREFIX_LABEL;
+				break;
+			case PREFIX::REPNE_PREPNZ:
+			case PREFIX::REP_REPE_PERZ:
+				st = STATE::PREFIX;
+				repeatPrefix = true;
+				++srcoffset;
+				goto PREFIX_LABEL;
 				break;
 			default:
 				st = STATE::OPCODE;
 				goto OPCODE_LABEL;
+				break;
 			}
 			break;
 		case STATE::OPCODE:
-		OPCODE_LABEL:
+			OPCODE_LABEL:
 			if ((src[srcoffset] >= 0 && src[srcoffset] <= 0x3D && ((src[srcoffset] - 1) % 8 == 0 || (src[srcoffset] - 3) % 8 == 0)) || src[srcoffset] >= 0x50 && src[srcoffset] <= 0x5F ||
 				src[srcoffset] == 0x69 || src[srcoffset] == 0x6B || src[srcoffset] == 0x81 ||
 				src[srcoffset] == 0x83 ||
@@ -81,7 +115,7 @@ void translator(void* address, void* destination, u64& size)
 				src[srcoffset] == 0xA9 || src[srcoffset] == 0xAB || src[srcoffset] == 0xAD || src[srcoffset] == 0xAF ||
 				src[srcoffset] >= 0xB8 && src[srcoffset] <= 0xBF || src[srcoffset] == 0xC1 || src[srcoffset] == 0xD1 ||
 				src[srcoffset] == 0xD3 || src[srcoffset] == 0xC7 || src[srcoffset] == 0xE5 || src[srcoffset] == 0xE7 ||
-				src[srcoffset] == 0xE8)
+				src[srcoffset] == 0xE8 || src[srcoffset] == 0xF7)
 			{
 				if (operandSize != 32)
 					operandSize = 16;
@@ -113,6 +147,7 @@ void translator(void* address, void* destination, u64& size)
 				CASEM(0xC0, 1)
 				CASEM(0xC6, 1)
 				CASEM(0xD2, 1)
+				CASEM(0xF6, 1)
 				{
 					if (operandSize == 16)
 						dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
@@ -130,22 +165,102 @@ void translator(void* address, void* destination, u64& size)
 				CASEM(0xAA, 5)
 				CASEM(0xC9, 0)
 				CASEM(0xCC, 0)
+				CASEM(0xF1, 0)
+				CASEM(0xF4, 1)
+				CASEM(0xF8, 5)
 				{
 					if (operandSize == 16)
 						dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
 					dst[dstoffset++] = src[srcoffset++];
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//OPCODE FOR PUSH ES
+				CASEM(0x06, 0)
+				{
+					++srcoffset;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x8C;
+					dst[dstoffset++] = 0xC0;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x50;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//OPCODE FOR POP ES
+				CASEM(0x07, 0)
+				{
+					++srcoffset;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x58;
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x8E;
+					dst[dstoffset++] = 0xC0;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//OPCODE FOR PUSH SS
+				CASEM(0x16, 0)
+				{
+					++srcoffset;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x8C;
+					dst[dstoffset++] = 0xD2;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x52;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//OPCODE FOR POP SS
+				CASEM(0x17, 0)
+				{
+					++srcoffset;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x5A;
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x8E;
+					dst[dstoffset++] = 0xD2;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//OPCODE FOR PUSH DS
+				CASEM(0x1E, 0)
+				{
+					++srcoffset;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x8C;
+					dst[dstoffset++] = 0xDB;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x53;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//OPCODE FOR POP DS
+				CASEM(0x1F, 0)
+				{
+					++srcoffset;
+					dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x5B;
+					dst[dstoffset++] = std::to_underlying(PREFIX::REXF000B);
+					dst[dstoffset++] = 0x8E;
+					dst[dstoffset++] = 0xDB;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				CASEM(0xCB, 0)
 				{
 					dst[dstoffset++] = std::to_underlying(PREFIX::REXFW000);
 					dst[dstoffset++] = src[srcoffset++];
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				CASEM(0xCF, 0)
@@ -153,9 +268,7 @@ void translator(void* address, void* destination, u64& size)
 					if (operandSize == 8)
 						dst[dstoffset++] = std::to_underlying(PREFIX::REXFW000);
 					dst[dstoffset++] = src[srcoffset++];
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				//OPCODE + IMM16
@@ -170,12 +283,18 @@ void translator(void* address, void* destination, u64& size)
 					*reinterpret_cast<u32*>(&dst[dstoffset]) = *reinterpret_cast<u16*>(&src[srcoffset]);
 					srcoffset += 2;
 					dstoffset += 4;
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				//OPCODE + IMM16 or IMM32
+				CASEM(0x00 + 5, 0)
+				CASEM(0x08 + 5, 0)
+				CASEM(0x10 + 5, 0)
+				CASEM(0x18 + 5, 0)
+				CASEM(0x20 + 5, 0)
+				CASEM(0x28 + 5, 0)
+				CASEM(0x30 + 5, 0)
+				CASEM(0x38 + 5, 0)
 				CASEM(0xA9, 0)
 				CASEM(0xB8, 7)
 				CASEM(0xC2, 0)
@@ -197,27 +316,22 @@ void translator(void* address, void* destination, u64& size)
 						srcoffset += 2;
 						dstoffset += 2;
 					}
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				//SPECIALLY FOR CALL
 				CASEM(0xEB, 0)
 				{
 					dst[dstoffset++] = src[srcoffset++];
-					u8 s = (src[srcoffset] >> 7) ? dstoffset - srcoffset : 0;
-					dst[dstoffset] = src[srcoffset] - s;
-					++dstoffset;
-					++srcoffset;
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					dst[dstoffset++] = src[srcoffset++];
+					st = STATE::ENDJUMP;
 					break;
 				}
 				//SPECIALLY FOR CALL
 				CASEM(0xE8, 0)
 				{
+					int srcl = srcoffset;
+					int dstl = dstoffset;
 					if (addressSize == 16)
 						dst[dstoffset++] = std::to_underlying(PREFIX::ADDRESSSIZEOVERRIDE);
 					if (operandSize == 16)
@@ -226,20 +340,16 @@ void translator(void* address, void* destination, u64& size)
 					if (operandSize == 32)
 					{
 						*reinterpret_cast<u32*>(&dst[dstoffset]) = *reinterpret_cast<u32*>(&src[srcoffset]);
-						*reinterpret_cast<u32*>(&dst[dstoffset]) += (*reinterpret_cast<u32*>(&dst[dstoffset]) >> 31) ? srcoffset - dstoffset : 0;
 						srcoffset += 4;
 						dstoffset += 4;
 					}
 					else
 					{
 						*reinterpret_cast<u16*>(&dst[dstoffset]) = *reinterpret_cast<u16*>(&src[srcoffset]);
-						*reinterpret_cast<u16*>(&dst[dstoffset]) += (*reinterpret_cast<u16*>(&dst[dstoffset]) >> 15) ? srcoffset - dstoffset : 0;
 						srcoffset += 2;
 						dstoffset += 2;
 					}
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDJUMP;
 					break;
 				}
 				CASEM(0xCA, 0)
@@ -249,9 +359,7 @@ void translator(void* address, void* destination, u64& size)
 					*reinterpret_cast<u16*>(&dst[dstoffset]) = *reinterpret_cast<u16*>(&src[srcoffset]);
 					srcoffset += 2;
 					dstoffset += 2;
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				//OPCODE + IMM16 + IMM8
@@ -266,20 +374,18 @@ void translator(void* address, void* destination, u64& size)
 					srcoffset += 2;
 					dstoffset += 2;
 					dst[dstoffset++] = src[srcoffset++];
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				//OPCODE + IMM8
-				CASEM(0x00 + 4, 1)
-				CASEM(0x08 + 4, 1)
-				CASEM(0x10 + 4, 1)
-				CASEM(0x18 + 4, 1)
-				CASEM(0x20 + 4, 1)
-				CASEM(0x28 + 4, 1)
-				CASEM(0x30 + 4, 1)
-				CASEM(0x38 + 4, 1)
+				CASEM(0x00 + 4, 0)
+				CASEM(0x08 + 4, 0)
+				CASEM(0x10 + 4, 0)
+				CASEM(0x18 + 4, 0)
+				CASEM(0x20 + 4, 0)
+				CASEM(0x28 + 4, 0)
+				CASEM(0x30 + 4, 0)
+				CASEM(0x38 + 4, 0)
 				CASEM(0x6A, 0)
 				CASEM(0x70, 15)
 				CASEM(0xA8, 0)
@@ -295,9 +401,7 @@ void translator(void* address, void* destination, u64& size)
 						dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
 					dst[dstoffset++] = src[srcoffset++];
 					dst[dstoffset++] = src[srcoffset++];
-					st = STATE::PREFIX;
-					operandSize = 8;
-					addressSize = 8;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 				//OPCODE STOP
@@ -305,22 +409,19 @@ void translator(void* address, void* destination, u64& size)
 			{
 				dst[dstoffset++] = src[srcoffset++];
 				ret = true;
-				st = STATE::PREFIX;
-				operandSize = 8;
-				addressSize = 8;
+				st = STATE::ENDOPCODE;
 				break;
 			}
 			case 0x90:
 			{
 				dst[dstoffset++] = src[srcoffset++];
-				st = STATE::PREFIX;
-				operandSize = 8;
-				addressSize = 8;
+				st = STATE::ENDOPCODE;
 				break;
 			}
 			}
 			break;
 		case STATE::MODRM:
+		{
 			u8 mrm = src[srcoffset++];
 			u8 mrmmod = mrm >> 6;
 			MODREG mrmreg = static_cast<MODREG>((mrm >> 3) & 0x07);
@@ -338,6 +439,7 @@ void translator(void* address, void* destination, u64& size)
 					*reinterpret_cast<u32*>(&dst[dstoffset]) = *reinterpret_cast<u32*>(&src[srcoffset]);
 					srcoffset += 4;
 					dstoffset += 4;
+					st = STATE::ENDOPCODE;
 					break;
 				}
 			}
@@ -468,10 +570,11 @@ void translator(void* address, void* destination, u64& size)
 			{
 				dst[dstoffset++] = mrm;
 				//OPCODE + IMM8
-				if (src[srcoffset - 2] == 0x6B || src[srcoffset - 2] == 0x80 || src[srcoffset - 2] == 0x83 || src[srcoffset - 2] == 0xC0 || src[srcoffset - 2] == 0xC1)
+				if (src[srcoffset - 2] == 0x6B || src[srcoffset - 2] == 0x80 || src[srcoffset - 2] == 0x83 || src[srcoffset - 2] == 0xC0 ||
+					src[srcoffset - 2] == 0xC1 || (src[srcoffset - 2] == 0xF6 && (mrmreg == MODREG::AL || mrmreg == MODREG::CL)))
 					dst[dstoffset++] = src[srcoffset++];
 				//OPCODE + IMM16
-				if (src[srcoffset - 2] == 0x69 || src[srcoffset - 2] == 0x81)
+				if (src[srcoffset - 2] == 0x69 || src[srcoffset - 2] == 0x81 || (src[srcoffset - 2] == 0xF7 && (mrmreg == MODREG::AL || mrmreg == MODREG::CL)))
 				{
 					*reinterpret_cast<u16*>(&dst[dstoffset]) = *reinterpret_cast<u16*>(&src[srcoffset]);
 					srcoffset += 2;
@@ -487,10 +590,52 @@ void translator(void* address, void* destination, u64& size)
 				break;
 			}
 			}
+			st = STATE::ENDOPCODE;
+			break;
+		}
+		case STATE::ENDOPCODE:
+			cmd16[cmdOffset] = srcoffset;
+			cmd64[cmdOffset] = dstoffset;
+			++cmdOffset;
 			st = STATE::PREFIX;
 			operandSize = 8;
 			addressSize = 8;
 			break;
+		case STATE::ENDJUMP:
+			cmdJump[cmdJumpOffset++] = cmdOffset;
+			cmd16[cmdOffset] = srcoffset;
+			cmd64[cmdOffset] = dstoffset;
+			++cmdOffset;
+			st = STATE::PREFIX;
+			operandSize = 8;
+			addressSize = 8;
+			break;
+		}
+	}
+	for (size_t i = 0; i < cmdJumpOffset; i++)
+	{
+		//получаем текущий jump который будем обрабатывать
+		int cmdJumpIndex = cmdJump[i] - 1;
+		//получаем смещение в scr с которого начинается текущий jump
+		int cmd16JumpOffset = cmd16[cmdJumpIndex];
+		int cmd16JumpOffset1 = cmd16[cmdJumpIndex + 1];
+		int cmd64JumpOffset = cmd64[cmdJumpIndex];
+		int cmd64JumpOffset1 = cmd64[cmdJumpIndex + 1];
+		if (src[cmd16JumpOffset] == 0xEB)
+		{
+			++cmd16JumpOffset;
+			++cmd64JumpOffset;
+			i8 address16 = *reinterpret_cast<i8*>(&src[cmd16JumpOffset]);
+			int findCmdIndex = search(cmd16, cmdOffset, cmd16JumpOffset1 + address16);
+			*reinterpret_cast<i8*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd64[findCmdIndex]);
+		}
+		else if (src[cmd16JumpOffset] == 0xE8)
+		{
+			++cmd16JumpOffset;
+			cmd64JumpOffset += 2;
+			i16 address16 = *reinterpret_cast<i16*>(&src[cmd16JumpOffset]);
+			int findCmdIndex = search(cmd16, cmdOffset, cmd16JumpOffset1 + address16);
+			*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd64[findCmdIndex]);
 		}
 	}
 	size = dstoffset;

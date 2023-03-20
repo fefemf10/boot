@@ -416,7 +416,7 @@ use16
 ;mov dl, 24
 ;mov bx, 568
 ;mov eax, 568658
-
+;
 ;rol dl, 3
 ;ror dh, 4
 ;rcl bl, 4
@@ -485,21 +485,65 @@ use16
 ;int 32
 ;iret
 ;iretd
-;loopnz label1
-;loopz label1
-;loop label1
-;label1:
+;loopnz label5
+;loopz label5
+;loop label5
+;label5:
 ;add al, bl
-add ax, bx
-label3:
-in al, 8
-in ax, 8
-out 8, al
-out 8, ax
-call label3
-jmp label3
-jmp label4
-add ax, bx
-label4:
-add al, bl
+;add ax, bx
+;label3:
+;in al, 8
+;in ax, 8
+;out 8, al
+;out 8, ax
+;call label3
+;jmp label3
+;jmp label4
+;add ax, bx
+;label4:
+;add al, bl
+;
+;and eax, 0xFF55
+;push es
+;pop es
+;
+;push ss
+;pop ss
+;
+;push ds
+;pop ds
+;
+int1
+icebp
+hlt
+cmc
+
+test bl, 6
+test bh, 7
+not bl
+neg bl
+mul bl
+imul bl
+div bl
+idiv bl
+
+
+test bx, 0x4566
+test bx, 0x4569
+not bx
+neg bx
+mul bx
+imul bx
+div dx
+idiv bx
+
+clc
+stc
+cld
+std
+;push fs
+;pop fs
+;
+;push gs
+;pop gs
 ret
