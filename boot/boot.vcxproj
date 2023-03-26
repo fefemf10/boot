@@ -226,7 +226,7 @@ qemu-system-x86_64 -drive format=raw,file=$(SolutionDir)$(Platform)\$(Configurat
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <Driver>Driver</Driver>
       <EntryPointSymbol>kernel_start</EntryPointSymbol>
-      <SectionAlignment>16</SectionAlignment>
+      <SectionAlignment>512</SectionAlignment>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <AdditionalOptions>/nocoffgrpinfo /kernel %(AdditionalOptions)</AdditionalOptions>

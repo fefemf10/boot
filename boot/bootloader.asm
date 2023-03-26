@@ -1,9 +1,9 @@
 format MS64 COFF
 public _fltused
+extrn kernel_start
 READBLOCKCOUNT equ 0x2
 MAXCOUNTSECTORS equ 0x7f
 SECONDLOADER equ 0x8000
-KERNEL equ 0x100000
 section '.text$a' code readable executable
 use16
 org 0x7c00
@@ -212,10 +212,11 @@ startProtectedMode:
 use64
 startLongMode:
 	mov rsi, SECONDLOADER
-	mov rdi, KERNEL + 0x660
+	mov rdi, kernel_start
 	mov rcx, (MAXCOUNTSECTORS * READBLOCKCOUNT * 0x200 / 8)
 	rep movsq
-	call KERNEL + 0x660
+	mov rdi, kernel_start
+	call rdi
 
 readPacket0:
 	db 0x10
