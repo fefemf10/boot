@@ -502,48 +502,129 @@ use16
 ;add ax, bx
 ;label4:
 ;add al, bl
+;;
+;;and eax, 0xFF55
+;;push es
+;;pop es
+;;
+;;push ss
+;;pop ss
+;;
+;;push ds
+;;pop ds
+;;
+;int1
+;icebp
+;hlt
+;cmc
 ;
-;and eax, 0xFF55
-;push es
-;pop es
+;test bl, 6
+;test bh, 7
+;not bl
+;neg bl
+;mul bl
+;imul bl
+;div bl
+;idiv bl
 ;
-;push ss
-;pop ss
 ;
-;push ds
-;pop ds
+;test bx, 0x4566
+;test bx, 0x4569
+;not bx
+;neg bx
+;mul bx
+;imul bx
+;div dx
+;idiv bx
 ;
-int1
-icebp
-hlt
-cmc
-
-test bl, 6
-test bh, 7
-not bl
-neg bl
-mul bl
-imul bl
-div bl
-idiv bl
-
-
-test bx, 0x4566
-test bx, 0x4569
-not bx
-neg bx
-mul bx
-imul bx
-div dx
-idiv bx
-
-clc
-stc
-cld
-std
+;clc
+;stc
+;cld
+;std
+;
+;jo word 0xFF52
+;jno word 0xFF52
+;jb word 0xFF52
+;jnb word 0xFF52
+;jz word 0xFF52
+;jnz word 0xFF52
+;jna word 0xFF52
+;ja word 0xFF52
+;js word 0xFF52
+;jns word 0xFF52
+;jp word 0xFF52
+;jnp word 0xFF52
+;jl word 0xFF52
+;jnl word 0xFF52
+;jng word 0xFF52
+;jg word 0xFF52
+;
 ;push fs
 ;pop fs
-;
 ;push gs
 ;pop gs
-ret
+;
+;seto al
+;setno ah
+;setb al
+;setnb ah
+;setz al
+;setnz ah
+;setbe al
+;setnbe ah
+;sets al
+;setns ah
+;setp al
+;setnp ah
+;setl al
+;setnl ah
+;setle al
+;setnle ah
+;cpuid
+;
+;pusha
+;pushad
+;popad
+;popa
+;cmp ah, 0x80
+;je 0x3e
+;cmp ah, 0x81
+;je 0x3e
+;cmp ah, 0x82
+;je 0x3e
+;cmp ah, 0x90
+;je 0x3e
+;cmp ah, 0x91
+;je 0x3e
+;pushf 
+;cmp ah, 0x53
+;je 0x3b
+;cmp ah, 0x86
+;je 0x49
+;cmp ah, 0xe8
+;je 0x49
+;cmp ah, 0xc2
+;je 0x44
+;call 0x4467
+;popf 
+;jmp 0x963f
+;jmp 0x9c9d
+;xor ah, ah
+;clc 
+;jmp 0x963f
+;call 0x494b
+;jmp 0x34
+;call 0x5073
+;jmp 0x35
+cmp ah, 0x89
+je dword 0xd9f1
+push dword 0xbb16
+jmp 0xdb1e
+push ebp
+push edi
+push esi
+push ebx
+push edx
+mov ebx, eax
+mov al, [eax + 0x1d]
+cmp al, 2

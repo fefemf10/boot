@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{51b656e4-8ae6-453c-8bc7-df03f731aaf1}</ProjectGuid>
+    <RootNamespace>kernel</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>kernel</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\BuildCustomizations\fasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetExt>.efi</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <TargetExt>.efi</TargetExt>
+    <LibraryWPath>$(LibraryWPath)</LibraryWPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <SourcePath>$(SourcePath)</SourcePath>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BuildStlModules>false</BuildStlModules>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <SubSystem>EFI Application</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <Driver>Driver</Driver>
+      <EntryPointSymbol>kernel_start</EntryPointSymbol>
+      <SectionAlignment>16</SectionAlignment>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalOptions>/nocoffgrpinfo /kernel %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies />
+      <GenerateMapFile>true</GenerateMapFile>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <FunctionOrder>order.txt</FunctionOrder>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <BaseAddress>0x100000</BaseAddress>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
+      <DataExecutionPrevention />
+    </Link>
+    <Lib>
+      <SubSystem>Native</SubSystem>
+    </Lib>
+    <PostBuildEvent>
+      <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)os.bin
+align $(OutDir)os.bin 10485760
+sfk partcopy $(OutDir)os.bin 0 10485760 $(OutDir)boot.vhd 0 -yes
+qemu-system-x86_64 -display sdl -machine q35 -serial file:$(OutDir)serial.txt -drive format=raw,file="$(OutDir)os.bin",id=disk,if=none -device ich9-ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
+del $(OutDir)$(TargetName)$(TargetExt)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <Optimization>MaxSpeed</Optimization>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ShowIncludes>false</ShowIncludes>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BuildStlModules>false</BuildStlModules>
+    </ClCompile>
+    <Link>
+      <SubSystem>EFI Application</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <Driver>Driver</Driver>
+      <EntryPointSymbol>kernel_start</EntryPointSymbol>
+      <SectionAlignment>16</SectionAlignment>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalOptions>/nocoffgrpinfo /kernel %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies />
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
+      <ShowProgress>NotSet</ShowProgress>
+      <FunctionOrder>order.txt</FunctionOrder>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <BaseAddress>0x100000</BaseAddress>
+      <LargeAddressAware>
+      </LargeAddressAware>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>false</MapExports>
+      <ForceFileOutput>
+      </ForceFileOutput>
+      <TurnOffAssemblyGeneration>false</TurnOffAssemblyGeneration>
+      <CreateHotPatchableImage>
+      </CreateHotPatchableImage>
+      <MergeSections>
+      </MergeSections>
+    </Link>
+    <Lib>
+      <SubSystem>Native</SubSystem>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+    </Lib>
+    <PostBuildEvent>
+      <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)os.bin
+align $(OutDir)os.bin 10485760
+sfk partcopy $(OutDir)os.bin 0 10485760 $(OutDir)boot.vhd 0 -yes
+qemu-system-x86_64 -display sdl -machine q35 -serial file:$(OutDir)serial.txt -drive format=raw,file="$(OutDir)os.bin",id=disk,if=none -device ich9-ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
+del $(OutDir)$(TargetName)$(TargetExt)</Command>
+    </PostBuildEvent>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ACPI.ixx" />
+    <ClCompile Include="driver.AHCI.ixx" />
+    <ClCompile Include="driver.Driver.ixx" />
+    <ClCompile Include="driver.ixx" />
+    <ClCompile Include="fs.exFAT.structures.ixx" />
+    <ClCompile Include="fs.exFAT.Volume.ixx" />
+    <ClCompile Include="glm.geometric.ixx" />
+    <ClCompile Include="glm.ixx" />
+    <ClCompile Include="glm.mat.ixx" />
+    <ClCompile Include="glm.mat2x2.ixx" />
+    <ClCompile Include="glm.mat2x3.ixx" />
+    <ClCompile Include="glm.mat2x4.ixx" />
+    <ClCompile Include="glm.mat3x2.ixx" />
+    <ClCompile Include="glm.mat3x3.ixx" />
+    <ClCompile Include="glm.mat3x4.ixx" />
+    <ClCompile Include="glm.mat4x2.ixx" />
+    <ClCompile Include="glm.mat4x3.ixx" />
+    <ClCompile Include="glm.mat4x4.ixx" />
+    <ClCompile Include="glm.matrix.ixx" />
+    <ClCompile Include="glm.setup.ixx" />
+    <ClCompile Include="glm.transform.ixx" />
+    <ClCompile Include="glm.vec1.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="glm.vec2.ixx" />
+    <ClCompile Include="glm.vec3.ixx" />
+    <ClCompile Include="glm.vec4.ixx" />
+    <ClCompile Include="glm.vectorize.ixx" />
+    <ClCompile Include="memory.Heap.ixx" />
+    <ClCompile Include="memory.PageIndex.ixx" />
+    <ClCompile Include="memory.SMAP.ixx" />
+    <ClCompile Include="pci.structures.ixx" />
+    <ClCompile Include="PIT.ixx" />
+    <ClCompile Include="sl.algorithm.ixx" />
+    <ClCompile Include="sl.compare.ixx" />
+    <ClCompile Include="sl.concepts.ixx" />
+    <ClCompile Include="console.ixx" />
+    <ClCompile Include="cpuio.ixx" />
+    <ClCompile Include="disk.ixx" />
+    <ClCompile Include="GDT.ixx" />
+    <ClCompile Include="hash-crc.ixx" />
+    <ClCompile Include="hash-sha.ixx" />
+    <ClCompile Include="hash.ixx" />
+    <ClCompile Include="IDT.ixx" />
+    <ClCompile Include="intrinsic.ixx" />
+    <ClCompile Include="IRQ.ixx" />
+    <ClCompile Include="ISR.ixx" />
+    <ClCompile Include="kernel.ixx" />
+    <ClCompile Include="keyboard.ixx" />
+    <ClCompile Include="memory.allocator.ixx" />
+    <ClCompile Include="memory.utils.ixx" />
+    <ClCompile Include="memory.ixx" />
+    <ClCompile Include="pci.ixx" />
+    <ClCompile Include="PIC.ixx" />
+    <ClCompile Include="serial.ixx" />
+    <ClCompile Include="sl.allocator.ixx" />
+    <ClCompile Include="sl.initializer_list.ixx" />
+    <ClCompile Include="sl.iterator.ixx" />
+    <ClCompile Include="sl.math.ixx" />
+    <ClCompile Include="sl.memory.ixx" />
+    <ClCompile Include="sl.numbers.ixx" />
+    <ClCompile Include="sl.numeric_limits.ixx" />
+    <ClCompile Include="sl.print.ixx" />
+    <ClCompile Include="sl.ratio.ixx" />
+    <ClCompile Include="sl.source_location.ixx" />
+    <ClCompile Include="sl.span.ixx" />
+    <ClCompile Include="sl.string.ixx" />
+    <ClCompile Include="sl.type.ixx" />
+    <ClCompile Include="sl.utility.ixx" />
+    <ClCompile Include="sl.vector.ixx" />
+    <ClCompile Include="sl.ixx" />
+    <ClCompile Include="SMBIOS.ixx" />
+    <ClCompile Include="SMBIOS.structures.ixx" />
+    <ClCompile Include="string.ixx" />
+    <ClCompile Include="teletype.ixx" />
+    <ClCompile Include="translator.ixx" />
+    <ClCompile Include="types.ixx" />
+    <ClCompile Include="sl.typetraits.ixx">
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</PreprocessToFile>
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PreprocessToFile>
+    </ClCompile>
+    <ClCompile Include="glm.vec.ixx" />
+    <ClCompile Include="VESA.ixx" />
+    <ClCompile Include="vfs.file.ixx" />
+  </ItemGroup>
+  <ItemGroup>
+    <FASM Include="bootloader.asm">
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\%(FileName).bin</Outputs>
+      <NoLogo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</NoLogo>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </DeploymentContent>
+    </FASM>
+    <FASM Include="IOasm.asm" />
+    <FASM Include="IRQasm.asm" />
+    <FASM Include="ISRasm.asm" />
+    <FASM Include="mathasm.asm" />
+    <FASM Include="memcpy.asm" />
+    <FASM Include="memset.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="disk.sata.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdarg.h" />
+    <ClInclude Include="vadefs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.AHCI.structures.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sl.bit.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="memory.PageTableManager.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="VESA.structures.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\BuildCustomizations\fasm.targets" />
+  </ImportGroup>
+</Project>

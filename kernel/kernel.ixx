@@ -26,6 +26,7 @@ import sl.numbers;
 import sl.vector;
 import SMBIOS;
 import memory.utils;
+import translator;
 extern "C" void kernel_start()
 {
 	IDT::initialize();
@@ -43,12 +44,17 @@ extern "C" void kernel_start()
 	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
 		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
 	console::setOut(console::OUT::TELETYPE);
-	/*u8 bit16[] = { 0x00, 0xD8, 0x67, 0x66, 0x01, 0x15, 0x50, 0x50, 0x55, 0x00, 0x03, 0x2E,
-	0x55, 0x55, 0xC3 };
-	u8 bit64[128]{};
+	u32* biosFunc = nullptr;
+	console::puth(biosFunc, 256*4);
+	u8 bit64[1024]{};
 	size_t s{};
-	translator(bit16, bit64, s);
-	console::puth(bit64, 128);*/
+	u32 i0x15 = biosFunc[0x15];
+	u16 segment = i0x15 >> 16;
+	u16 offset = i0x15;
+	console::printf(u8"%llx", segment * 0x10 | offset);
+	console::puth((u64*)(segment * 0x10 | offset), 512);
+	translator::translator((u64*)(segment * 0x10 | offset), bit64, s);
+	console::puth(bit64, s);
 	//std::vector<int> a;
 	////a.reserve(8);
 	//console::printf(u8"%llx %i %i\n", a.data(), a[0], a[1]);

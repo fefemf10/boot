@@ -38,13 +38,12 @@ constexpr u8 putSIB(u8 ss, MODSIB64 index, MODSIBBASE64 base)
 {
 	return (ss & 0b11) << 6 | (std::to_underlying(index) & 0b111) << 3 | (std::to_underlying(base) & 0b111);
 }
-size_t search(int* cmd, int size, int value)
+int search(int* cmd, int size, int value)
 {
-	size_t i;
-	for (i = 0; i < size; i++)
+	for (int i = 0; i < size; i++)
 		if (cmd[i] == value)
-			break;
-	return i;
+			return i;
+	return -1;
 }
 i64 functionMap64[100]{};
 i64 functionMap16[100]{};
@@ -71,7 +70,8 @@ void translator(void* address, void* destination, u64& size)
 	cmd16[cmdOffset] = srcoffset;
 	cmd64[cmdOffset] = dstoffset;
 	++cmdOffset;
-	while (!ret)
+	int counter = 256;
+	while (!ret && counter != 0)
 	{
 		switch (st)
 		{
@@ -115,7 +115,8 @@ void translator(void* address, void* destination, u64& size)
 				src[srcoffset] == 0xA9 || src[srcoffset] == 0xAB || src[srcoffset] == 0xAD || src[srcoffset] == 0xAF ||
 				src[srcoffset] >= 0xB8 && src[srcoffset] <= 0xBF || src[srcoffset] == 0xC1 || src[srcoffset] == 0xD1 ||
 				src[srcoffset] == 0xD3 || src[srcoffset] == 0xC7 || src[srcoffset] == 0xE5 || src[srcoffset] == 0xE7 ||
-				src[srcoffset] == 0xE8 || src[srcoffset] == 0xF7)
+				src[srcoffset] == 0xE8 || src[srcoffset] == 0xF7 || src[srcoffset] == 0x60 || src[srcoffset] == 0x61 ||
+				src[srcoffset] == 0xE9 || src[srcoffset] == 0x68)
 			{
 				if (operandSize != 32)
 					operandSize = 16;
@@ -172,6 +173,32 @@ void translator(void* address, void* destination, u64& size)
 					if (operandSize == 16)
 						dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
 					dst[dstoffset++] = src[srcoffset++];
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//PUSHA
+				CASEM(0x60, 0)
+				{
+					++srcoffset;
+					for (size_t i = 0; i < 8; i++)
+					{
+						if (operandSize == 16)
+							dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+						dst[dstoffset++] = 0x50 + i;
+					}
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				//POPA
+				CASEM(0x61, 0)
+				{
+					++srcoffset;
+					for (size_t i = 0; i < 8; i++)
+					{
+						if (operandSize == 16)
+							dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+						dst[dstoffset++] = 0x5F - i;
+					}
 					st = STATE::ENDOPCODE;
 					break;
 				}
@@ -272,7 +299,6 @@ void translator(void* address, void* destination, u64& size)
 					break;
 				}
 				//OPCODE + IMM16
-				CASEM(0x68, 0)
 				CASEM(0xA0, 3)
 				{
 					if (addressSize == 16)
@@ -295,6 +321,7 @@ void translator(void* address, void* destination, u64& size)
 				CASEM(0x28 + 5, 0)
 				CASEM(0x30 + 5, 0)
 				CASEM(0x38 + 5, 0)
+				CASEM(0x68, 0)
 				CASEM(0xA9, 0)
 				CASEM(0xB8, 7)
 				CASEM(0xC2, 0)
@@ -320,6 +347,7 @@ void translator(void* address, void* destination, u64& size)
 					break;
 				}
 				//SPECIALLY FOR CALL
+				CASEM(0x70, 15)
 				CASEM(0xEB, 0)
 				{
 					dst[dstoffset++] = src[srcoffset++];
@@ -330,8 +358,28 @@ void translator(void* address, void* destination, u64& size)
 				//SPECIALLY FOR CALL
 				CASEM(0xE8, 0)
 				{
-					int srcl = srcoffset;
-					int dstl = dstoffset;
+					if (addressSize == 16)
+						dst[dstoffset++] = std::to_underlying(PREFIX::ADDRESSSIZEOVERRIDE);
+					if (operandSize == 16)
+						dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = src[srcoffset++];
+					if (operandSize == 32)
+					{
+						*reinterpret_cast<u32*>(&dst[dstoffset]) = *reinterpret_cast<u32*>(&src[srcoffset]);
+						srcoffset += 4;
+						dstoffset += 4;
+					}
+					else
+					{
+						*reinterpret_cast<u16*>(&dst[dstoffset]) = *reinterpret_cast<u16*>(&src[srcoffset]);
+						srcoffset += 2;
+						dstoffset += 2;
+					}
+					st = STATE::ENDJUMP;
+					break;
+				}
+				CASEM(0xE9, 0)
+				{
 					if (addressSize == 16)
 						dst[dstoffset++] = std::to_underlying(PREFIX::ADDRESSSIZEOVERRIDE);
 					if (operandSize == 16)
@@ -387,7 +435,6 @@ void translator(void* address, void* destination, u64& size)
 				CASEM(0x30 + 4, 0)
 				CASEM(0x38 + 4, 0)
 				CASEM(0x6A, 0)
-				CASEM(0x70, 15)
 				CASEM(0xA8, 0)
 				CASEM(0xB0, 7)
 				CASEM(0xD0, 1)
@@ -404,20 +451,73 @@ void translator(void* address, void* destination, u64& size)
 					st = STATE::ENDOPCODE;
 					break;
 				}
+				//2 BYTE OPCODE
+				CASEM(0x0F, 0)
+				{
+					if (src[srcoffset + 1] >= 0x80 && src[srcoffset + 1] <= 0x8F)
+					{
+						if (operandSize != 32)
+							operandSize = 16;
+					}
+					if (addressSize == 16)
+						dst[dstoffset++] = std::to_underlying(PREFIX::ADDRESSSIZEOVERRIDE);
+					if (operandSize == 16)
+						dst[dstoffset++] = std::to_underlying(PREFIX::OPSIZEOVERRIDE);
+					dst[dstoffset++] = src[srcoffset++];
+					switch (src[srcoffset])
+					{
+						//OPCODE
+						CASEM(0xA0, 2)
+						CASEM(0xA8, 1)
+						{
+							dst[dstoffset++] = src[srcoffset++];
+							st = STATE::ENDOPCODE;
+							break;
+						}
+						//OPCODE + IMM8
+						CASEM(0x90, 15)
+						{
+							dst[dstoffset++] = src[srcoffset++];
+							dst[dstoffset++] = src[srcoffset++];
+							st = STATE::ENDOPCODE;
+							break;
+						}
+						//JUMP REL16
+						CASEM(0x80, 15)
+						{
+							dst[dstoffset++] = src[srcoffset++];
+							if (operandSize == 32)
+							{
+								*reinterpret_cast<u32*>(&dst[dstoffset]) = *reinterpret_cast<u32*>(&src[srcoffset]);
+								srcoffset += 4;
+								dstoffset += 4;
+							}
+							else
+							{
+								*reinterpret_cast<u16*>(&dst[dstoffset]) = *reinterpret_cast<u16*>(&src[srcoffset]);
+								srcoffset += 2;
+								dstoffset += 2;
+							}
+							st = STATE::ENDJUMP;
+							break;
+						}
+					}
+					break;
+				}
 				//OPCODE STOP
-			case 0xC3:
-			{
-				dst[dstoffset++] = src[srcoffset++];
-				ret = true;
-				st = STATE::ENDOPCODE;
-				break;
-			}
-			case 0x90:
-			{
-				dst[dstoffset++] = src[srcoffset++];
-				st = STATE::ENDOPCODE;
-				break;
-			}
+				case 0xC3:
+				{
+					dst[dstoffset++] = src[srcoffset++];
+					ret = true;
+					st = STATE::ENDOPCODE;
+					break;
+				}
+				case 0x90:
+				{
+					dst[dstoffset++] = src[srcoffset++];
+					st = STATE::ENDOPCODE;
+					break;
+				}
 			}
 			break;
 		case STATE::MODRM:
@@ -611,7 +711,12 @@ void translator(void* address, void* destination, u64& size)
 			addressSize = 8;
 			break;
 		}
+		--counter;
 	}
+	/*for (size_t i = 0; i < cmdJumpOffset; i++)
+	{
+		printf("%i %hi\n", i, cmd16[cmdJump[i] - 1]);
+	}*/
 	for (size_t i = 0; i < cmdJumpOffset; i++)
 	{
 		//получаем текущий jump который будем обрабатывать
@@ -627,7 +732,10 @@ void translator(void* address, void* destination, u64& size)
 			++cmd64JumpOffset;
 			i8 address16 = *reinterpret_cast<i8*>(&src[cmd16JumpOffset]);
 			int findCmdIndex = search(cmd16, cmdOffset, cmd16JumpOffset1 + address16);
-			*reinterpret_cast<i8*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd64[findCmdIndex]);
+			if (findCmdIndex != -1)
+				*reinterpret_cast<i8*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd16[findCmdIndex]);
+			else
+				*reinterpret_cast<i8*>(&dst[cmd64JumpOffset]) -= (cmd64JumpOffset1 - cmd16JumpOffset - 1);
 		}
 		else if (src[cmd16JumpOffset] == 0xE8)
 		{
@@ -635,7 +743,34 @@ void translator(void* address, void* destination, u64& size)
 			cmd64JumpOffset += 2;
 			i16 address16 = *reinterpret_cast<i16*>(&src[cmd16JumpOffset]);
 			int findCmdIndex = search(cmd16, cmdOffset, cmd16JumpOffset1 + address16);
-			*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd64[findCmdIndex]);
+			if (findCmdIndex != -1)
+				*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd16[findCmdIndex]);
+			else
+				*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) -= (cmd64JumpOffset1 - 2 - cmd16JumpOffset - 1 + 1);
+		}
+		else if (src[cmd16JumpOffset] == 0xE9)
+		{
+			++cmd16JumpOffset;
+			cmd64JumpOffset += 2;
+			i16 address16 = *reinterpret_cast<i16*>(&src[cmd16JumpOffset]);
+			int findCmdIndex = search(cmd16, cmdOffset, cmd16JumpOffset1 + address16);
+			if (findCmdIndex != -1)
+				*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd16[findCmdIndex]);
+			else
+				*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) -= (cmd64JumpOffset1 - 2 - cmd16JumpOffset - 1 + 1);
+		}
+		else if (src[cmd16JumpOffset + 1] >= 0x80 && src[cmd16JumpOffset + 1] <= 0x8F)
+		{
+			cmd16JumpOffset += 2;
+			cmd64JumpOffset += 3;
+			i16 address16 = *reinterpret_cast<i16*>(&src[cmd16JumpOffset]);
+			int findCmdIndex = search(cmd16, cmdOffset, cmd16JumpOffset1 + address16);
+			if (findCmdIndex == -1)
+			{
+				*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) -= (cmd64JumpOffset1 - cmd16JumpOffset) - 2;
+			}
+			else
+				*reinterpret_cast<i16*>(&dst[cmd64JumpOffset]) = -(cmd64JumpOffset1 - cmd64[findCmdIndex]);
 		}
 	}
 	size = dstoffset;

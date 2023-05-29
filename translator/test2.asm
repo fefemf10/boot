@@ -519,37 +519,149 @@ use64
 ;pop r11w
 ;mov ds, r11w
 ;
-int1
-icebp
-hlt
-cmc
-
-test bl, 6
-test bh, 7
-not bl
-neg bl
-mul bl
-imul bl
-div bl
-idiv bl
-
-
-test bx, 0x4566
-test bx, 0x4569
-not bx
-neg bx
-mul bx
-imul bx
-div dx
-idiv bx
-
-clc
-stc
-cld
-std
+;int1
+;icebp
+;hlt
+;cmc
+;
+;test bl, 6
+;test bh, 7
+;not bl
+;neg bl
+;mul bl
+;imul bl
+;div bl
+;idiv bl
+;
+;
+;test bx, 0x4566
+;test bx, 0x4569
+;not bx
+;neg bx
+;mul bx
+;imul bx
+;div dx
+;idiv bx
+;
+;clc
+;stc
+;cld
+;std
+;
+;jo word 0xFF52
+;jno word 0xFF52
+;jb word 0xFF52
+;jnb word 0xFF52
+;jz word 0xFF52
+;jnz word 0xFF52
+;jna word 0xFF52
+;ja word 0xFF52
+;js word 0xFF52
+;jns word 0xFF52
+;jp word 0xFF52
+;jnp word 0xFF52
+;jl word 0xFF52
+;jnl word 0xFF52
+;jng word 0xFF52
+;jg word 0xFF52
+;
 ;push fs
 ;pop fs
-;
 ;push gs
 ;pop gs
-ret
+;
+;seto al
+;setno ah
+;setb al
+;setnb ah
+;setz al
+;setnz ah
+;setbe al
+;setnbe ah
+;sets al
+;setns ah
+;setp al
+;setnp ah
+;setl al
+;setnl ah
+;setle al
+;setnle ah
+;cpuid
+;
+;push ax
+;push cx
+;push dx
+;push bx
+;push sp
+;push bp
+;push si
+;push di
+;
+;push rax
+;push rcx
+;push rdx
+;push rbx
+;push rsp
+;push rbp
+;push rsi
+;push rdi
+;
+;pop rdi
+;pop rsi
+;pop rbp
+;pop rsp
+;pop rbx
+;pop rdx
+;pop rcx
+;pop rax
+;
+;pop di
+;pop si
+;pop bp
+;pop sp
+;pop bx
+;pop dx
+;pop cx
+;pop ax
+;cmp ah, 0x80
+;je 0x3e
+;cmp ah, 0x81
+;je 0x3e
+;cmp ah, 0x82
+;je 0x3e
+;cmp ah, 0x90
+;je 0x3e
+;cmp ah, 0x91
+;je 0x3e
+;pushf 
+;cmp ah, 0x53
+;je 0x3b
+;cmp ah, 0x86
+;je 0x49
+;cmp ah, 0xe8
+;je 0x49
+;cmp ah, 0xc2
+;je 0x44
+;call word 0x4467
+;popf 
+;jmp word 0x963f
+;jmp word 0x9c9d
+;xor ah, ah
+;clc 
+;jmp word 0x963f
+;call word 0x494b
+;jmp 0x34
+;call word 0x5073
+;jmp 0x35
+cmp ah, 0x89
+je 0xd9f1
+push 0xbb16
+jmp word 0xdb1e
+push rbp
+push rdi
+push rsi
+push rbx
+push rdx
+mov ebx, eax
+mov al, [eax + 0x1d]
+cmp al, 2
