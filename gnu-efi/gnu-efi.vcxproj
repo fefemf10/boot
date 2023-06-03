@@ -170,6 +170,7 @@
     <ClCompile Include="lib\smbios.c" />
     <ClCompile Include="lib\sread.c" />
     <ClCompile Include="lib\str.c" />
+    <ClCompile Include="lib\x86_64\callwrap.c" />
     <ClCompile Include="lib\x86_64\initplat.c" />
     <ClCompile Include="lib\x86_64\math.c" />
   </ItemGroup>
