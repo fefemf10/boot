@@ -50,11 +50,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
-    <TargetExt>.efi</TargetExt>
+    <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
-    <TargetExt>.efi</TargetExt>
+    <TargetExt>.exe</TargetExt>
     <LibraryWPath>$(LibraryWPath)</LibraryWPath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
@@ -75,45 +75,49 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BuildStlModules>false</BuildStlModules>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <SubSystem>EFI Application</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <Driver>Driver</Driver>
-      <EntryPointSymbol>kernel_start</EntryPointSymbol>
-      <SectionAlignment>16</SectionAlignment>
+      <Driver>
+      </Driver>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <SectionAlignment>
+      </SectionAlignment>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/nocoffgrpinfo /kernel %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/nocoffgrpinfo %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies />
       <GenerateMapFile>true</GenerateMapFile>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <FunctionOrder>order.txt</FunctionOrder>
+      <FunctionOrder>
+      </FunctionOrder>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <BaseAddress>0x100000</BaseAddress>
-      <RandomizedBaseAddress>
-      </RandomizedBaseAddress>
-      <FixedBaseAddress>true</FixedBaseAddress>
+      <BaseAddress>
+      </BaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <FixedBaseAddress>false</FixedBaseAddress>
       <DataExecutionPrevention />
+      <TurnOffAssemblyGeneration>
+      </TurnOffAssemblyGeneration>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
     </Lib>
     <PostBuildEvent>
-      <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)os.bin
-align $(OutDir)os.bin 10485760
-sfk partcopy $(OutDir)os.bin 0 10485760 $(OutDir)boot.vhd 0 -yes
-qemu-system-x86_64 -display sdl -machine q35 -serial file:$(OutDir)serial.txt -drive format=raw,file="$(OutDir)os.bin",id=disk,if=none -device ich9-ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
-del $(OutDir)$(TargetName)$(TargetExt)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -146,37 +150,41 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <DiagnosticsFormat>Column</DiagnosticsFormat>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <AdditionalOptions>/kernel %(AdditionalOptions)</AdditionalOptions>
       <MinimalRebuild>false</MinimalRebuild>
       <BuildStlModules>false</BuildStlModules>
     </ClCompile>
     <Link>
-      <SubSystem>EFI Application</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <Driver>Driver</Driver>
-      <EntryPointSymbol>kernel_start</EntryPointSymbol>
-      <SectionAlignment>16</SectionAlignment>
+      <Driver>
+      </Driver>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <SectionAlignment>
+      </SectionAlignment>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalOptions>/nocoffgrpinfo /kernel %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/nocoffgrpinfo %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies />
-      <RandomizedBaseAddress>
-      </RandomizedBaseAddress>
-      <FixedBaseAddress>true</FixedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <FixedBaseAddress>false</FixedBaseAddress>
       <ShowProgress>NotSet</ShowProgress>
-      <FunctionOrder>order.txt</FunctionOrder>
+      <FunctionOrder>
+      </FunctionOrder>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <BaseAddress>0x100000</BaseAddress>
+      <BaseAddress>
+      </BaseAddress>
       <LargeAddressAware>
       </LargeAddressAware>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>false</MapExports>
       <ForceFileOutput>
       </ForceFileOutput>
-      <TurnOffAssemblyGeneration>false</TurnOffAssemblyGeneration>
+      <TurnOffAssemblyGeneration>
+      </TurnOffAssemblyGeneration>
       <CreateHotPatchableImage>
       </CreateHotPatchableImage>
       <MergeSections>
@@ -187,11 +195,8 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
-      <Command>objcopy -O binary $(OutDir)$(TargetName)$(TargetExt) $(OutDir)os.bin
-align $(OutDir)os.bin 10485760
-sfk partcopy $(OutDir)os.bin 0 10485760 $(OutDir)boot.vhd 0 -yes
-qemu-system-x86_64 -display sdl -machine q35 -serial file:$(OutDir)serial.txt -drive format=raw,file="$(OutDir)os.bin",id=disk,if=none -device ich9-ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
-del $(OutDir)$(TargetName)$(TargetExt)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -288,9 +293,10 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <FASM Include="bootloader.asm">
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\%(FileName).bin</Outputs>
       <NoLogo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</NoLogo>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FASM>
     <FASM Include="IOasm.asm" />
     <FASM Include="IRQasm.asm" />
@@ -327,6 +333,9 @@ del $(OutDir)$(TargetName)$(TargetExt)</Command>
     <ClCompile Include="VESA.structures.ixx">
       <FileType>Document</FileType>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="zap-ext-vga16.psf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

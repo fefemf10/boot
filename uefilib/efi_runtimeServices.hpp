@@ -2,6 +2,13 @@
 #include "efi_tables.hpp"
 namespace efi
 {
+	struct CapsuleHeader
+	{
+		GUID capsuleGuid;
+		uint32_t headerSize;
+		uint32_t flags;
+		uint32_t capsuleImageSize;
+	};
 	struct RuntimeServices
 	{
 		static constexpr uint64_t signature = 0x56524553544e5552ull;
@@ -22,8 +29,8 @@ namespace efi
 		Status (*getNextHighMonotonicCount)(uint32_t* highCount);
 		Status (*resetSystem)(ResetType resetType, Status ResetStatus, uint64_t dataSize, char16_t* resetData);
 
-		void* updateCapsule;
-		void* queryCapsuleCapabilities;
-		void* queryVariableInfo;
+		Status (*updateCapsule) (CapsuleHeader** capsuleHeaderArray, uint64_t capsuleCount, PhysicalAddress scatterGatherList);
+		Status (*queryCapsuleCapabilities) (CapsuleHeader** capsuleHeaderArray, uint64_t capsuleCount, uint64_t* maximumCapsuleSize, ResetType* resetType);
+		Status (*queryVariableInfo) (uint32_t attributes, uint64_t* maximumVariableStorageSize, uint64_t* remainingVariableStorageSize, uint64_t* maximumVariableSize);
 	};
 }

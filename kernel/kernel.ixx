@@ -27,7 +27,8 @@ import sl.vector;
 import SMBIOS;
 import memory.utils;
 import translator;
-extern "C" void kernel_start()
+extern "C" int _fltused;
+int mainCRTStartup()
 {
 	IDT::initialize();
 	ISR::initialize();
@@ -143,4 +144,5 @@ extern "C" void kernel_start()
 	memory::pageTableManager.mapMemory(pcie, pcie);
 	console::printf(u8"%llx\n", *pcie);*/
 	cpuio::loop();
+	return 0;
 }

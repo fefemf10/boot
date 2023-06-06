@@ -110,9 +110,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="efi.cpp" />
+    <ClInclude Include="efi_console.hpp" />
     <ClInclude Include="efi_bootServices.hpp" />
+    <ClInclude Include="efi_file.hpp" />
+    <ClInclude Include="efi_graphics.hpp" />
     <ClInclude Include="efi_runtimeServices.hpp" />
     <ClInclude Include="efi_GUID.hpp" />
+    <ClInclude Include="stdint.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="efi.hpp" />

@@ -5,8 +5,8 @@ namespace efi
 {
 	struct RuntimeServices;
 	struct BootServices;
-	struct SimpleTextInput;
-	struct SimpleTextOutput;
+	struct SimpleTextInputInterface;
+	struct SimpleTextOutputInterface;
 	struct TableHeader
 	{
 		uint64_t signature;
@@ -26,11 +26,11 @@ namespace efi
 		char16_t* firmwareVendor;
 		uint32_t firmwareRevision;
 		Handle conInHandle;
-		SimpleTextInput* conIn;
+		SimpleTextInputInterface* conIn;
 		Handle conOutHandle;
-		SimpleTextOutput* conOut;
+		SimpleTextOutputInterface* conOut;
 		Handle stdErrorHandle;
-		SimpleTextOutput* stdError;
+		SimpleTextOutputInterface* stdError;
 		RuntimeServices* runtimeServices;
 		BootServices* bootServices;
 		uint32_t numberOfTableEntries;
@@ -43,9 +43,4 @@ namespace efi
 	constexpr uint64_t SystemTableSignature = 0x5453595320494249ull;
 	constexpr uint32_t SystemTableRevision = makeSystemTableRevision(2, 70);
 	constexpr uint32_t SpecificationRevision = SystemTableRevision;
-	namespace vendorGUID
-	{
-		constexpr GUID acpi1{ 0xeb9d2d30,0x2d88,0x11d3,{0x9a,0x16,0x00,0x90,0x27,0x3f,0xc1,0x4d} };
-		constexpr GUID acpi1{ 0x8868e871,0xe4f1,0x11d3,{0xbc,0x22,0x00,0x80,0xc7,0x3c,0x88,0x81} };
-	}
 }

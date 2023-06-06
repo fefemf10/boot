@@ -1,10 +1,11 @@
 #pragma once
-#include <stdint.h>
+#include "stdint.hpp"
 namespace efi
 {
 	using Handle = void*;
 	using Event = void*;
-
+	using PhysicalAddress = uint64_t;
+	using VirtualAddress = uint64_t;
 	constexpr uint64_t errorBit = 0x8000000000000000ull;
 	enum class Status : uint64_t
 	{
@@ -113,7 +114,7 @@ namespace efi
 		RELATIVE
 	};
 
-	enum class Event : uint32_t
+	enum class EventType : uint32_t
 	{
 		TIMER = 0x80000000,
 		RUNTIME = 0x40000000,
@@ -129,31 +130,33 @@ namespace efi
 		CALLBACK = 8,
 		NOTIFY = 16,
 		HIGH_LEVEL = 31
-	};
-
-	enum class FileMode : uint64_t
-	{
-		FILE_MODE_READ = 0x0000000000000001,
-		FILE_MODE_WRITE = 0x0000000000000002,
-		FILE_MODE_CREATE = 0x8000000000000000
-	};
-
-	enum class FileAttributes : uint64_t
-	{
-		FILE_READ_ONLY = 0x0000000000000001,
-		FILE_HIDDEN = 0x0000000000000002,
-		FILE_SYSTEM = 0x0000000000000004,
-		FILE_RESERVED = 0x0000000000000008,
-		FILE_DIRECTORY = 0x0000000000000010,
-		FILE_ARCHIVE = 0x0000000000000020,
-		FILE_VALID_ATTR = 0x0000000000000037
-	};
+	}; 
 
 	enum class ResetType
 	{
 		RESET_COLD,
 		RESET_WARM,
 		RESET_SHUTDOWN
+	};
+
+	enum class InterfaceType : uint32_t
+	{
+		NATIVE_INTERFACE,
+		PCODE_INTERFACE
+	};
+
+	enum class LocateSearchType : uint32_t
+	{
+		ALL_HANDLES,
+		BY_REGISTER_NOTIFY,
+		BY_PROTOCOL
+	};
+
+	struct DevicePath
+	{
+		uint8_t type;
+		uint8_t subType;
+		uint8_t length[2];
 	};
 
 	struct MemoryDescriptor
@@ -173,4 +176,6 @@ namespace efi
 	};
 
 	using EventNotify = void (*)(Event, void*);
+
+	
 }

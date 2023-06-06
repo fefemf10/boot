@@ -90,4 +90,5 @@ QEMU_EXE   = "qemu-system-x86_64w"
 
 call shell.Run("cmd /c mkdir ""..\image\efi\boot""", 0, true)
 call fso.CopyFile(WScript.Arguments(0), "..\image\efi\boot\" & BOOT_NAME, true)
+call fso.CopyFile("zap-ext-vga16.psf", "..\image\zap-ext-vga16.psf", true)
 call shell.Run(QEMU_EXE + " -net none -monitor none -parallel none -bios " & FW_FILE & " -hda fat:rw:..\image")
