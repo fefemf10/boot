@@ -13,6 +13,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boot", "boot\boot.vcxproj",
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kernel", "kernel\kernel.vcxproj", "{51B656E4-8AE6-453C-8BC7-DF03F731AAF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E99DE661-D73C-45F9-AC15-BC0B0BB719F1} = {E99DE661-D73C-45F9-AC15-BC0B0BB719F1}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uefilib", "uefilib\uefilib.vcxproj", "{83AF7C83-858C-43EA-8DCF-5237D5CAD4DC}"
 EndProject

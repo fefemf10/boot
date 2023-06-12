@@ -37,6 +37,9 @@
     <Filter Include="Исходные файлы\fs\exFAT">
       <UniqueIdentifier>{1f52f8cf-d18c-4916-8de3-5d460eb1ccf2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\PECOFF">
+      <UniqueIdentifier>{20c09874-2e49-4278-8489-883ba3bad9ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.ixx">
@@ -291,6 +294,9 @@
     <ClCompile Include="translator.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="PE.ixx">
+      <Filter>Исходные файлы\PECOFF</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -324,6 +330,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="zap-ext-vga16.psf" />
+    <CopyFileToFolders Include="zap-ext-vga16.psf" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="debug.vbs" />
   </ItemGroup>
 </Project>

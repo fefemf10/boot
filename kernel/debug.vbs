@@ -1,17 +1,21 @@
 set shell = WScript.CreateObject("WScript.Shell")
 set fso = CreateObject("Scripting.FileSystemObject")
 
+TARGET_DIR = WScript.Arguments(0)
+
 NO_CACHE = false
 UEFI_EXT  = "x64"
 QEMU_ARCH = "x86_64"
 FW_BASE   = "OVMF"
 BIOS_OPT  = "-pflash"
 
+
 FW_ARCH = UCase(UEFI_EXT)
 FW_DIR  = "https://efi.akeo.ie/" & FW_BASE & "/"
-FW_ZIP  = FW_BASE & "-" & FW_ARCH & ".zip"
-FW_FILE = FW_BASE & "_" & FW_ARCH & ".fd"
-FW_URL  = FW_DIR & FW_ZIP
+FW_ZIPURL  = FW_BASE & "-" & FW_ARCH & ".zip"
+FW_ZIP  = "..\boot\" & FW_BASE & "-" & FW_ARCH & ".zip"
+FW_FILE = "..\boot\" & FW_BASE & "_" & FW_ARCH & ".fd"
+FW_URL  = FW_DIR & FW_ZIPURL
 
 Sub DownloadFtp(Server, Path)
   Set file = fso.CreateTextFile("ftp.txt", True)
@@ -89,6 +93,7 @@ QEMU_EXE   = "qemu-system-x86_64w"
 
 
 call shell.Run("cmd /c mkdir ""..\image\efi\boot""", 0, true)
-call fso.CopyFile(WScript.Arguments(0), "..\image\efi\boot\" & BOOT_NAME, true)
+call fso.CopyFile(TARGET_DIR & "boot.efi", "..\image\efi\boot\" & BOOT_NAME, true)
 call fso.CopyFile("zap-ext-vga16.psf", "..\image\zap-ext-vga16.psf", true)
+call fso.CopyFile(TARGET_DIR & "kernel.exe", "..\image\kernel.exe", true)
 call shell.Run(QEMU_EXE + " -net none -monitor none -parallel none -bios " & FW_FILE & " -hda fat:rw:..\image")

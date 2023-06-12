@@ -1,148 +1,109 @@
 ﻿export module kernel;
 import types;
-import cpuio;
-import IDT;
-import ISR;
-import IRQ;
-import pci;
-import memory;
-import memory.allocator;
-import memory.SMAP;
-import console;
-import sl;
-import ACPI;
-import PIT;
-import VESA;
-import driver.AHCI.structures;
-import glm;
-import glm.vec2;
-import glm.vec3;
-import glm.vec4;
-import glm.mat2x2;
-import glm.mat4x4;
-import glm.transform;
-import sl.math;
-import sl.numbers;
-import sl.vector;
-import SMBIOS;
-import memory.utils;
-import translator;
-extern "C" int _fltused;
+//import cpuio;
+//import IDT;
+//import ISR;
+//import IRQ;
+//import pci;
+//import memory;
+//import memory.allocator;
+//import memory.SMAP;
+//import console;
+//import sl;
+//import ACPI;
+//import PIT;
+//import VESA;
+//import driver.AHCI.structures;
+//import glm;
+//import glm.vec2;
+//import glm.vec3;
+//import glm.vec4;
+//import glm.mat2x2;
+//import glm.mat4x4;
+//import glm.transform;
+//import sl.math;
+//import sl.numbers;
+//import sl.vector;
+//import SMBIOS;
+//import memory.utils;
+//import translator;
+
+//struct Framebuffer
+//{
+//	void* baseAddress;
+//	size_t bufferSize;
+//	u32 width;
+//	u32 height;
+//	u32 pixelsPerScanline;
+//};
+//struct PSF1Header
+//{
+//	u8 magic[2];
+//	u8 mode;
+//	u8 charSize;
+//};
+//struct PSF1Font
+//{
+//	PSF1Header* psf1Header;
+//	void* glyphBuffer;
+//};
+//struct MemoryDescriptor
+//{
+//	u32 type;
+//	u32 pad;
+//	void* physicalStart;
+//	void* virtualStart;
+//	u64 numberOfPages;
+//	u64 attribute;
+//};
+//struct BootInfo
+//{
+//	Framebuffer* fb;
+//	PSF1Font* font;
+//	MemoryDescriptor* map;
+//	u64 mapSize;
+//	u64 mapDescriptorSize;
+//};
+//
+//struct Point
+//{
+//	u32 x;
+//	u32 y;
+//} cursorPos{};
+//void putChar(Framebuffer* fb, PSF1Font* font, u32 color, char8_t c, u32 offsetX, u32 offsetY)
+//{
+//	u32* pixels = (u32*)fb->baseAddress;
+//	char8_t* fontPtr = reinterpret_cast<char8_t*>(font->glyphBuffer) + (c * font->psf1Header->charSize);
+//	for (size_t y = offsetY; y < offsetY + 16; y++)
+//	{
+//		for (size_t x = offsetX; x < offsetX + 8; x++)
+//		{
+//			if ((*fontPtr & (0b10000000 >> (x - offsetX))) > 0)
+//			{
+//				*(u32*)(pixels + x + (y * fb->pixelsPerScanline)) = color;
+//			}
+//		}
+//		++fontPtr;
+//	}
+//}
+//
+//void print(Framebuffer* fb, PSF1Font* font, const char8_t* str)
+//{
+//	const char8_t* c = str;
+//	while (*c)
+//	{
+//		putChar(fb, font, 0x00FFFFFF, *c, cursorPos.x, cursorPos.y);
+//		cursorPos.x += 8;
+//		if (cursorPos.x + 8 > fb->width)
+//		{
+//			cursorPos.x = 0;
+//			cursorPos.y += 16;
+//		}
+//		++c;
+//	}
+//}
+int b = 1;
 int mainCRTStartup()
 {
-	IDT::initialize();
-	ISR::initialize();
-	IRQ::initialize();
-	IDT::loadIDTR(&IDT::idtr);
-	console::initialize();
-	/*int a = 5;
-	int b = 0;
-	console::printf(u8"%i\n", a / b);*/
-	//console::printf(u8"%i\n", *(reinterpret_cast<int*>(0x5994646154)));
-	console::setOut(console::OUT::SERIAL);
-	memory::initialize();
-	//VESA::initialize();
-	//console::printf(u8"%c %s %i %lli %llu %% %x %f %.2f\n",
-		//u8'A', "Hello", -5, -48889845131554, -48889845131554, 0xABCDEF, 2.84898878f, 2.84898878f);
-	console::setOut(console::OUT::TELETYPE);
-	u32* biosFunc = nullptr;
-	console::puth(biosFunc, 256*4);
-	u8 bit64[1024]{};
-	size_t s{};
-	u32 i0x15 = biosFunc[0x15];
-	u16 segment = i0x15 >> 16;
-	u16 offset = i0x15;
-	console::printf(u8"%llx", segment * 0x10 | offset);
-	console::puth((u64*)(segment * 0x10 | offset), 512);
-	translator::translator((u64*)(segment * 0x10 | offset), bit64, s);
-	console::puth(bit64, s);
-	//std::vector<int> a;
-	////a.reserve(8);
-	//console::printf(u8"%llx %i %i\n", a.data(), a[0], a[1]);
-	//console::puth(a.data(), sizeof(int) * a.capacity());
-	//a.reserve(16);
-	//console::printf(u8"%llx %i %i\n", a.data(), a[0], a[1]);
-	//console::puth(a.data(), sizeof(int) * a.capacity());
-	/*size_t i = 0;
-	for (; i < VESA::countModes; i++)
-	{
-		console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
-	}
-	i = VESA::currentMode;
-	console::printf(u8"%hu %hu %hu %hu %x\n", VESA::vesaModesInfo[i].width, VESA::vesaModesInfo[i].height, VESA::vesaModesInfo[i].attributes, VESA::vesaModesInfo[i].bpp, VESA::vesaModesInfo[i].framebuffer);
-	console::printf(u8"%hx\n", VESA::currentMode);*/
-	/*SMBIOS::SMBIOS* smbios = SMBIOS::SMBIOS::find();
-	if (smbios)
-	{
-		SMBIOS::SMBIOSHeaderStruct* header = reinterpret_cast<SMBIOS::SMBIOSHeaderStruct*>(smbios->V2.structureTableAddress);
-		while (header->type != std::to_underlying(SMBIOS::Type::PROCESSOR_INFORMATION))
-		{
-			header = reinterpret_cast<SMBIOS::SMBIOSHeaderStruct*>(smbios->V2.structureTableAddress)
-		}
-		console::printf(u8"%hx\n", smbios->V2.numberOfStructures);
-	}*/
-	glm::f32vec3 vertex[8] =
-	{
-		{0, 0, 0},
-		{0, 110, 0},
-		{175, 110, 0},
-		{175, 0, 0},
-		{0, 0, 150},
-		{0, 110, 150},
-		{175, 110, 150},
-		{175, 0, 150}
-	};
-	glm::u8vec2 edge[12] =
-	{
-		{0, 1},
-		{1, 2},
-		{2, 3},
-		{3, 0},
-		{4, 5},
-		{5, 6},
-		{6, 7},
-		{7, 4},
-		{0, 4},
-		{1, 5},
-		{2, 6},
-		{3, 7}
-	};
-	
-	PIT::setDivisor(65535);
-	//glm::f32mat4x4 r = glm::rotate(glm::f32mat4x4(1.f), std::numbers::pi_v<float> / 12.f / 16.f, (glm::f32vec3(1.f, 1.f, 1.f)));
-	//double dt = 0;
-	//while (true)
-	//{
-	//	//double start = PIT::timeSinceBoot;
-	//	VESA::clear();
-	//	for (size_t i = 0; i < 12; i++)
-	//	{
-	//		int x0 = vertex[edge[i].x].x + 520;
-	//		int y0 = 440 - vertex[edge[i].x].y;
-	//		int x1 = vertex[edge[i].y].x + 520;
-	//		int y1 = 440 - vertex[edge[i].y].y;
-	//		VESA::drawLine(x0, y0, x1, y1, 0xFF00FF00);
-	//	}
-	//	VESA::drawRectangle(20, 20, 100, 100, 0xFF00FF00);
-	//	VESA::drawCircle(200, 200, 100, 0xFF0000FF);
-	//	for (size_t i = 0; i < 8; i++)
-	//	{
-	//		glm::f32vec4 m = r * glm::f32vec4(vertex[i], 1.f);
-	//		vertex[i] = glm::f32vec3(m);
-	//	}
-	//	VESA::swap();
-	//	/*double end = PIT::timeSinceBoot;
-	//	dt = end - start;
-	//	console::printf(u8"%f\n", dt);*/
-	//}
-	//memory::printSMAP();
-	
-	/*ACPI::RSDP* rsdp = ACPI::RSDP::find();
-	ACPI::MCFGHeader* mcfg = reinterpret_cast<ACPI::MCFGHeader*>(ACPI::SDTHeader::find(reinterpret_cast<ACPI::SDTHeader*>(rsdp->RSDTAddress), u8"MCFG"));
-	pci::enumeratePCI(mcfg);*/
-	/*u64* pcie = reinterpret_cast<u64*>(static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x60)) | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x62)) << 16u | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x64)) << 32u | static_cast<u64>(pci::old::configRealWord(0, 0, 0, 0x66)) << 48u);
-	memory::pageTableManager.mapMemory(pcie, pcie);
-	console::printf(u8"%llx\n", *pcie);*/
-	cpuio::loop();
-	return 0;
+	return f(0) + b;
 }
