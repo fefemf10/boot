@@ -5,8 +5,6 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "translator", "translator\translator.vcxproj", "{16B7D45A-A23C-4897-B59A-C340564D6C0E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gnu-efi", "gnu-efi\gnu-efi.vcxproj", "{F5D091B4-FCFA-439F-94B8-7FF361DDC4CA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boot", "boot\boot.vcxproj", "{E99DE661-D73C-45F9-AC15-BC0B0BB719F1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{83AF7C83-858C-43EA-8DCF-5237D5CAD4DC} = {83AF7C83-858C-43EA-8DCF-5237D5CAD4DC}
@@ -29,10 +27,6 @@ Global
 		{16B7D45A-A23C-4897-B59A-C340564D6C0E}.Debug|x64.Build.0 = Debug|x64
 		{16B7D45A-A23C-4897-B59A-C340564D6C0E}.Release|x64.ActiveCfg = Release|x64
 		{16B7D45A-A23C-4897-B59A-C340564D6C0E}.Release|x64.Build.0 = Release|x64
-		{F5D091B4-FCFA-439F-94B8-7FF361DDC4CA}.Debug|x64.ActiveCfg = Debug|x64
-		{F5D091B4-FCFA-439F-94B8-7FF361DDC4CA}.Debug|x64.Build.0 = Debug|x64
-		{F5D091B4-FCFA-439F-94B8-7FF361DDC4CA}.Release|x64.ActiveCfg = Release|x64
-		{F5D091B4-FCFA-439F-94B8-7FF361DDC4CA}.Release|x64.Build.0 = Release|x64
 		{E99DE661-D73C-45F9-AC15-BC0B0BB719F1}.Debug|x64.ActiveCfg = Debug|x64
 		{E99DE661-D73C-45F9-AC15-BC0B0BB719F1}.Debug|x64.Build.0 = Debug|x64
 		{E99DE661-D73C-45F9-AC15-BC0B0BB719F1}.Release|x64.ActiveCfg = Release|x64
