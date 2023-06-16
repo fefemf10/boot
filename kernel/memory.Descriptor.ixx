@@ -1,27 +1,18 @@
-export module memory.SMAP;
+export module memory.Descriptor;
 import types;
-import console;
-import memory.allocator;
 export namespace memory
 {
-	struct SMAP
+	struct Descriptor
 	{
-		u64* base;
-		u64 length;
 		u32 type;
-		u32 acpi;
-		constexpr static u64 address = 0x27A00;
-		static u32 size;
-		static SMAP* smap;
-		static void initialize()
-		{
-			size = *reinterpret_cast<u32*>(SMAP::address);
-			smap = reinterpret_cast<SMAP*>(SMAP::address + 4);
-		}
+		u32 pad;
+		void* physicalStart;
+		void* virtualStart;
+		u64 numberOfPages;
+		u64 attribute;
 	};
-	u32 SMAP::size;
-	SMAP* SMAP::smap;
-	void printSMAP()
+
+	/*void printSMAP()
 	{
 		for (u64 i = 0; i < SMAP::size; i++)
 		{
@@ -43,5 +34,5 @@ export namespace memory
 		console::printf(u8"Total 4KB blocks: %x\n", allocator::maxBlocks);
 		console::printf(u8"Used blocks: %x\n", allocator::usedBlocks);
 		console::printf(u8"Free blocks: %x\n", allocator::maxBlocks - allocator::usedBlocks);
-	}
+	}*/
 }

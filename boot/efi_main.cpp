@@ -108,7 +108,7 @@ struct BootInfo
 	uint64_t mapDescriptorSize;
 };
 
-int (*mainCRTStartup)();
+void (*mainCRTStartup)(BootInfo*);
 
 void loadPE(efi::FileHandle file, PE::PE& pe)
 {
@@ -155,7 +155,7 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 			*reinterpret_cast<u64*>(reinterpret_cast<uint64_t>(image) + rva + (relocationVirtualTable[i] & 0x0FFF)) += reinterpret_cast<uint64_t>(image) - pe.optionalHeader.imageBase;
 		}
 	}
-	mainCRTStartup = reinterpret_cast<int (*)()>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.addressOfEntryPoint);
+	mainCRTStartup = reinterpret_cast<void(*)(BootInfo*)>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.addressOfEntryPoint);
 }
 const char16_t* EFI_MEMORY_TYPE_STRINGS[]{
 
@@ -217,9 +217,9 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	bootInfo.mapSize = mapSize;
 	bootInfo.mapDescriptorSize = descriptorSize;
 
-	//BS->exitBootServices(imageHandle, mapKey);
-
-	if (mainCRTStartup() == 'b')
+	BS->exitBootServices(imageHandle, mapKey);
+	mainCRTStartup(&bootInfo);
+	/*if (mainCRTStartup() == 'b')
 	{
 		SS->conOut->outputString(SS->conOut, u"Counld not load kernel\n\r");
 	}
@@ -229,6 +229,6 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	}
 	systemTable->conIn->reset(systemTable->conIn, false);
 	systemTable->bootServices->waitForEvent(1, &systemTable->conIn->waitForKey, &event);
-	systemTable->runtimeServices->resetSystem(efi::ResetType::RESET_WARM, efi::Status::SUCCESS, 0, nullptr);
+	systemTable->runtimeServices->resetSystem(efi::ResetType::RESET_WARM, efi::Status::SUCCESS, 0, nullptr);*/
 	return efi::Status::SUCCESS;
 }

@@ -1,21 +1,53 @@
 export module console;
 import "stdarg.h";
-import teletype;
 import serial;
 import cpuio;
 import types;
+import Framebuffer;
+import Font;
 import sl.math;
-import sl.bit;
 export namespace console
 {
+	void putChar(u32 color, char8_t c, u32 offsetX, u32 offsetY)
+	{
+		u32* pixels = (u32*)framebuffer->baseAddress;
+		char8_t* fontPtr = reinterpret_cast<char8_t*>(font->glyphBuffer) + (c * font->psf1Header->charSize);
+		for (size_t y = offsetY; y < offsetY + 16; y++)
+		{
+			for (size_t x = offsetX; x < offsetX + 8; x++)
+			{
+				if ((*fontPtr & (0b10000000 >> (x - offsetX))) > 0)
+				{
+					*(u32*)(pixels + x + (y * framebuffer->pixelsPerScanline)) = color;
+				}
+			}
+			++fontPtr;
+		}
+		cursorPos.x += 8;
+		if (cursorPos.x + 8 > framebuffer->width)
+		{
+			cursorPos.x = 0;
+			cursorPos.y += 16;
+		}
+	}
+
+	void print(const char8_t* str)
+	{
+		const char8_t* c = str;
+		while (*c)
+		{
+			putChar(0x00FFFFFF, *c, cursorPos.x, cursorPos.y);
+			++c;
+		}
+	}
 	enum class OUT
 	{
+		FRAMEBUFFER,
 		TELETYPE,
 		SERIAL
 	} out;
 	void initialize()
 	{
-		teletype::clear();
 		serial::initialize();
 	}
 	void setOut(OUT outt)
@@ -24,14 +56,16 @@ export namespace console
 	}
 	void putc(char8_t c)
 	{
-		if (out == OUT::SERIAL)
+		if (out == OUT::FRAMEBUFFER)
+			putChar(0x00FFFFFF, c, cursorPos.x, cursorPos.y);
+		else if (out == OUT::SERIAL)
 			serial::write(c);
-		else
-			teletype::putc(c);
 	}
 	void puts(const char8_t* str)
 	{
-		if (out == OUT::SERIAL)
+		if (out == OUT::FRAMEBUFFER)
+			print(str);
+		else if (out == OUT::SERIAL)
 		{
 			char8_t* strs = const_cast<char8_t*>(str);
 			while (*strs)
@@ -39,8 +73,6 @@ export namespace console
 				serial::write(*strs++);
 			}
 		}
-		else
-			teletype::puts(str);
 	}
 	void printf_unsigned(u64 number, i32 radix, i64 width, bool skipfirst = false)
 	{

@@ -186,7 +186,7 @@
     <ClCompile Include="memory.PageIndex.ixx">
       <Filter>Исходные файлы\memory</Filter>
     </ClCompile>
-    <ClCompile Include="memory.SMAP.ixx">
+    <ClCompile Include="memory.Descriptor.ixx">
       <Filter>Исходные файлы\memory</Filter>
     </ClCompile>
     <ClCompile Include="memory.Heap.ixx">
@@ -296,6 +296,18 @@
     </ClCompile>
     <ClCompile Include="PE.ixx">
       <Filter>Исходные файлы\PECOFF</Filter>
+    </ClCompile>
+    <ClCompile Include="Framebuffer.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Font.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="BootInfo.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="fltused.ixx">
+      <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
