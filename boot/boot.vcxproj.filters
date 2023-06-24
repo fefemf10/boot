@@ -27,8 +27,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.vbs" />
-    <None Include="kernelTrampoline.asm">
+  </ItemGroup>
+  <ItemGroup>
+    <FASM Include="setStack.asm">
       <Filter>Исходные файлы</Filter>
-    </None>
+    </FASM>
   </ItemGroup>
 </Project>

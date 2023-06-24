@@ -2,7 +2,7 @@ export module BootInfo;
 import types;
 import Framebuffer;
 import Font;
-import memory.Descriptor;
+import memory.descriptor;
 export
 {
 	struct BootInfo
@@ -10,7 +10,10 @@ export
 		Framebuffer* fb;
 		PSF1Font* font;
 		memory::Descriptor* map;
+		u64 mapEntries;
 		u64 mapSize;
-		u64 mapDescriptorSize;
+		u64 descriptorSize;
+		void* kernelAddress;
+		u64 kernelSize;
 	};
 }

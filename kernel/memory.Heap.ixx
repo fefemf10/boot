@@ -48,17 +48,12 @@ export namespace memory
 	void* heapStart;
 	void* heapEnd;
 
-	void initializeHeap(PageTable* PLM4, void* address, u64 size)
+	void initializeHeap(PageTable* PLM4, void* address, u64 countPages)
 	{
 		PLM4 = PLM4;
-		void* pos = address;
 		PageTableManager pageTableManager(PLM4);
-		for (size_t i = 0; i < size; ++i)
-		{
-			pageTableManager.mapMemory(pos, memory::allocator::allocBlocks(1));
-			pos = reinterpret_cast<void*>(reinterpret_cast<u64>(pos) + 0x1000);
-		}
-		u64 heapSize = size * 0x1000;
+		const u64 heapSize = countPages * memory::PAGESIZE;
+		pageTableManager.mapMemory(memory::allocator::allocBlocks(countPages), address, heapSize);
 		heapStart = address;
 		heapEnd = reinterpret_cast<void*>(reinterpret_cast<u64>(heapStart) + heapSize);
 		HeapSegment* startSegment = reinterpret_cast<HeapSegment*>(address);
@@ -70,19 +65,15 @@ export namespace memory
 	}
 	void extendMap(u64 size)
 	{
-		if (size % 0x1000)
+		if (size % memory::PAGESIZE)
 		{
-			size -= size % 0x1000;
-			size += 0x1000;
+			size -= size % memory::PAGESIZE;
+			size += memory::PAGESIZE;
 		}
-		u64 pages = size / 0x1000;
+		u64 pages = size / memory::PAGESIZE;
 		HeapSegment* newSegment = reinterpret_cast<HeapSegment*>(heapEnd);
 		PageTableManager pageTableManager(PLM4);
-		for (size_t i = 0; i < pages; ++i)
-		{
-			pageTableManager.mapMemory(heapEnd, allocator::allocBlocks(1));
-			heapEnd = reinterpret_cast<void*>(reinterpret_cast<u64>(heapEnd) + 0x1000);
-		}
+		pageTableManager.mapMemory(allocator::allocBlocks(pages), heapEnd, pages * memory::PAGESIZE);
 		newSegment->free = true;
 		newSegment->last = lastHS;
 		lastHS->next = newSegment;

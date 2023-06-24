@@ -1,4 +1,4 @@
-export module memory.Descriptor;
+export module memory.descriptor;
 import types;
 export namespace memory
 {
@@ -6,8 +6,8 @@ export namespace memory
 	{
 		u32 type;
 		u32 pad;
-		void* physicalStart;
-		void* virtualStart;
+		void* physicalAddress;
+		void* virtualAddress;
 		u64 numberOfPages;
 		u64 attribute;
 	};

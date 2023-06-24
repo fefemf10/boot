@@ -11,9 +11,4 @@ export
 	using u64 = unsigned long long;
 	using f32 = float;
 	using f64 = double;
-	const char* s = "abcdefghijklmno";
-	int f(long a)
-	{
-		return s[a];
-	};
 }

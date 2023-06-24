@@ -3,7 +3,7 @@ import types;
 import cpuio;
 export namespace serial
 {
-	constexpr u16 PORT = 0x3f8;
+	constinit const u16 PORT = 0x3f8;
 	void initialize()
 	{
 		cpuio::outb(0x00, PORT + 1);

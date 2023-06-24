@@ -186,7 +186,7 @@
     <ClCompile Include="memory.PageIndex.ixx">
       <Filter>Исходные файлы\memory</Filter>
     </ClCompile>
-    <ClCompile Include="memory.Descriptor.ixx">
+    <ClCompile Include="memory.descriptor.ixx">
       <Filter>Исходные файлы\memory</Filter>
     </ClCompile>
     <ClCompile Include="memory.Heap.ixx">

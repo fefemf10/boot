@@ -8,7 +8,41 @@ import Font;
 import sl.math;
 export namespace console
 {
-	void putChar(u32 color, char8_t c, u32 offsetX, u32 offsetY)
+	enum Color
+	{
+		BLACK = 0x000C0C0C,
+		BLUE = 0x000037DA,
+		CYAN = 0x003A96DD,
+		GREEN = 0x0013A10E,
+		PURPLE = 0x00881798,
+		RED = 0x00C50F1F,
+		WHITE = 0x00CCCCCC,
+		YELLOW = 0x00C19C00,
+		BRIGHTBLACK = 0x00767676,
+		BRIGHTBLUE = 0x003B78FF,
+		BRIGHTCYAN = 0x0061D6D6,
+		BRIGHTGREEN = 0x0016C60C,
+		BRIGHTPURPLE = 0x00B4009E,
+		BRIGHTRED = 0x00E74856,
+		BRIGHTWHITE = 0x00F2F2F2,
+		BRIGHTYELLOW = 0x00F9F1A5
+	};
+	u32 color = 0x00FFFFFF;
+	void nextPositionCursor()
+	{
+		cursorPos.x += 8;
+		if (cursorPos.x + 8 > framebuffer->width)
+		{
+			cursorPos.x = 0;
+			cursorPos.y += 16;
+		}
+	}
+	void nextLineCursor()
+	{
+		cursorPos.x = 0;
+		cursorPos.y += 16;
+	}
+	void putChar(char8_t c, u32 offsetX, u32 offsetY)
 	{
 		u32* pixels = (u32*)framebuffer->baseAddress;
 		char8_t* fontPtr = reinterpret_cast<char8_t*>(font->glyphBuffer) + (c * font->psf1Header->charSize);
@@ -23,12 +57,7 @@ export namespace console
 			}
 			++fontPtr;
 		}
-		cursorPos.x += 8;
-		if (cursorPos.x + 8 > framebuffer->width)
-		{
-			cursorPos.x = 0;
-			cursorPos.y += 16;
-		}
+		nextPositionCursor();
 	}
 
 	void print(const char8_t* str)
@@ -36,7 +65,10 @@ export namespace console
 		const char8_t* c = str;
 		while (*c)
 		{
-			putChar(0x00FFFFFF, *c, cursorPos.x, cursorPos.y);
+			if (*c == u8'\n')
+				nextLineCursor();
+			else
+				putChar(*c, cursorPos.x, cursorPos.y);
 			++c;
 		}
 	}
@@ -57,7 +89,7 @@ export namespace console
 	void putc(char8_t c)
 	{
 		if (out == OUT::FRAMEBUFFER)
-			putChar(0x00FFFFFF, c, cursorPos.x, cursorPos.y);
+			putChar(c, cursorPos.x, cursorPos.y);
 		else if (out == OUT::SERIAL)
 			serial::write(c);
 	}

@@ -12,6 +12,7 @@ public iowait as '?iowait@cpuio@@YAXXZ::<!cpuio>'
 public pausee as '?pause@cpuio@@YAXXZ::<!cpuio>'
 public cr22 as '?cr2@cpuio@@YA_KXZ::<!cpuio>'
 public cr33 as '?cr3@cpuio@@YA_KXZ::<!cpuio>'
+public spp as '?getSP@cpuio@@YA_KXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
 public loadGDT
 
@@ -82,4 +83,8 @@ cr22:
 	ret
 cr33:
 	mov rax, cr3
+	ret
+
+spp:
+	mov rax, rsp
 	ret

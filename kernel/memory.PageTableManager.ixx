@@ -3,6 +3,7 @@ import types;
 import memory.utils;
 import memory.PageIndex;
 import memory.allocator;
+import console;
 export namespace memory
 {
 #pragma pack(1)
@@ -33,7 +34,7 @@ export namespace memory
 		{
 
 		}
-		void mapMemory(void* virtualMemory, void* physicalMemory)
+		void mapMemory(void* physicalMemory, void* virtualMemory)
 		{
 			PageIndex index(reinterpret_cast<u64>(virtualMemory));
 			PageDirectoryEntry PDE = PLM4->entries[index.pdp];
@@ -86,13 +87,13 @@ export namespace memory
 			PDE.readWrite = true;
 			PT->entries[index.p] = PDE;
 		}
-		void mapMemory(void* virtualMemory, void* physicalMemory, u64 size)
+		void mapMemory(void* physicalMemory, void* virtualMemory, u64 size)
 		{
 			u8* virt = reinterpret_cast<u8*>(virtualMemory);
 			u8* phys = reinterpret_cast<u8*>(physicalMemory);
 			for (; phys < reinterpret_cast<u8*>(physicalMemory) + size; virt += 0x1000, phys += 0x1000)
 			{
-				mapMemory(virt, phys);
+				mapMemory(phys, virt);
 			}
 		}
 	};

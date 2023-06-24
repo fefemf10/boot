@@ -23,4 +23,5 @@ export namespace cpuio
 	u64 cr2();
 	u64 cr3();
 	void ret16();
+	u64 getSP();
 }

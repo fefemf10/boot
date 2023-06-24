@@ -25,7 +25,7 @@ namespace efi
 		GRAPHICS_OUTPUT_BLT_OPERATION_MAX
 	};
 
-	enum class GraphicsPixelFormat
+	enum class GraphicsPixelFormat : uint32_t
 	{
 		PIXEL_RED_GREEN_BLUE_RESERVED_8BIT_PER_COLOR,
 		PIXEL_BLUE_GREEN_RED_RESERVED_8BIT_PER_COLOR,
@@ -65,7 +65,7 @@ namespace efi
 	struct GraphicsOutputProtocol
 	{
 		Status (*queryMode) (GraphicsOutputProtocol* graphicsOutputProtocol, uint32_t modeNumber, uint64_t* sizeOfInfo, GraphicsOutputModeInformation** info);
-		Status (*setMode) (GraphicsOutputProtocolMode* graphicsOutputProtocol, uint32_t modeNumber);
+		Status (*setMode) (GraphicsOutputProtocol* graphicsOutputProtocol, uint32_t modeNumber);
 		Status (*blt) (GraphicsOutputProtocol* graphicsOutputProtocol, GraphicsOutputBltPixel* graphicsOutputBltPixel, GraphicsOutputBltOperation bltOperation, uint64_t sourceX, uint64_t sourceY, uint64_t destinationX, uint64_t destinationY, uint64_t width, uint64_t height, uint64_t delta);
 		GraphicsOutputProtocolMode* mode;
 	};

@@ -15,6 +15,7 @@ struct Framebuffer
 	uint32_t width;
 	uint32_t height;
 	uint32_t pixelsPerScanline;
+	efi::GraphicsPixelFormat format;
 };
 Framebuffer framebuffer;
 
@@ -31,6 +32,28 @@ struct PSF1Font
 	PSF1Header* psf1Header;
 	void* glyphBuffer;
 };
+void putc(const char16_t c)
+{
+	const char16_t buf[2] = { c, u'\0' };
+	SS->conOut->outputString(SS->conOut, buf);
+}
+void printf_unsigned(uint64_t number, int32_t radix, int64_t width, bool skipfirst = false)
+{
+	int16_t buffer[32]{};
+	int8_t pos = 0;
+	const char16_t hexchar8_ts[] = u"0123456789ABCDEF";
+	do
+	{
+		const uint64_t rem = number % radix;
+		number /= radix;
+		buffer[pos++] = hexchar8_ts[rem];
+	} while (number);
+	for (int8_t i = 0; i < width - pos; i++)
+		SS->conOut->outputString(SS->conOut, u"0");
+	pos -= skipfirst ? 1 : 0;
+	while (--pos >= 0)
+		putc(buffer[pos]);
+}
 
 Framebuffer* InitializeGOP()
 {
@@ -42,15 +65,28 @@ Framebuffer* InitializeGOP()
 		SS->conOut->outputString(SS->conOut, u"Unable to locate GOP\n\r");
 		return 0;
 	}
-	else
+
+	uint32_t requirenmentWidth = 1920;
+	uint32_t requirenmentHeight = 1080;
+
+	uint64_t sizeInfo{};
+	efi::GraphicsOutputModeInformation* modeInformation{};
+	for (uint64_t i = 0; i < gop->mode->maxMode; i++)
 	{
-		SS->conOut->outputString(SS->conOut, u"GOP locateed\n\r");
+		efi::Status s = gop->queryMode(gop, i, &sizeInfo, &modeInformation);
+		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution >= requirenmentWidth && modeInformation->verticalResolution >= requirenmentHeight)
+		{
+			gop->setMode(gop, i);
+			break;
+		}
 	}
+
 	framebuffer.baseAddress = (void*)gop->mode->frameBufferBase;
 	framebuffer.bufferSize = gop->mode->frameBufferSize;
 	framebuffer.width = gop->mode->info->horizontalResolution;
 	framebuffer.height = gop->mode->info->verticalResolution;
 	framebuffer.pixelsPerScanline = gop->mode->info->pixelsPerScanLine;
+	framebuffer.format = gop->mode->info->pixelFormat;
 	return &framebuffer;
 }
 
@@ -104,16 +140,19 @@ struct BootInfo
 	Framebuffer* fb;
 	PSF1Font* font;
 	efi::MemoryDescriptor* map;
+	uint64_t mapEntries;
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
+	void* kernelAddress;
+	uint64_t kernelSize;
 };
 
-void (*mainCRTStartup)(BootInfo*);
-
+void (*mainCRTStartup)(BootInfo);
+extern void setStack(uint64_t address);
+extern uint64_t getStack();
+void* image = reinterpret_cast<void*>(0x1000);
 void loadPE(efi::FileHandle file, PE::PE& pe)
 {
-	void* image;
-	
 	PE::Section sections[10];
 	uint64_t sizeForRead;
 	sizeForRead = sizeof(PE::MSDOSHeader);
@@ -147,15 +186,27 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 	}
 	if (pe.optionalHeaderData.baseRelocationTable.size)
 	{
-		uint64_t entries = (pe.optionalHeaderData.baseRelocationTable.size - 8) / 2 - 1;
-		uint32_t rva = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress);
-		u16* relocationVirtualTable = reinterpret_cast<u16*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + 8);
-		for (size_t i = 0; i < entries; i++)
+		uint64_t offset = 0;
+		while (offset < pe.optionalHeaderData.baseRelocationTable.size)
 		{
-			*reinterpret_cast<u64*>(reinterpret_cast<uint64_t>(image) + rva + (relocationVirtualTable[i] & 0x0FFF)) += reinterpret_cast<uint64_t>(image) - pe.optionalHeader.imageBase;
+			uint32_t rva = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset);
+			uint32_t sizeOfBlock = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 4);
+			//printf_unsigned(sizeOfBlock, 10, 0);
+			//SS->conOut->outputString(SS->conOut, u" ");
+			uint64_t entries = (sizeOfBlock - 8) / 2;
+			u16* relocationVirtualTable = reinterpret_cast<u16*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 8);
+			for (size_t i = 0; i < entries; i++)
+			{
+				*reinterpret_cast<u64*>(reinterpret_cast<uint64_t>(image) + rva + (relocationVirtualTable[i] & 0x0FFF)) += reinterpret_cast<uint64_t>(image) - pe.optionalHeader.imageBase;
+				//printf_unsigned(rva + (relocationVirtualTable[i] & 0x0FFF), 16, 0);
+				//SS->conOut->outputString(SS->conOut, u" ");
+			}
+			offset += sizeOfBlock;
+			//printf_unsigned(offset, 10, 0);
+			//SS->conOut->outputString(SS->conOut, u"\n\r");
 		}
 	}
-	mainCRTStartup = reinterpret_cast<void(*)(BootInfo*)>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.addressOfEntryPoint);
+	mainCRTStartup = reinterpret_cast<void(*)(BootInfo)>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.addressOfEntryPoint);
 }
 const char16_t* EFI_MEMORY_TYPE_STRINGS[]{
 
@@ -174,14 +225,26 @@ const char16_t* EFI_MEMORY_TYPE_STRINGS[]{
 	u"EfiMemoryMappedIOPortSpace\n\r",
 	u"EfiPalCode\n\r",
 };
+
+uint64_t getMemorySize(efi::MemoryDescriptor* map, uint64_t mapEntries, uint64_t descriptorSize)
+{
+	static uint64_t memorySizeBytes{};
+	if (memorySizeBytes > 0) return memorySizeBytes;
+	for (size_t i = 0; i < mapEntries; i++)
+	{
+		efi::MemoryDescriptor* descriptor = (efi::MemoryDescriptor*)((uint64_t)map + (i * descriptorSize));
+		memorySizeBytes += descriptor->numberOfPages * 0x1000;
+	}
+	return memorySizeBytes;
+}
+
 efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 {
+	uint64_t s = getStack();
 	SS = systemTable;
 	BS = systemTable->bootServices;
 	RS = systemTable->runtimeServices;
 	uint64_t event;
-	systemTable->conOut->clearScreen(systemTable->conOut);
-	systemTable->conOut->outputString(systemTable->conOut, u"Init kernel\n\r");
 	efi::FileHandle volume = loadVolume(imageHandle);
 	PSF1Font* newFont = loadPSF1Font(volume, u"zap-ext-vga16.psf", imageHandle);
 	if (newFont == nullptr)
@@ -189,7 +252,8 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 		systemTable->conOut->outputString(systemTable->conOut, u"Counld not load font\n\r");
 	}
 	Framebuffer* newBuffer = InitializeGOP();
-
+	systemTable->conOut->clearScreen(systemTable->conOut);
+	printf_unsigned(s, 16, 0);
 
 	efi::FileHandle kernel = loadFile(volume, u"kernel.exe", imageHandle);
 	PE::PE kernelPE;
@@ -203,8 +267,8 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	BS->allocatePool(efi::MemoryType::LOADER_DATA, mapSize + 2 * descriptorSize, (void**)&map);
 	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
 
-	/*uint64_t mapEntries = mapSize / descriptorSize;
-	for (size_t i = 0; i < mapEntries; i++)
+	uint64_t mapEntries = mapSize / descriptorSize;
+	/*for (size_t i = 0; i < mapEntries; i++)
 	{
 		efi::MemoryDescriptor* descriptor = reinterpret_cast<efi::MemoryDescriptor*>((uint64_t)map + (i * descriptorSize));
 		systemTable->conOut->outputString(systemTable->conOut, EFI_MEMORY_TYPE_STRINGS[descriptor->type]);
@@ -214,11 +278,15 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	bootInfo.fb = &framebuffer;
 	bootInfo.font = newFont;
 	bootInfo.map = map;
+	bootInfo.mapEntries = mapEntries;
 	bootInfo.mapSize = mapSize;
 	bootInfo.mapDescriptorSize = descriptorSize;
+	bootInfo.kernelAddress = image;
+	bootInfo.kernelSize = kernelPE.optionalHeader.sizeOfImage;
 
 	BS->exitBootServices(imageHandle, mapKey);
-	mainCRTStartup(&bootInfo);
+	//setStack(0x1000);
+	mainCRTStartup(bootInfo);
 	/*if (mainCRTStartup() == 'b')
 	{
 		SS->conOut->outputString(SS->conOut, u"Counld not load kernel\n\r");

@@ -34,6 +34,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\BuildCustomizations\fasm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -69,7 +70,7 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
@@ -155,7 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.vbs" />
-    <None Include="kernelTrampoline.asm" />
+    <FASM Include="setStack.asm">
+      <FileType>Document</FileType>
+    </FASM>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\uefilib\uefilib.vcxproj">
@@ -164,5 +167,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\BuildCustomizations\fasm.targets" />
   </ImportGroup>
 </Project>
