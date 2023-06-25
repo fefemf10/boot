@@ -45,7 +45,7 @@ export namespace console
 	void putChar(char8_t c, u32 offsetX, u32 offsetY)
 	{
 		u32* pixels = (u32*)framebuffer->baseAddress;
-		char8_t* fontPtr = reinterpret_cast<char8_t*>(font->glyphBuffer) + (c * font->psf1Header->charSize);
+		char8_t* fontPtr = reinterpret_cast<char8_t*>(&font->glyphBuffer) + (c * font->charSize);
 		for (size_t y = offsetY; y < offsetY + 16; y++)
 		{
 			for (size_t x = offsetX; x < offsetX + 8; x++)
@@ -362,16 +362,12 @@ export namespace console
 		}
 		va_end(args);
 	}
-	void puth(const void* data, u64 size)
+	void puthex(const void* data, u64 size)
 	{
-		for (size_t i = 0; i < size; i++)
-		{
-			serial::write(reinterpret_cast<const u8*>(data)[i]);
-		}
-		/*for (size_t i = 1; i <= size / 8; i++)
+		for (size_t i = 1; i <= size / 8; i++)
 		{
 			printf((i % 4 == 0) ? u8"%016llx\n" : u8"%016llx ", std::byteswap(reinterpret_cast<const u64*>(data)[i - 1]));
-		}*/
+		}
 	}
 	void putregs(const cpuio::regs& regs)
 	{

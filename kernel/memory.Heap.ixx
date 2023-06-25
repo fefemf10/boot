@@ -2,6 +2,7 @@ export module memory.Heap;
 import types;
 import memory.allocator;
 import memory.PageTableManager;
+import console;
 export namespace memory
 {
 	struct HeapSegment;
@@ -48,12 +49,13 @@ export namespace memory
 	void* heapStart;
 	void* heapEnd;
 
-	void initializeHeap(PageTable* PLM4, void* address, u64 countPages)
+	void initializeHeap(void* address, u64 countPages)
 	{
-		PLM4 = PLM4;
-		PageTableManager pageTableManager(PLM4);
-		const u64 heapSize = countPages * memory::PAGESIZE;
-		pageTableManager.mapMemory(memory::allocator::allocBlocks(countPages), address, heapSize);
+		void* s = memory::allocator::allocBlocks(countPages);
+		console::printf(u8"%llx\n", s);
+		PageTableManager pageTableManager(memory::PLM4);
+		/*const u64 heapSize = countPages * memory::PAGESIZE;
+		pageTableManager.mapMemory(s, address, heapSize);
 		heapStart = address;
 		heapEnd = reinterpret_cast<void*>(reinterpret_cast<u64>(heapStart) + heapSize);
 		HeapSegment* startSegment = reinterpret_cast<HeapSegment*>(address);
@@ -61,7 +63,7 @@ export namespace memory
 		startSegment->next = nullptr;
 		startSegment->last = nullptr;
 		startSegment->free = true;
-		lastHS = startSegment;
+		lastHS = startSegment;*/
 	}
 	void extendMap(u64 size)
 	{

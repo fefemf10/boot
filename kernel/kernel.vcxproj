@@ -67,7 +67,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -110,6 +110,8 @@
       <DataExecutionPrevention />
       <TurnOffAssemblyGeneration>
       </TurnOffAssemblyGeneration>
+      <StackCommitSize>8192</StackCommitSize>
+      <StackReserveSize>8192</StackReserveSize>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
@@ -124,7 +126,7 @@
       <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -187,6 +189,8 @@
       </CreateHotPatchableImage>
       <MergeSections>
       </MergeSections>
+      <StackReserveSize>8192</StackReserveSize>
+      <StackCommitSize>8192</StackCommitSize>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>

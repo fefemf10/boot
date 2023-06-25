@@ -13,6 +13,7 @@ import memory.Heap;
 import memory.PageIndex;
 import memory.PageTableManager;
 import memory.utils;
+import sl.math;
 //import IDT;
 //import ISR;
 //import IRQ;
@@ -55,17 +56,22 @@ const char8_t* EFI_MEMORY_TYPE_STRINGS[]{
 	u8"EfiMemoryMappedIOPortSpace",
 	u8"EfiPalCode",
 };
-extern "C" void loadGDT(memory::PageTable* plm4);
-void mainCRTStartup(BootInfo bootInfo)
+
+[[noreturn]] void mainCRTStartup(BootInfo& bootInfo)
 {
 	framebuffer = bootInfo.fb;
 	font = bootInfo.font;
-	serial::initialize();
-	console::nextLineCursor();
 	console::color = console::CYAN;
 	memory::allocator::initialize(bootInfo.map, bootInfo.mapEntries, bootInfo.descriptorSize);
 	memory::allocator::setRegion(nullptr, 1);
+	memory::allocator::setRegion(reinterpret_cast<const void*>(reinterpret_cast<u64>(bootInfo.kernelAddress) - bootInfo.kernelStackSize), memory::allocator::countBlocks(bootInfo.kernelStackSize));
 	memory::allocator::setRegion(bootInfo.kernelAddress, memory::allocator::countBlocks(bootInfo.kernelSize));
+	memory::allocator::setRegion(font, memory::allocator::countBlocks(bootInfo.kernelResourcesSize));
+	if (reinterpret_cast<u64>(framebuffer->baseAddress) < memory::sizeRAM)
+	{
+		memory::allocator::setRegion(framebuffer->baseAddress, memory::allocator::countBlocks(framebuffer->bufferSize));
+	}
+	memory::set(framebuffer->baseAddress, 0x00, framebuffer->bufferSize);
 	for (size_t i = 0; i < bootInfo.mapEntries; i++)
 	{
 		const memory::Descriptor* descriptor = (memory::Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
@@ -89,19 +95,20 @@ void mainCRTStartup(BootInfo bootInfo)
 			break;
 		}
 	}
-	memory::PageTableManager pageTableManager;
 	memory::PLM4 = reinterpret_cast<memory::PageTable*>(memory::allocator::allocBlocks(1));
 	memory::set(memory::PLM4, 0, sizeof(memory::PageTable));
-	pageTableManager = memory::PageTableManager(memory::PLM4);
+	memory::pageTableManager = memory::PageTableManager(memory::PLM4);
 	//pageTableManager.mapMemory((void*)0, (void*)0, memory::sizeRAM);
-	//pageTableManager.mapMemory((void*)bootInfo->kernelAddress, (void*)bootInfo->kernelAddress, memory::allocator::countBlocks(bootInfo->kernelSize) * 0x1000);
-	//console::printf(u8"%llx %llx %i %i %i\n", bootInfo->fb->baseAddress, bootInfo->fb->bufferSize, bootInfo->fb->width, bootInfo->fb->height, bootInfo->fb->pixelsPerScanline);
-	//pageTableManager.mapMemory((void*)bootInfo->fb->baseAddress, (void*)bootInfo->fb->baseAddress, memory::allocator::countBlocks(bootInfo->fb->bufferSize) * memory::PAGESIZE);
+	//memory::pageTableManager.mapMemory((void*)((u64)bootInfo.kernelAddress - bootInfo.kernelStackSize), (void*)((u64)bootInfo.kernelAddress - bootInfo.kernelStackSize), memory::allocator::countBlocks(bootInfo.kernelStackSize) * 0x1000);
+	//memory::pageTableManager.mapMemory((void*)bootInfo.kernelAddress, (void*)bootInfo.kernelAddress, memory::allocator::countBlocks(bootInfo.kernelSize) * 0x1000);
+	//memory::pageTableManager.mapMemory((void*)font, (void*)font, memory::allocator::countBlocks(bootInfo.kernelResourcesSize) * 0x1000);
+	//memory::pageTableManager.mapMemory((void*)framebuffer->baseAddress, (void*)framebuffer->baseAddress, framebuffer->bufferSize);
 	//loadGDT(memory::PLM4);
-	//console::printf(u8"%llx\n", memory::PLM4);
-	//memory::initializeHeap(memory::PLM4, (void*)0x0000100000000000, 0x10);
+	//memory::initializeHeap((void*)0x0000100000000000, 0x10);
 	console::printf(u8"%llx\n", &bootInfo);
 	console::printf(u8"%llx %llx %llx %llx\n", memory::sizeRAM, memory::allocator::maxBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks);
-	console::printf(u8"%llx %llx %i %i %i\n", bootInfo.fb->baseAddress, bootInfo.fb->bufferSize, bootInfo.fb->width, bootInfo.fb->height, bootInfo.fb->pixelsPerScanline);
+	console::printf(u8"%llx %llx %u %u %u\n", framebuffer->baseAddress, framebuffer->bufferSize, framebuffer->width, framebuffer->height, framebuffer->pixelsPerScanline);
+	//int* a = new int(5);
+	//console::printf(u8"%llx", a);
 	cpuio::loop();
 }

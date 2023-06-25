@@ -15,5 +15,7 @@ export
 		u64 descriptorSize;
 		void* kernelAddress;
 		u64 kernelSize;
+		u64 kernelStackSize;
+		u64 kernelResourcesSize;
 	};
 }

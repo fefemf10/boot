@@ -27,4 +27,11 @@ export namespace serial
 		while ((cpuio::inb(PORT + 5) & 0x20) == 0);
 		cpuio::outb(data, PORT);
 	}
+	void puthex(const void* data, u64 size)
+	{
+		for (size_t i = 0; i < size; i++)
+		{
+			serial::write(reinterpret_cast<const u8*>(data)[i]);
+		}
+	}
 }

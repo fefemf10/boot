@@ -19,25 +19,23 @@ struct Framebuffer
 };
 Framebuffer framebuffer;
 
-struct PSF1Header
-{
-	uint8_t magic[2];
-	uint8_t mode;
-	uint8_t charSize;
-};
 constexpr auto PSF1MAGIC0 = 0x36;
 constexpr auto PSF1MAGIC1 = 0x04;
 struct PSF1Font
 {
-	PSF1Header* psf1Header;
-	void* glyphBuffer;
+	uint8_t magic[2];
+	uint8_t mode;
+	uint8_t charSize;
+	uint8_t glyphBuffer[1];
 };
-void putc(const char16_t c)
+
+extern "C" void putc(const char16_t c)
 {
 	const char16_t buf[2] = { c, u'\0' };
 	SS->conOut->outputString(SS->conOut, buf);
 }
-void printf_unsigned(uint64_t number, int32_t radix, int64_t width, bool skipfirst = false)
+
+extern "C" void printf_unsigned(uint64_t number, int32_t radix, int64_t width)
 {
 	int16_t buffer[32]{};
 	int8_t pos = 0;
@@ -50,7 +48,6 @@ void printf_unsigned(uint64_t number, int32_t radix, int64_t width, bool skipfir
 	} while (number);
 	for (int8_t i = 0; i < width - pos; i++)
 		SS->conOut->outputString(SS->conOut, u"0");
-	pos -= skipfirst ? 1 : 0;
 	while (--pos >= 0)
 		putc(buffer[pos]);
 }
@@ -106,33 +103,6 @@ efi::FileHandle loadFile(efi::FileHandle directory, const char16_t* path, efi::H
 	efi::FileHandle loadedFile;
 	return directory->open(directory, &loadedFile, path, efi::FileMode::READ, efi::FileAttributes::FILE_READ_ONLY) == efi::Status::SUCCESS ? loadedFile : nullptr;
 }
-PSF1Font* loadPSF1Font(efi::FileHandle directory, const char16_t* path, efi::Handle imageHangle)
-{
-	efi::FileHandle font = loadFile(directory, path, imageHangle);
-	if (font == nullptr) return nullptr;
-	PSF1Header* fontHeader;
-	BS->allocatePool(efi::MemoryType::LOADER_DATA, sizeof(PSF1Header), (void**)&fontHeader);
-	uint64_t size = sizeof(PSF1Header);
-	font->read(font, &size, fontHeader);
-	if (fontHeader->magic[0] != PSF1MAGIC0 || fontHeader->magic[1] != PSF1MAGIC1)
-		return nullptr;
-	uint64_t glyphBufferSize = fontHeader->charSize * 256;
-	if (fontHeader->mode == 1)
-	{
-		glyphBufferSize *= 2;
-	}
-	void* glyphBuffer;
-	{
-		font->setPosition(font, sizeof(PSF1Header));
-		BS->allocatePool(efi::MemoryType::LOADER_DATA, glyphBufferSize, (void**)&glyphBuffer);
-		font->read(font, &glyphBufferSize, glyphBuffer);
-	}
-	PSF1Font* finishedFont;
-	BS->allocatePool(efi::MemoryType::LOADER_DATA, sizeof(PSF1Font), (void**)(&finishedFont));
-	finishedFont->psf1Header = fontHeader;
-	finishedFont->glyphBuffer = glyphBuffer;
-	return finishedFont;
-}
 
 
 struct BootInfo
@@ -145,12 +115,35 @@ struct BootInfo
 	uint64_t mapDescriptorSize;
 	void* kernelAddress;
 	uint64_t kernelSize;
+	uint64_t kernelStackSize;
+	uint64_t kernelResourcesSize;
 };
 
 void (*mainCRTStartup)(BootInfo);
-extern void setStack(uint64_t address);
+extern void setStack(uint64_t address, BootInfo* bootInfo);
 extern uint64_t getStack();
 void* image = reinterpret_cast<void*>(0x1000);
+PSF1Font* loadPSF1Font(BootInfo& bootInfo, efi::FileHandle directory, const char16_t* path, efi::Handle imageHangle)
+{
+	constexpr const uint64_t countPagesForFont = 3;
+	efi::FileHandle font = loadFile(directory, path, imageHangle);
+	if (font == nullptr) return nullptr;
+	void* fontStruct = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(image) + bootInfo.kernelSize);
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_DATA, countPagesForFont, fontStruct);
+	PSF1Font* finishedFont = reinterpret_cast<PSF1Font*>(fontStruct);
+	uint64_t size = 4;
+	font->read(font, &size, finishedFont);
+	if (finishedFont->magic[0] != PSF1MAGIC0 || finishedFont->magic[1] != PSF1MAGIC1)
+		return nullptr;
+	uint64_t glyphBufferSize = finishedFont->charSize * 256;
+	if (finishedFont->mode == 1)
+	{
+		glyphBufferSize *= 2;
+	}
+	font->read(font, &glyphBufferSize, finishedFont->glyphBuffer);
+	bootInfo.kernelResourcesSize += countPagesForFont * 0x1000;
+	return finishedFont;
+}
 void loadPE(efi::FileHandle file, PE::PE& pe)
 {
 	PE::Section sections[10];
@@ -169,7 +162,8 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 	{
 		file->read(file, &sizeForRead, &sections[i]);
 	}
-	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, pe.optionalHeader.sizeOfImage >> 12, image);
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, (pe.optionalHeader.sizeOfImage >> 12) + (pe.optionalHeader.sizeOfStackCommit >> 12), image);
+	image = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.sizeOfStackCommit);
 	file->setPosition(file, 0);
 	sizeForRead = pe.optionalHeader.sizeOfHeaders;
 	file->read(file, &sizeForRead, image);
@@ -197,6 +191,8 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 			u16* relocationVirtualTable = reinterpret_cast<u16*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 8);
 			for (size_t i = 0; i < entries; i++)
 			{
+				if (relocationVirtualTable[i] == 0)
+					continue;
 				*reinterpret_cast<u64*>(reinterpret_cast<uint64_t>(image) + rva + (relocationVirtualTable[i] & 0x0FFF)) += reinterpret_cast<uint64_t>(image) - pe.optionalHeader.imageBase;
 				//printf_unsigned(rva + (relocationVirtualTable[i] & 0x0FFF), 16, 0);
 				//SS->conOut->outputString(SS->conOut, u" ");
@@ -210,20 +206,20 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 }
 const char16_t* EFI_MEMORY_TYPE_STRINGS[]{
 
-	u"EfiReservedMemoryType\n\r",
-	u"EfiLoaderCode\n\r",
-	u"EfiLoaderData\n\r",
-	u"EfiBootServicesCode\n\r",
-	u"EfiBootServicesData\n\r",
-	u"EfiRuntimeServicesCode\n\r",
-	u"EfiRuntimeServicesData\n\r",
-	u"EfiConventionalMemory\n\r",
-	u"EfiUnusableMemory\n\r",
-	u"EfiACPIReclaimMemory\n\r",
-	u"EfiACPIMemoryNVS\n\r",
-	u"EfiMemoryMappedIO\n\r",
-	u"EfiMemoryMappedIOPortSpace\n\r",
-	u"EfiPalCode\n\r",
+	u"EfiReservedMemoryType",
+	u"EfiLoaderCode",
+	u"EfiLoaderData",
+	u"EfiBootServicesCode",
+	u"EfiBootServicesData",
+	u"EfiRuntimeServicesCode",
+	u"EfiRuntimeServicesData",
+	u"EfiConventionalMemory",
+	u"EfiUnusableMemory",
+	u"EfiACPIReclaimMemory",
+	u"EfiACPIMemoryNVS",
+	u"EfiMemoryMappedIO",
+	u"EfiMemoryMappedIOPortSpace",
+	u"EfiPalCode",
 };
 
 uint64_t getMemorySize(efi::MemoryDescriptor* map, uint64_t mapEntries, uint64_t descriptorSize)
@@ -240,20 +236,13 @@ uint64_t getMemorySize(efi::MemoryDescriptor* map, uint64_t mapEntries, uint64_t
 
 efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 {
-	uint64_t s = getStack();
 	SS = systemTable;
 	BS = systemTable->bootServices;
 	RS = systemTable->runtimeServices;
 	uint64_t event;
 	efi::FileHandle volume = loadVolume(imageHandle);
-	PSF1Font* newFont = loadPSF1Font(volume, u"zap-ext-vga16.psf", imageHandle);
-	if (newFont == nullptr)
-	{
-		systemTable->conOut->outputString(systemTable->conOut, u"Counld not load font\n\r");
-	}
 	Framebuffer* newBuffer = InitializeGOP();
 	systemTable->conOut->clearScreen(systemTable->conOut);
-	printf_unsigned(s, 16, 0);
 
 	efi::FileHandle kernel = loadFile(volume, u"kernel.exe", imageHandle);
 	PE::PE kernelPE;
@@ -276,27 +265,18 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 
 	BootInfo bootInfo;
 	bootInfo.fb = &framebuffer;
-	bootInfo.font = newFont;
 	bootInfo.map = map;
 	bootInfo.mapEntries = mapEntries;
 	bootInfo.mapSize = mapSize;
 	bootInfo.mapDescriptorSize = descriptorSize;
 	bootInfo.kernelAddress = image;
 	bootInfo.kernelSize = kernelPE.optionalHeader.sizeOfImage;
-
+	bootInfo.kernelStackSize = kernelPE.optionalHeader.sizeOfStackCommit;
+	PSF1Font* newFont = loadPSF1Font(bootInfo, volume, u"zap-ext-vga16.psf", imageHandle);
+	bootInfo.font = newFont;
+	
 	BS->exitBootServices(imageHandle, mapKey);
-	//setStack(0x1000);
-	mainCRTStartup(bootInfo);
-	/*if (mainCRTStartup() == 'b')
-	{
-		SS->conOut->outputString(SS->conOut, u"Counld not load kernel\n\r");
-	}
-	else
-	{
-		SS->conOut->outputString(SS->conOut, u"Kernel loaded successfully\n\r");
-	}
-	systemTable->conIn->reset(systemTable->conIn, false);
-	systemTable->bootServices->waitForEvent(1, &systemTable->conIn->waitForKey, &event);
-	systemTable->runtimeServices->resetSystem(efi::ResetType::RESET_WARM, efi::Status::SUCCESS, 0, nullptr);*/
+	setStack(reinterpret_cast<uint64_t>(image), &bootInfo);
+
 	return efi::Status::SUCCESS;
 }
