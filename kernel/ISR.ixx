@@ -3,7 +3,7 @@ import types;
 import IDT;
 import cpuio;
 import console;
-import PIC;
+import Framebuffer;
 export namespace ISR
 {
 	extern "C" void isr0();
@@ -75,6 +75,9 @@ export namespace ISR
 	};
 	extern "C" void isrHandler(const cpuio::regs& regs)
 	{
+		framebuffer.clear(console::BLACK);
+		console::color = console::WHITE;
+		console::currentPos = 0;
 		console::printf(u8"%s\n", errors[regs.interruptCode]);
 		if (regs.interruptCode == 0xC && regs.errorCode != 0)
 		{

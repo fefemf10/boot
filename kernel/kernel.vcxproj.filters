@@ -320,7 +320,7 @@
     <FASM Include="IRQasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
-    <FASM Include="IOasm.asm">
+    <FASM Include="cpuioasm.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
     <FASM Include="memset.asm">

@@ -3,8 +3,8 @@ import types;
 import IDT;
 import cpuio;
 import keyboard;
-import PIC;
 import PIT;
+import PIC;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -51,21 +51,21 @@ export namespace IRQ
 	}
 	void initialize()
 	{
-		IDT::set(32, irq0); PIC::setMask(0, 0);
+		IDT::set(32, irq0); PIC::setMask(0, 1);
 		IDT::set(33, irq1); PIC::setMask(1, 0);
-		IDT::set(34, irq2);
-		IDT::set(35, irq3);
-		IDT::set(36, irq4);
-		IDT::set(37, irq5);
-		IDT::set(38, irq6);
-		IDT::set(39, irq7);
-		IDT::set(40, irq8);
-		IDT::set(41, irq9);
-		IDT::set(42, irq10);
-		IDT::set(43, irq11);
-		IDT::set(44, irq12);
-		IDT::set(45, irq13);
-		IDT::set(46, irq14);
-		IDT::set(47, irq15);
+		//IDT::set(34, irq2);
+		//IDT::set(35, irq3);
+		//IDT::set(36, irq4);
+		//IDT::set(37, irq5);
+		//IDT::set(38, irq6);
+		//IDT::set(39, irq7);
+		//IDT::set(40, irq8);
+		//IDT::set(41, irq9);
+		//IDT::set(42, irq10);
+		//IDT::set(43, irq11);
+		//IDT::set(44, irq12);
+		//IDT::set(45, irq13);
+		//IDT::set(46, irq14);
+		//IDT::set(47, irq15);
 	}
 }

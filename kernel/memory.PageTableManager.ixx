@@ -3,7 +3,6 @@ import types;
 import memory.utils;
 import memory.PageIndex;
 import memory.allocator;
-import console;
 export namespace memory
 {
 #pragma pack(1)
@@ -72,6 +71,7 @@ export namespace memory
 			if (!PDE.present)
 			{
 				PT = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
+				set(PT, 0, 0x1000);
 				PDE.address = reinterpret_cast<u64>(PT) >> 12;
 				PDE.present = true;
 				PDE.readWrite = true;
@@ -87,11 +87,11 @@ export namespace memory
 			PDE.readWrite = true;
 			PT->entries[index.p] = PDE;
 		}
-		void mapMemory(void* physicalMemory, void* virtualMemory, u64 size)
+		void mapMemory(void* physicalMemory, void* virtualMemory, u64 countPages)
 		{
 			u8* virt = reinterpret_cast<u8*>(virtualMemory);
 			u8* phys = reinterpret_cast<u8*>(physicalMemory);
-			for (; phys < reinterpret_cast<u8*>(physicalMemory) + size; virt += 0x1000, phys += 0x1000)
+			for (size_t i = 0; i < countPages; ++i, virt += 0x1000, phys += 0x1000)
 			{
 				mapMemory(phys, virt);
 			}

@@ -28,49 +28,97 @@ export namespace console
 		BRIGHTYELLOW = 0x00F9F1A5
 	};
 	u32 color = 0x00FFFFFF;
-	void nextPositionCursor()
+	u32 clearColor = Color::BLACK;
+	i64 currentPos = 0;
+	i64 width;
+	i64 height;
+	void initialize()
 	{
-		cursorPos.x += 8;
-		if (cursorPos.x + 8 > framebuffer->width)
-		{
-			cursorPos.x = 0;
-			cursorPos.y += 16;
-		}
+		serial::initialize();
+		width = framebuffer.width / 8;
+		height = framebuffer.height / 16;
 	}
-	void nextLineCursor()
+	void clear()
 	{
-		cursorPos.x = 0;
-		cursorPos.y += 16;
+		framebuffer.clear(clearColor);
+		currentPos = 0;
 	}
-	void putChar(char8_t c, u32 offsetX, u32 offsetY)
+	void setCursorPosition(i64 position)
 	{
-		u32* pixels = (u32*)framebuffer->baseAddress;
-		char8_t* fontPtr = reinterpret_cast<char8_t*>(&font->glyphBuffer) + (c * font->charSize);
-		for (size_t y = offsetY; y < offsetY + 16; y++)
+		currentPos = position;
+		if (currentPos < 0)
+			currentPos = 0;
+		else if (currentPos >= width * height)
+			currentPos = width * height;
+	}
+	void upCursorPosition()
+	{
+		setCursorPosition(currentPos - width);
+	}
+	void downCursorPosition()
+	{
+		setCursorPosition(currentPos + width);
+	}
+	void clearLine(i64 index)
+	{
+		i64 cursorY = index / width;
+		framebuffer.drawRectangle(0, cursorY * 16, framebuffer.width, 16, clearColor);
+		setCursorPosition(index - clearColor % width);
+	}
+	void clearGlyph(i64 index)
+	{
+		if (index < 0)
+			index = 0;
+		else if (index >= width * height)
+			index = width * height - 1;
+		i64 cursorY = index / width;
+		i64 cursorX = index % width;
+		framebuffer.drawRectangle(cursorX * 8, cursorY * 16, 8, 16, clearColor);
+	}
+	void drawChar(char8_t c, i64 position)
+	{
+		if (position < 0)
+			position = 0;
+		else if (position >= width * height)
+			position = width * height - 1;
+		i64 cursorY = position / width * 16;
+		i64 cursorX = position % width * 8;
+		clearGlyph(position);
+		u32* pixels = (u32*)framebuffer.baseAddress;
+		char* fontPtr = reinterpret_cast<char*>(&font->glyphBuffer) + (c * font->charSize);
+		for (size_t y = cursorY; y < cursorY + 16; y++)
 		{
-			for (size_t x = offsetX; x < offsetX + 8; x++)
+			for (size_t x = cursorX; x < cursorX + 8; x++)
 			{
-				if ((*fontPtr & (0b10000000 >> (x - offsetX))) > 0)
+				if ((*fontPtr & (0b10000000 >> (x - cursorX))) > 0)
 				{
-					*(u32*)(pixels + x + (y * framebuffer->pixelsPerScanline)) = color;
+					*(u32*)(pixels + x + (y * framebuffer.pixelsPerScanline)) = color;
 				}
 			}
 			++fontPtr;
 		}
-		nextPositionCursor();
 	}
 
 	void print(const char8_t* str)
 	{
-		const char8_t* c = str;
-		while (*c)
+		i64 index = currentPos;
+		char8_t* s = const_cast<char8_t*>(str);
+		while (*s)
 		{
-			if (*c == u8'\n')
-				nextLineCursor();
-			else
-				putChar(*c, cursorPos.x, cursorPos.y);
-			++c;
+			switch (*s)
+			{
+			case u8'\n':
+				index += width;
+				index -= index % width;
+				break;
+			default:
+				drawChar(*s, index);
+				++index;
+				break;
+			}
+			++s;
 		}
+		setCursorPosition(index);
 	}
 	enum class OUT
 	{
@@ -78,10 +126,6 @@ export namespace console
 		TELETYPE,
 		SERIAL
 	} out;
-	void initialize()
-	{
-		serial::initialize();
-	}
 	void setOut(OUT outt)
 	{
 		out = outt;
@@ -89,7 +133,10 @@ export namespace console
 	void putc(char8_t c)
 	{
 		if (out == OUT::FRAMEBUFFER)
-			putChar(c, cursorPos.x, cursorPos.y);
+		{
+			drawChar(c, currentPos);
+			setCursorPosition(currentPos + 1);
+		}
 		else if (out == OUT::SERIAL)
 			serial::write(c);
 	}

@@ -24,4 +24,7 @@ export namespace cpuio
 	u64 cr3();
 	void ret16();
 	u64 getSP();
+	void loadPLM(void* plm4);
+	void loadGDT(void* gdtDesciptor);
+	void loadIDTR(void* idtrDesciptor);
 }

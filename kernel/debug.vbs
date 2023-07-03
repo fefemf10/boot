@@ -23,5 +23,6 @@ call fso.CopyFile(TARGET_DIR & "boot.efi", "..\image\efi\boot\" & BOOT_NAME, tru
 call fso.CopyFile("zap-ext-vga16.psf", "..\image\zap-ext-vga16.psf", true)
 call fso.CopyFile(TARGET_DIR & "kernel.exe", "..\image\kernel.exe", true)
 call shell.Run(QEMU_EXE + " -machine q35 -m 256m -cpu max -serial file:serial.txt -net none -monitor none -parallel none -drive file=" & BOOT_DIR & OVMFCODE & ",if=pflash,index=0,format=raw,readonly=on -drive file=" & IMAGE_DIR & OVMFVARS & ",if=pflash,index=1,format=raw -hda fat:rw:..\image")
+
 '-drive file=..\image\NvVars,if=pflash,format=raw,readonly=off
 'call shell.Run(QEMU_EXE + " -m 256m -serial file:serial.txt -vga vmware -net none -monitor none -parallel none -drive file=" & FW_FILE & ",if=pflash,format=raw,readonly=off -hda fat:rw:..\image")

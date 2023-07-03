@@ -80,4 +80,41 @@ export namespace GDT
 		descriptor |= (flag << 8) & 0x00F0FF00;
 		descriptor <<= 32;
 	}
+
+	struct GDTEntry
+	{
+		u16 limit0;
+		u16 base0;
+		u8 base1;
+		u8 access;
+		u8 limit1;
+		u8 base2;
+	};
+
+	struct GDT
+	{
+		GDTEntry null;
+		GDTEntry kernelCode;
+		GDTEntry kernelData;
+		GDTEntry userNull;
+		GDTEntry userCode;
+		GDTEntry userData;
+	};
+
+	_declspec(align(0x10)) GDT DefaultGDT =
+	{
+		{0, 0, 0, 0x00, 0x00, 0},
+		{0, 0, 0, 0x9A, 0xA0, 0},
+		{0, 0, 0, 0x92, 0xA0, 0},
+		{0, 0, 0, 0x00, 0x00, 0},
+		{0, 0, 0, 0x9A, 0xA0, 0},
+		{0, 0, 0, 0x92, 0xA0, 0},
+	};
+
+#pragma pack(1)
+	struct GDTDescriptor
+	{
+		u16 size;
+		u64 offset;
+	} gdtDescriptor{ sizeof(GDT) - 1, reinterpret_cast<u64>(&DefaultGDT) };
 }

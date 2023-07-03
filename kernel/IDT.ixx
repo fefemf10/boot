@@ -1,6 +1,5 @@
 export module IDT;
 import types;
-import teletype;
 import PIC;
 import cpuio;
 export namespace IDT
@@ -16,7 +15,6 @@ export namespace IDT
 		u16 size;
 		u64 offset;
 	};
-#pragma pack(1)
 	struct IDT
 	{
 		u16 offsetLow;
@@ -42,16 +40,11 @@ export namespace IDT
 		}
 	};
 	IDT idt[256]{};
-	IDTR idtr{ .size = 4095, .offset = reinterpret_cast<u64>(idt) };
-	void loadIDTR(const IDTR* idtr);
+	IDTR idtr{ .size = 0x0FFF, .offset = reinterpret_cast<u64>(idt) };
 	void set(size_t index, void(*function)())
 	{
 		idt[index].setOffset(function);
 		idt[index].selector = 0x08;
 		idt[index].typeAttr = 0x80 | Gate::INTERRUPT;
-	}
-	void initialize()
-	{
-		PIC::initialize();
 	}
 }

@@ -2,11 +2,10 @@ export module memory.Heap;
 import types;
 import memory.allocator;
 import memory.PageTableManager;
-import console;
 export namespace memory
 {
 	struct HeapSegment;
-	HeapSegment* lastHS;
+	HeapSegment* lastHS{};
 	PageTable* PLM4;
 #pragma pack(8)
 	struct HeapSegment
@@ -35,7 +34,8 @@ export namespace memory
 			i64 splitSize = this->size - size - sizeof(HeapSegment);
 			if (splitSize < 0x10) return nullptr;
 			HeapSegment* newSplit = reinterpret_cast<HeapSegment*>(reinterpret_cast<u64>(this) + size + sizeof(HeapSegment));
-			next->last = newSplit;
+			if (next)
+				next->last = newSplit;
 			newSplit->next = next;
 			next = newSplit;
 			newSplit->last = this;
@@ -51,11 +51,10 @@ export namespace memory
 
 	void initializeHeap(void* address, u64 countPages)
 	{
+		PageTableManager pageTableManager(PLM4);
+		const u64 heapSize = countPages * memory::PAGESIZE;
 		void* s = memory::allocator::allocBlocks(countPages);
-		console::printf(u8"%llx\n", s);
-		PageTableManager pageTableManager(memory::PLM4);
-		/*const u64 heapSize = countPages * memory::PAGESIZE;
-		pageTableManager.mapMemory(s, address, heapSize);
+		pageTableManager.mapMemory(s, address, countPages);
 		heapStart = address;
 		heapEnd = reinterpret_cast<void*>(reinterpret_cast<u64>(heapStart) + heapSize);
 		HeapSegment* startSegment = reinterpret_cast<HeapSegment*>(address);
@@ -63,7 +62,7 @@ export namespace memory
 		startSegment->next = nullptr;
 		startSegment->last = nullptr;
 		startSegment->free = true;
-		lastHS = startSegment;*/
+		lastHS = startSegment;
 	}
 	void extendMap(u64 size)
 	{
@@ -75,7 +74,7 @@ export namespace memory
 		u64 pages = size / memory::PAGESIZE;
 		HeapSegment* newSegment = reinterpret_cast<HeapSegment*>(heapEnd);
 		PageTableManager pageTableManager(PLM4);
-		pageTableManager.mapMemory(allocator::allocBlocks(pages), heapEnd, pages * memory::PAGESIZE);
+		pageTableManager.mapMemory(allocator::allocBlocks(pages), heapEnd, pages);
 		newSegment->free = true;
 		newSegment->last = lastHS;
 		lastHS->next = newSegment;

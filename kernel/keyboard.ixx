@@ -1,7 +1,8 @@
 export module keyboard;
 import types;
-import teletype;
 import cpuio;
+import console;
+import Framebuffer;
 export namespace keyboard
 {
 	enum KEYBOARD_PORT : u8
@@ -154,19 +155,19 @@ export namespace keyboard
 			switch (scancode)
 			{
 			case KEYBOARD_KEYS::K_P2:
-				teletype::setCursorPosition(teletype::currentPos + static_cast<short>(teletype::width));
+				console::downCursorPosition();
 				break;
 			case KEYBOARD_KEYS::K_P8:
-				teletype::setCursorPosition(teletype::currentPos - static_cast<short>(teletype::width));
+				console::upCursorPosition();
 				break;
 			case KEYBOARD_KEYS::K_P4:
-				teletype::setCursorPosition(teletype::currentPos - 1);
+				console::setCursorPosition(console::currentPos - 1);
 				break;
 			case KEYBOARD_KEYS::K_P6:
-				teletype::setCursorPosition(teletype::currentPos + 1);
+				console::setCursorPosition(console::currentPos + 1);
 				break;
 			case KEYBOARD_KEYS::K_ENTER://keypad enter
-				teletype::puts(u8"\n");
+				console::puts(u8"\n");
 				break;
 			case KEYBOARD_KEYS::K_LEFTCTRL://right ctrl
 				rightCtrlPressed = true;
@@ -175,7 +176,7 @@ export namespace keyboard
 				rightCtrlPressed = false;
 				break;
 			case KEYBOARD_KEYS::K_SLASH:
-				teletype::putc(scancodes[KEYBOARD_KEYS::K_SLASH]);
+				console::putc(scancodes[KEYBOARD_KEYS::K_SLASH]);
 				break;
 			}
 			break;
@@ -185,17 +186,17 @@ export namespace keyboard
 				bool additional = scancode == KEYBOARD_KEYS::K_TILDE || scancode == KEYBOARD_KEYS::K_SEMICOLON || scancode == KEYBOARD_KEYS::K_RSQUO || scancode == KEYBOARD_KEYS::K_LEFTBRACKET || scancode == KEYBOARD_KEYS::K_RIGHTBRACKET || scancode == KEYBOARD_KEYS::K_BACKSLASH || scancode >= KEYBOARD_KEYS::K_1 && scancode <= KEYBOARD_KEYS::K_PLUS;
 				if ((leftShiftPressed || rightShiftPressed) && additional)
 				{
-					teletype::putc(scancodes[scancode + 64]);
+					console::putc(scancodes[scancode + 64]);
 				}
 				else
 				{
 					switch (((leftShiftPressed | rightShiftPressed) ^ capsLock) && !additional)
 					{
 					case true:
-						teletype::putc(static_cast<i8>(c - 32));
+						console::putc(static_cast<i8>(c - 32));
 						break;
 					case false:
-						teletype::putc(c);
+						console::putc(c);
 						break;
 					}
 				}
@@ -205,9 +206,8 @@ export namespace keyboard
 				switch (scancode)
 				{
 				case KEYBOARD_KEYS::K_BACKSPACE://backspace
-					teletype::setCursorPosition(teletype::currentPos - 1);
-					teletype::putc(' ');
-					teletype::setCursorPosition(teletype::currentPos - 1);
+					console::clearGlyph(console::currentPos - 1);
+					console::setCursorPosition(console::currentPos - 1);
 					break;
 				case KEYBOARD_KEYS::K_LEFTSHIFT://left shift
 					leftShiftPressed = true;
@@ -228,7 +228,7 @@ export namespace keyboard
 					rightCtrlPressed = false;
 					break;
 				case KEYBOARD_KEYS::K_ENTER://enter
-					teletype::puts(u8"\n");
+					console::puts(u8"\n");
 					break;
 				case KEYBOARD_KEYS::K_CASPLOCK://capslock
 					capsLock ^= lastScancode != scancode;
@@ -237,13 +237,13 @@ export namespace keyboard
 					numLock ^= lastScancode != scancode;
 					break;
 				case KEYBOARD_KEYS::K_PPLUS:
-					teletype::putc(scancodes[KEYBOARD_KEYS::K_PPLUS]);
+					console::putc(scancodes[KEYBOARD_KEYS::K_PPLUS]);
 					break;
 				case KEYBOARD_KEYS::K_PMINUS:
-					teletype::putc(scancodes[KEYBOARD_KEYS::K_MINUS]);
+					console::putc(scancodes[KEYBOARD_KEYS::K_MINUS]);
 					break;
 				case KEYBOARD_KEYS::K_PMUL:
-					teletype::putc(scancodes[KEYBOARD_KEYS::K_PMUL]);
+					console::putc(scancodes[KEYBOARD_KEYS::K_PMUL]);
 					break;
 				case KEYBOARD_KEYS::K_ESC://reboot 
 					cpuio::reboot();
@@ -254,34 +254,34 @@ export namespace keyboard
 					switch (scancode)
 					{
 					case KEYBOARD_KEYS::K_P0:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_0]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_0]);
 						break;
 					case KEYBOARD_KEYS::K_P1:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_1]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_1]);
 						break;
 					case KEYBOARD_KEYS::K_P2:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_2]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_2]);
 						break;
 					case KEYBOARD_KEYS::K_P3:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_3]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_3]);
 						break;
 					case KEYBOARD_KEYS::K_P4:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_4]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_4]);
 						break;
 					case KEYBOARD_KEYS::K_P5:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_5]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_5]);
 						break;
 					case KEYBOARD_KEYS::K_P6:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_6]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_6]);
 						break;
 					case KEYBOARD_KEYS::K_P7:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_7]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_7]);
 						break;
 					case KEYBOARD_KEYS::K_P8:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_8]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_8]);
 						break;
 					case KEYBOARD_KEYS::K_P9:
-						teletype::putc(scancodes[KEYBOARD_KEYS::K_9]);
+						console::putc(scancodes[KEYBOARD_KEYS::K_9]);
 						break;
 					}
 				}

@@ -2,6 +2,8 @@ export module memory.allocator;
 import memory.utils;
 import memory.descriptor;
 import types;
+import console;
+import Framebuffer;
 export namespace memory
 {
 	constinit const u64 PAGESIZE = 0x1000;
@@ -69,7 +71,6 @@ export namespace memory::allocator
 							}
 						}
 					}
-					
 				}
 			}
 		}
@@ -129,14 +130,14 @@ export namespace memory::allocator
 			Descriptor* descriptor = (Descriptor*)((u64)map + (i * descriptorSize));
 			if (descriptor->type == 7)
 			{
-				if (descriptor->numberOfPages * PAGESIZE > largestFreeMemorySegmentSize)
+				if (descriptor->numberOfPages > largestFreeMemorySegmentSize)
 				{
 					largestFreeMemorySegment = descriptor->physicalAddress;
-					largestFreeMemorySegmentSize = descriptor->numberOfPages * 0x1000;
+					largestFreeMemorySegmentSize = descriptor->numberOfPages;
 				}
 			}
 		}
 		initialize(largestFreeMemorySegment, sizeRAM);
-		setRegion(memoryMap, countBlocks(sizeRAM >> BLOCKSIZE >> BLOCKSPERBYTE));
+		setRegion(memoryMap, memory::allocator::countBlocks(maxBlocks >> BLOCKSPERBYTE));
 	}
 }

@@ -4,14 +4,56 @@ import memory.descriptor;
 import memory.PageTableManager;
 import memory.utils;
 import memory.Heap;
-import console;
 import types;
-
+import cpuio;
+import BootInfo;
 
 export namespace memory
 {
 	PageTableManager pageTableManager;
-	extern "C" void loadGDT(PageTable* plm4);
+	extern void loadPLM(PageTable* plm4);
+	void initialize(BootInfo& bootInfo)
+	{
+		memory::allocator::initialize(bootInfo.map, bootInfo.mapEntries, bootInfo.descriptorSize);
+		if (reinterpret_cast<u64>(bootInfo.fb.baseAddress) < memory::sizeRAM)
+			memory::allocator::setRegion(bootInfo.fb.baseAddress, memory::allocator::countBlocks(bootInfo.fb.bufferSize));
+		for (size_t i = 0; i < bootInfo.mapEntries; i++)
+		{
+			const memory::Descriptor* descriptor = (memory::Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
+			switch (descriptor->type)
+			{
+			case 0:
+			case 5:
+			case 6:
+			case 8:
+			case 9:
+			case 10:
+			case 11:
+			case 12:
+			case 13:
+			case 14:
+			case 15:
+				memory::allocator::setRegion(descriptor->physicalAddress, descriptor->numberOfPages);
+				break;
+			}
+		}
+		
+		allocator::setRegion(nullptr, 1);
+		for (size_t i = 0; i < 4; i++)
+		{
+			allocator::setRegion(bootInfo.memoryMapEntries[i].address, bootInfo.memoryMapEntries[i].numberOfPages);
+		}
+
+		PLM4 = reinterpret_cast<memory::PageTable*>(memory::allocator::allocBlocks(1));
+		set(memory::PLM4, 0, sizeof(memory::PageTable));
+		pageTableManager = memory::PageTableManager(memory::PLM4);
+		;
+		pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, (memory::sizeRAM >> 12) - 1);
+		pageTableManager.mapMemory(bootInfo.fb.baseAddress, bootInfo.fb.baseAddress, memory::allocator::countBlocks(bootInfo.fb.bufferSize));
+
+		cpuio::loadPLM(memory::PLM4);
+		initializeHeap((void*)0x0000100000000000, 0x10);
+	}
 }
 export
 {

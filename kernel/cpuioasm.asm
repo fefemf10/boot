@@ -13,8 +13,9 @@ public pausee as '?pause@cpuio@@YAXXZ::<!cpuio>'
 public cr22 as '?cr2@cpuio@@YA_KXZ::<!cpuio>'
 public cr33 as '?cr3@cpuio@@YA_KXZ::<!cpuio>'
 public spp as '?getSP@cpuio@@YA_KXZ::<!cpuio>'
-public loadIDTR as '?loadIDTR@IDT@@YAXPEBUIDTR@1@@Z::<!IDT>'
-public loadGDT
+public loadIDTR as '?loadIDTR@cpuio@@YAXPEAX@Z::<!cpuio>'
+public loadPLM as '?loadPLM@cpuio@@YAXPEAX@Z::<!cpuio>'
+public loadGDT as '?loadGDT@cpuio@@YAXPEAX@Z::<!cpuio>'
 
 section '.text$mn' code readable executable
 inb:
@@ -73,9 +74,8 @@ loadIDTR:
 	sti
 	ret
 
-loadGDT:
-	mov rdi, rcx
-	mov cr3, rdi
+loadPLM:
+	mov cr3, rcx
 	ret
 
 cr22:
@@ -88,3 +88,17 @@ cr33:
 spp:
 	mov rax, rsp
 	ret
+
+loadGDT:
+	lgdt [rcx]
+	mov ax, 0x10
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+	pop rdi
+	mov rax, 0x08
+	push rax
+	push rdi
+	retfq

@@ -63,15 +63,15 @@ Framebuffer* InitializeGOP()
 		return 0;
 	}
 
-	uint32_t requirenmentWidth = 1920;
-	uint32_t requirenmentHeight = 1080;
+	uint32_t requirenmentWidth = 640;
+	uint32_t requirenmentHeight = 480;
 
 	uint64_t sizeInfo{};
 	efi::GraphicsOutputModeInformation* modeInformation{};
 	for (uint64_t i = 0; i < gop->mode->maxMode; i++)
 	{
 		efi::Status s = gop->queryMode(gop, i, &sizeInfo, &modeInformation);
-		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution >= requirenmentWidth && modeInformation->verticalResolution >= requirenmentHeight)
+		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution == requirenmentWidth && modeInformation->verticalResolution == requirenmentHeight)
 		{
 			gop->setMode(gop, i);
 			break;
@@ -103,45 +103,68 @@ efi::FileHandle loadFile(efi::FileHandle directory, const char16_t* path, efi::H
 	efi::FileHandle loadedFile;
 	return directory->open(directory, &loadedFile, path, efi::FileMode::READ, efi::FileAttributes::FILE_READ_ONLY) == efi::Status::SUCCESS ? loadedFile : nullptr;
 }
-
-
+struct MapEntry
+{
+	void* address;
+	uint64_t sizeOfBytes;
+	uint64_t numberOfPages;
+};
+#pragma pack(16)
 struct BootInfo
 {
-	Framebuffer* fb;
+	Framebuffer fb;
 	PSF1Font* font;
 	efi::MemoryDescriptor* map;
 	uint64_t mapEntries;
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
-	void* kernelAddress;
-	uint64_t kernelSize;
-	uint64_t kernelStackSize;
-	uint64_t kernelResourcesSize;
+	MapEntry memoryMapEntries[4];
 };
 
-void (*mainCRTStartup)(BootInfo);
-extern void setStack(uint64_t address, BootInfo* bootInfo);
+void (*mainCRTStartup)(BootInfo&);
+extern void setStack(void* address, BootInfo* bootInfo);
 extern uint64_t getStack();
-void* image = reinterpret_cast<void*>(0x1000);
-PSF1Font* loadPSF1Font(BootInfo& bootInfo, efi::FileHandle directory, const char16_t* path, efi::Handle imageHangle)
+
+void* stackAddress = reinterpret_cast<void*>(0x1000);
+uint64_t stackSize;
+uint64_t numberOfPagesStack;
+void* kernelAddress;
+uint64_t kernelSize;
+uint64_t numberOfPagesKernel;
+void* bootInfoAddress;
+uint64_t bootInfoSize;
+uint64_t numberOfPagesBootInfo;
+void* fontAddress;
+uint64_t fontSize;
+uint64_t numberOfPagesFont;
+
+constexpr const uint64_t BLOCKSIZE = 12;
+constexpr uint64_t countPages(uint64_t size)
 {
-	constexpr const uint64_t countPagesForFont = 3;
+	return (size >> BLOCKSIZE) + (size % (1 << BLOCKSIZE) > 0);
+}
+
+PSF1Font* loadPSF1Font(efi::FileHandle directory, const char16_t* path, efi::Handle imageHangle)
+{
 	efi::FileHandle font = loadFile(directory, path, imageHangle);
 	if (font == nullptr) return nullptr;
-	void* fontStruct = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(image) + bootInfo.kernelSize);
-	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_DATA, countPagesForFont, fontStruct);
-	PSF1Font* finishedFont = reinterpret_cast<PSF1Font*>(fontStruct);
-	uint64_t size = 4;
-	font->read(font, &size, finishedFont);
+
+	numberOfPagesFont = 3;
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesFont, fontAddress);
+	
+	PSF1Font* finishedFont = reinterpret_cast<PSF1Font*>(fontAddress);
+	uint64_t sizeOfPSFHeader = 4;
+	font->read(font, &sizeOfPSFHeader, finishedFont);
 	if (finishedFont->magic[0] != PSF1MAGIC0 || finishedFont->magic[1] != PSF1MAGIC1)
 		return nullptr;
+
 	uint64_t glyphBufferSize = finishedFont->charSize * 256;
 	if (finishedFont->mode == 1)
 	{
 		glyphBufferSize *= 2;
 	}
+	
 	font->read(font, &glyphBufferSize, finishedFont->glyphBuffer);
-	bootInfo.kernelResourcesSize += countPagesForFont * 0x1000;
 	return finishedFont;
 }
 void loadPE(efi::FileHandle file, PE::PE& pe)
@@ -162,11 +185,26 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 	{
 		file->read(file, &sizeForRead, &sections[i]);
 	}
-	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, (pe.optionalHeader.sizeOfImage >> 12) + (pe.optionalHeader.sizeOfStackCommit >> 12), image);
-	image = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.sizeOfStackCommit);
+	
+	numberOfPagesStack = countPages(pe.optionalHeader.sizeOfStackCommit);
+	numberOfPagesKernel = countPages(pe.optionalHeader.sizeOfImage);
+	numberOfPagesBootInfo = countPages(sizeof(BootInfo));
+
+	stackSize = pe.optionalHeader.sizeOfStackCommit;
+	kernelSize = pe.optionalHeader.sizeOfImage;
+	bootInfoSize = sizeof(BootInfo);
+
+	kernelAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(stackAddress) + (numberOfPagesStack << BLOCKSIZE));
+	bootInfoAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(kernelAddress) + (numberOfPagesKernel << BLOCKSIZE));
+	fontAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(bootInfoAddress) + (numberOfPagesBootInfo << BLOCKSIZE));
+	
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesStack, stackAddress);
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesKernel, kernelAddress);
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesBootInfo, bootInfoAddress);
+
 	file->setPosition(file, 0);
 	sizeForRead = pe.optionalHeader.sizeOfHeaders;
-	file->read(file, &sizeForRead, image);
+	file->read(file, &sizeForRead, kernelAddress);
 	for (size_t i = 0; i < pe.coffHeader.numberSection; i++)
 	{
 		sizeForRead = sections[i].virtualSize;
@@ -174,7 +212,7 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 		{
 			continue;
 		}
-		void* sectionVirtualAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(image) + sections[i].virtualAddress);
+		void* sectionVirtualAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(kernelAddress) + sections[i].virtualAddress);
 		file->setPosition(file, sections[i].pointerRawData);
 		file->read(file, &sizeForRead, sectionVirtualAddress);
 	}
@@ -183,17 +221,17 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 		uint64_t offset = 0;
 		while (offset < pe.optionalHeaderData.baseRelocationTable.size)
 		{
-			uint32_t rva = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset);
-			uint32_t sizeOfBlock = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 4);
+			uint32_t rva = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(kernelAddress) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset);
+			uint32_t sizeOfBlock = *reinterpret_cast<u32*>(reinterpret_cast<uint64_t>(kernelAddress) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 4);
 			//printf_unsigned(sizeOfBlock, 10, 0);
 			//SS->conOut->outputString(SS->conOut, u" ");
 			uint64_t entries = (sizeOfBlock - 8) / 2;
-			u16* relocationVirtualTable = reinterpret_cast<u16*>(reinterpret_cast<uint64_t>(image) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 8);
+			u16* relocationVirtualTable = reinterpret_cast<u16*>(reinterpret_cast<uint64_t>(kernelAddress) + pe.optionalHeaderData.baseRelocationTable.virtualAddress + offset + 8);
 			for (size_t i = 0; i < entries; i++)
 			{
 				if (relocationVirtualTable[i] == 0)
 					continue;
-				*reinterpret_cast<u64*>(reinterpret_cast<uint64_t>(image) + rva + (relocationVirtualTable[i] & 0x0FFF)) += reinterpret_cast<uint64_t>(image) - pe.optionalHeader.imageBase;
+				*reinterpret_cast<u64*>(reinterpret_cast<uint64_t>(kernelAddress) + rva + (relocationVirtualTable[i] & 0x0FFF)) += reinterpret_cast<uint64_t>(kernelAddress) - pe.optionalHeader.imageBase;
 				//printf_unsigned(rva + (relocationVirtualTable[i] & 0x0FFF), 16, 0);
 				//SS->conOut->outputString(SS->conOut, u" ");
 			}
@@ -202,7 +240,7 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 			//SS->conOut->outputString(SS->conOut, u"\n\r");
 		}
 	}
-	mainCRTStartup = reinterpret_cast<void(*)(BootInfo)>(reinterpret_cast<uint64_t>(image) + pe.optionalHeader.addressOfEntryPoint);
+	mainCRTStartup = reinterpret_cast<void(*)(BootInfo&)>(reinterpret_cast<uint64_t>(kernelAddress) + pe.optionalHeader.addressOfEntryPoint);
 }
 const char16_t* EFI_MEMORY_TYPE_STRINGS[]{
 
@@ -234,6 +272,7 @@ uint64_t getMemorySize(efi::MemoryDescriptor* map, uint64_t mapEntries, uint64_t
 	return memorySizeBytes;
 }
 
+
 efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 {
 	SS = systemTable;
@@ -244,39 +283,71 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	Framebuffer* newBuffer = InitializeGOP();
 	systemTable->conOut->clearScreen(systemTable->conOut);
 
+
 	efi::FileHandle kernel = loadFile(volume, u"kernel.exe", imageHandle);
 	PE::PE kernelPE;
 	loadPE(kernel, kernelPE);
+	PSF1Font* newFont = loadPSF1Font(volume, u"zap-ext-vga16.psf", imageHandle);
+
+	/*printf_unsigned((uint64_t)stackAddress, 16, 0);
+	SS->conOut->outputString(SS->conOut, u" ");
+	printf_unsigned((uint64_t)numberOfPagesStack, 16, 0);
+	SS->conOut->outputString(SS->conOut, u"\n\r");
+
+	printf_unsigned((uint64_t)kernelAddress, 16, 0);
+	SS->conOut->outputString(SS->conOut, u" ");
+	printf_unsigned((uint64_t)numberOfPagesKernel, 16, 0);
+	SS->conOut->outputString(SS->conOut, u"\n\r");
+
+	printf_unsigned((uint64_t)bootInfoAddress, 16, 0);
+	SS->conOut->outputString(SS->conOut, u" ");
+	printf_unsigned((uint64_t)numberOfPagesBootInfo, 16, 0);
+	SS->conOut->outputString(SS->conOut, u"\n\r");
+
+	printf_unsigned((uint64_t)fontAddress, 16, 0);
+	SS->conOut->outputString(SS->conOut, u" ");
+	printf_unsigned((uint64_t)numberOfPagesFont, 16, 0);
+	SS->conOut->outputString(SS->conOut, u"\n\r");*/
 
 	efi::MemoryDescriptor* map{};
 	uint64_t mapSize, mapKey;
 	uint64_t descriptorSize;
 	uint32_t descriptorVersion;
-	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
-	BS->allocatePool(efi::MemoryType::LOADER_DATA, mapSize + 2 * descriptorSize, (void**)&map);
-	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
 
+	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
+	BS->allocatePool(efi::MemoryType::LOADER_CODE, mapSize + 2 * descriptorSize, (void**)&map);
+	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
 	uint64_t mapEntries = mapSize / descriptorSize;
-	/*for (size_t i = 0; i < mapEntries; i++)
-	{
-		efi::MemoryDescriptor* descriptor = reinterpret_cast<efi::MemoryDescriptor*>((uint64_t)map + (i * descriptorSize));
-		systemTable->conOut->outputString(systemTable->conOut, EFI_MEMORY_TYPE_STRINGS[descriptor->type]);
-	}*/
 
 	BootInfo bootInfo;
-	bootInfo.fb = &framebuffer;
+	bootInfo.fb = framebuffer;
+	bootInfo.font = newFont;
 	bootInfo.map = map;
 	bootInfo.mapEntries = mapEntries;
 	bootInfo.mapSize = mapSize;
 	bootInfo.mapDescriptorSize = descriptorSize;
-	bootInfo.kernelAddress = image;
-	bootInfo.kernelSize = kernelPE.optionalHeader.sizeOfImage;
-	bootInfo.kernelStackSize = kernelPE.optionalHeader.sizeOfStackCommit;
-	PSF1Font* newFont = loadPSF1Font(bootInfo, volume, u"zap-ext-vga16.psf", imageHandle);
-	bootInfo.font = newFont;
-	
+	//stack
+	bootInfo.memoryMapEntries[0].address = stackAddress;
+	bootInfo.memoryMapEntries[0].sizeOfBytes = stackSize;
+	bootInfo.memoryMapEntries[0].numberOfPages = numberOfPagesStack;
+	//kernel
+	bootInfo.memoryMapEntries[1].address = kernelAddress;
+	bootInfo.memoryMapEntries[1].sizeOfBytes = kernelSize;
+	bootInfo.memoryMapEntries[1].numberOfPages = numberOfPagesKernel;
+	//bootInfo
+	bootInfo.memoryMapEntries[2].address = bootInfoAddress;
+	bootInfo.memoryMapEntries[2].sizeOfBytes = bootInfoSize;
+	bootInfo.memoryMapEntries[2].numberOfPages = numberOfPagesBootInfo;
+	//font
+	bootInfo.memoryMapEntries[3].address = fontAddress;
+	bootInfo.memoryMapEntries[3].sizeOfBytes = fontSize;
+	bootInfo.memoryMapEntries[3].numberOfPages = numberOfPagesFont;
+
+	*reinterpret_cast<BootInfo*>(bootInfoAddress) = bootInfo;
+
 	BS->exitBootServices(imageHandle, mapKey);
-	setStack(reinterpret_cast<uint64_t>(image), &bootInfo);
+
+	setStack(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(stackAddress) + stackSize), &bootInfo);
 
 	return efi::Status::SUCCESS;
 }
