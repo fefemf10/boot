@@ -16,6 +16,7 @@ public spp as '?getSP@cpuio@@YA_KXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@cpuio@@YAXPEAX@Z::<!cpuio>'
 public loadPLM as '?loadPLM@cpuio@@YAXPEAX@Z::<!cpuio>'
 public loadGDT as '?loadGDT@cpuio@@YAXPEAX@Z::<!cpuio>'
+public getCPUFeatures as '?getCPUFeatures@cpuio@@YAXAEAUFeatures@1@@Z::<!cpuio>'
 
 section '.text$mn' code readable executable
 inb:
@@ -102,3 +103,12 @@ loadGDT:
 	push rax
 	push rdi
 	retfq
+
+getCPUFeatures:
+	mov eax, 1
+	mov r8, rcx
+	cpuid
+	mov dword [r8], ecx 
+	mov dword [r8+4], edx
+	mov dword [r8+8], eax
+	ret

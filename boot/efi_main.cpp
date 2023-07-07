@@ -29,6 +29,11 @@ struct PSF1Font
 	uint8_t glyphBuffer[1];
 };
 
+void print(const char16_t* str)
+{
+	SS->conOut->outputString(SS->conOut, str);
+}
+
 extern "C" void putc(const char16_t c)
 {
 	const char16_t buf[2] = { c, u'\0' };
@@ -63,21 +68,21 @@ Framebuffer* InitializeGOP()
 		return 0;
 	}
 
-	uint32_t requirenmentWidth = 640;
-	uint32_t requirenmentHeight = 480;
+	uint32_t requirenmentWidth = 1920;
+	uint32_t requirenmentHeight = 1080;
 
 	uint64_t sizeInfo{};
 	efi::GraphicsOutputModeInformation* modeInformation{};
+	uint64_t format{};
 	for (uint64_t i = 0; i < gop->mode->maxMode; i++)
 	{
 		efi::Status s = gop->queryMode(gop, i, &sizeInfo, &modeInformation);
-		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution == requirenmentWidth && modeInformation->verticalResolution == requirenmentHeight)
+		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution <= requirenmentWidth && modeInformation->verticalResolution <= requirenmentHeight && modeInformation->pixelFormat == efi::GraphicsPixelFormat::PIXEL_BLUE_GREEN_RED_RESERVED_8BIT_PER_COLOR)
 		{
-			gop->setMode(gop, i);
-			break;
+			format = i;
 		}
 	}
-
+	gop->setMode(gop, format);
 	framebuffer.baseAddress = (void*)gop->mode->frameBufferBase;
 	framebuffer.bufferSize = gop->mode->frameBufferSize;
 	framebuffer.width = gop->mode->info->horizontalResolution;
@@ -109,7 +114,7 @@ struct MapEntry
 	uint64_t sizeOfBytes;
 	uint64_t numberOfPages;
 };
-#pragma pack(16)
+
 struct BootInfo
 {
 	Framebuffer fb;
@@ -119,6 +124,7 @@ struct BootInfo
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
 	MapEntry memoryMapEntries[4];
+	void* ACPITable;
 };
 
 void (*mainCRTStartup)(BootInfo&);
@@ -278,44 +284,21 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	SS = systemTable;
 	BS = systemTable->bootServices;
 	RS = systemTable->runtimeServices;
-	uint64_t event;
 	efi::FileHandle volume = loadVolume(imageHandle);
 	Framebuffer* newBuffer = InitializeGOP();
-	systemTable->conOut->clearScreen(systemTable->conOut);
-
-
+	
 	efi::FileHandle kernel = loadFile(volume, u"kernel.exe", imageHandle);
 	PE::PE kernelPE;
 	loadPE(kernel, kernelPE);
 	PSF1Font* newFont = loadPSF1Font(volume, u"zap-ext-vga16.psf", imageHandle);
-
-	/*printf_unsigned((uint64_t)stackAddress, 16, 0);
-	SS->conOut->outputString(SS->conOut, u" ");
-	printf_unsigned((uint64_t)numberOfPagesStack, 16, 0);
-	SS->conOut->outputString(SS->conOut, u"\n\r");
-
-	printf_unsigned((uint64_t)kernelAddress, 16, 0);
-	SS->conOut->outputString(SS->conOut, u" ");
-	printf_unsigned((uint64_t)numberOfPagesKernel, 16, 0);
-	SS->conOut->outputString(SS->conOut, u"\n\r");
-
-	printf_unsigned((uint64_t)bootInfoAddress, 16, 0);
-	SS->conOut->outputString(SS->conOut, u" ");
-	printf_unsigned((uint64_t)numberOfPagesBootInfo, 16, 0);
-	SS->conOut->outputString(SS->conOut, u"\n\r");
-
-	printf_unsigned((uint64_t)fontAddress, 16, 0);
-	SS->conOut->outputString(SS->conOut, u" ");
-	printf_unsigned((uint64_t)numberOfPagesFont, 16, 0);
-	SS->conOut->outputString(SS->conOut, u"\n\r");*/
-
+	
 	efi::MemoryDescriptor* map{};
-	uint64_t mapSize, mapKey;
-	uint64_t descriptorSize;
-	uint32_t descriptorVersion;
-
+	uint64_t mapSize{}, mapKey{};
+	uint64_t descriptorSize{};
+	uint32_t descriptorVersion{};
 	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
-	BS->allocatePool(efi::MemoryType::LOADER_CODE, mapSize + 2 * descriptorSize, (void**)&map);
+	mapSize += 2 * descriptorSize;
+	BS->allocatePool(efi::MemoryType::LOADER_CODE, mapSize, (void**)&map);
 	BS->getMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
 	uint64_t mapEntries = mapSize / descriptorSize;
 
@@ -342,9 +325,17 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	bootInfo.memoryMapEntries[3].address = fontAddress;
 	bootInfo.memoryMapEntries[3].sizeOfBytes = fontSize;
 	bootInfo.memoryMapEntries[3].numberOfPages = numberOfPagesFont;
+	
+	for (size_t i = 0; i < SS->numberOfTableEntries; i++)
+	{
+		if (SS->configurationTables[i].vendorGUID == efi::ACPI_20)
+		{
+			bootInfo.ACPITable = SS->configurationTables[i].vendorTable;
+			break;
+		}
+	}
 
 	*reinterpret_cast<BootInfo*>(bootInfoAddress) = bootInfo;
-
 	BS->exitBootServices(imageHandle, mapKey);
 
 	setStack(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(stackAddress) + stackSize), &bootInfo);

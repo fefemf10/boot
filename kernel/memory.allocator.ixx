@@ -1,20 +1,17 @@
 export module memory.allocator;
+import types;
 import memory.utils;
 import memory.descriptor;
-import types;
-import console;
-import Framebuffer;
 export namespace memory
 {
 	constinit const u64 PAGESIZE = 0x1000;
-	const u64 sizeRAM;
-	u64 getMemorySize(Descriptor* map, u64 mapEntries, u64 descriptorSize)
+	u64 sizeRAM{};
+	const u64 getMemorySize(const Descriptor* map, u64 mapEntries, u64 descriptorSize)
 	{
-		static u64 memorySizeBytes{};
-		if (memorySizeBytes > 0) return memorySizeBytes;
+		u64 memorySizeBytes{};
 		for (size_t i = 0; i < mapEntries; i++)
 		{
-			Descriptor* descriptor = (Descriptor*)((u64)map + (i * descriptorSize));
+			const Descriptor* descriptor = (Descriptor*)((u64)map + (i * descriptorSize));
 			memorySizeBytes += descriptor->numberOfPages * PAGESIZE;
 		}
 		return memorySizeBytes;
@@ -22,11 +19,10 @@ export namespace memory
 }
 export namespace memory::allocator
 {
-	u64* memoryMap{};
-	u64 maxBlocks{};
-	u64 usedBlocks{};
-	u64 unusedBlocks{};
-	u64 reservedBlocks{};
+	u64* memoryMap;
+	u64 maxBlocks;
+	u64 usedBlocks;
+	u64 unusedBlocks;
 	constinit const u64 BLOCKSIZE = 12; // shr 12 = 4096
 	constinit const u64 BLOCKSPERBYTE = 3; // shr 3 = 8
 	constexpr void setBlock(u64 bit)
@@ -76,7 +72,7 @@ export namespace memory::allocator
 		}
 		return -1;
 	}
-	void initialize(void* address, const u64 size)
+	void initializeBitmap(void* address, const u64 size)
 	{
 		memoryMap = reinterpret_cast<u64*>(address);
 		maxBlocks = size >> BLOCKSIZE;
@@ -122,7 +118,7 @@ export namespace memory::allocator
 	}
 	void initialize(Descriptor* map, u64 mapEntries, u64 descriptorSize)
 	{
-		const_cast<u64&>(sizeRAM) = getMemorySize(map, mapEntries, descriptorSize);
+		sizeRAM = getMemorySize(map, mapEntries, descriptorSize);
 		void* largestFreeMemorySegment{};
 		u64 largestFreeMemorySegmentSize{};
 		for (size_t i = 0; i < mapEntries; i++)
@@ -137,7 +133,7 @@ export namespace memory::allocator
 				}
 			}
 		}
-		initialize(largestFreeMemorySegment, sizeRAM);
+		initializeBitmap(largestFreeMemorySegment, sizeRAM);
 		setRegion(memoryMap, memory::allocator::countBlocks(maxBlocks >> BLOCKSPERBYTE));
 	}
 }

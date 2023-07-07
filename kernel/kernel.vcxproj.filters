@@ -40,6 +40,9 @@
     <Filter Include="Исходные файлы\PECOFF">
       <UniqueIdentifier>{20c09874-2e49-4278-8489-883ba3bad9ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\ACPI">
+      <UniqueIdentifier>{704d76d6-78c8-4e53-a41f-ab85eef934a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.ixx">
@@ -308,6 +311,27 @@
     </ClCompile>
     <ClCompile Include="fltused.ixx">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="RSDP.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="SDT.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="MCFG.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="XSDT.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="FADT.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="GAS.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="MADT.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

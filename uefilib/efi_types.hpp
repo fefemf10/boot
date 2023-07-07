@@ -163,8 +163,8 @@ namespace efi
 	{
 		uint32_t type;
 		uint32_t pad;
-		uintptr_t physicalStart;
-		uintptr_t virtualStart;
+		uintptr_t physicalAddress;
+		uintptr_t virtualAddress;
 		uint64_t numberOfPages;
 		uint64_t attribute;
 	};

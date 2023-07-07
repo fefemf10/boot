@@ -3,6 +3,7 @@ import types;
 import IDT;
 import cpuio;
 import keyboard;
+import console;
 import PIT;
 import PIC;
 export namespace IRQ

@@ -2,6 +2,7 @@ export module IDT;
 import types;
 import PIC;
 import cpuio;
+import memory.utils;
 export namespace IDT
 {
 	enum Gate : u8
@@ -41,6 +42,10 @@ export namespace IDT
 	};
 	IDT idt[256]{};
 	IDTR idtr{ .size = 0x0FFF, .offset = reinterpret_cast<u64>(idt) };
+	void initialize()
+	{
+		memory::set(&idt, 0x00, sizeof(idt));
+	}
 	void set(size_t index, void(*function)())
 	{
 		idt[index].setOffset(function);

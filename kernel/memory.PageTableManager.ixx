@@ -96,5 +96,5 @@ export namespace memory
 				mapMemory(phys, virt);
 			}
 		}
-	};
+	} pageTableManager;
 }

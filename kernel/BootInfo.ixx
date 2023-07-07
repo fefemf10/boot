@@ -3,6 +3,7 @@ import types;
 import Framebuffer;
 import Font;
 import memory.descriptor;
+import RSDP;
 export
 {
 	struct MapEntry
@@ -11,7 +12,7 @@ export
 		u64 sizeOfBytes;
 		u64 numberOfPages;
 	};
-#pragma pack(16)
+
 	struct BootInfo
 	{
 		Framebuffer fb;
@@ -21,6 +22,7 @@ export
 		u64 mapSize;
 		u64 descriptorSize;
 		MapEntry memoryMapEntries[4];
+		ACPI::RSDP& RSDP;
 		//stack kernel
 		//kernel
 		//bootinfo

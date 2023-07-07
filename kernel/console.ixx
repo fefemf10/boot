@@ -29,12 +29,19 @@ export namespace console
 	};
 	u32 color = 0x00FFFFFF;
 	u32 clearColor = Color::BLACK;
-	i64 currentPos = 0;
+	i64 currentPos;
 	i64 width;
 	i64 height;
+	enum class OUT
+	{
+		FRAMEBUFFER,
+		SERIAL
+	} out{};
 	void initialize()
 	{
-		serial::initialize();
+		//serial::initialize();
+		currentPos = 0;
+		out = OUT::FRAMEBUFFER;
 		width = framebuffer.width / 8;
 		height = framebuffer.height / 16;
 	}
@@ -85,7 +92,7 @@ export namespace console
 		i64 cursorX = position % width * 8;
 		clearGlyph(position);
 		u32* pixels = (u32*)framebuffer.baseAddress;
-		char* fontPtr = reinterpret_cast<char*>(&font->glyphBuffer) + (c * font->charSize);
+		char8_t* fontPtr = reinterpret_cast<char8_t*>(&font->glyphBuffer) + (c * font->charSize);
 		for (size_t y = cursorY; y < cursorY + 16; y++)
 		{
 			for (size_t x = cursorX; x < cursorX + 8; x++)
@@ -120,12 +127,7 @@ export namespace console
 		}
 		setCursorPosition(index);
 	}
-	enum class OUT
-	{
-		FRAMEBUFFER,
-		TELETYPE,
-		SERIAL
-	} out;
+	
 	void setOut(OUT outt)
 	{
 		out = outt;
@@ -137,14 +139,14 @@ export namespace console
 			drawChar(c, currentPos);
 			setCursorPosition(currentPos + 1);
 		}
-		else if (out == OUT::SERIAL)
+		else
 			serial::write(c);
 	}
 	void puts(const char8_t* str)
 	{
 		if (out == OUT::FRAMEBUFFER)
 			print(str);
-		else if (out == OUT::SERIAL)
+		else
 		{
 			char8_t* strs = const_cast<char8_t*>(str);
 			while (*strs)
@@ -321,7 +323,14 @@ export namespace console
 				switch (*fmt)
 				{
 				case u8'c':
-					putc(static_cast<char8_t>(va_arg(args, i32)));
+					if (width != 0)
+					{
+						const char8_t* str = va_arg(args, const char8_t*);
+						for (size_t i = 0; i < width; i++)
+							putc(str[i]);
+					}
+					else
+						putc(static_cast<char8_t>(va_arg(args, i32)));
 					break;
 				case u8's':
 					puts(va_arg(args, const char8_t*));
@@ -432,5 +441,24 @@ export namespace console
 		printf(u8"SS: %016llx\n", regs.ss);
 		printf(u8"USERESP: %016llx\n", regs.useresp);
 		printf(u8"RFLAGS: %016llx\n", regs.rflags);
+	}
+	void putfeatures(const cpuio::Features& features)
+	{
+		printf(u8"SSE3:   %llx PCLMUL: %llx DTES64: %llx MONITOR: %llx\n", features.SSE3, features.PCLMUL, features.DTES64, features.MONITOR);
+		printf(u8"DS_CPL: %llx VMX:    %llx SMX:    %llx EST:     %llx\n", features.DS_CPL, features.VMX, features.SMX, features.EST);
+		printf(u8"TM2:    %llx SSSE3:  %llx CID:    %llx SDBG:    %llx\n", features.TM2, features.SSSE3, features.CID, features.SDBG);
+		printf(u8"FMA:    %llx CX16:   %llx XTPR:   %llx PDCM:    %llx\n", features.FMA, features.CX16, features.XTPR, features.PDCM);
+		printf(u8"rsv1:   %llx PCID:   %llx DCA:    %llx SSE4_1:  %llx\n", features.rsv1, features.PCID, features.DCA, features.SSE4_1);
+		printf(u8"SSE4_2: %llx X2APIC: %llx MOVBE:  %llx POPCNT:  %llx\n", features.SSE4_2, features.X2APIC, features.MOVBE, features.POPCNT);
+		printf(u8"ETSC:   %llx AES:    %llx XSAVE:  %llx OSXSAVE: %llx\n", features.ETSC, features.AES, features.XSAVE, features.OSXSAVE);
+		printf(u8"AVX:    %llx F16C:   %llx RDRAND: %llx HYPERV:  %llx\n", features.AVX, features.F16C, features.RDRAND, features.HYPERVISOR);
+		printf(u8"FPU:    %llx VME:    %llx DE:     %llx PSE:     %llx\n", features.FPU, features.VME, features.DE, features.PSE);
+		printf(u8"DTSC:   %llx MSR:    %llx PAE:    %llx MCE:     %llx\n", features.DTSC, features.MSR, features.PAE, features.MCE);
+		printf(u8"CX8:    %llx APIC:   %llx rsv2:   %llx SEP:     %llx\n", features.CX8, features.APIC, features.rsv2, features.SEP);
+		printf(u8"MTRR:   %llx PGE:    %llx MCA:    %llx CMOV:    %llx\n", features.MTRR, features.PGE, features.MCA, features.CMOV);
+		printf(u8"PAT:    %llx PSE36:  %llx PSN:    %llx CLFLUSH: %llx\n", features.PAT, features.PSE36, features.PSN, features.CLFLUSH);
+		printf(u8"rsv3:   %llx DS:     %llx ACPI:   %llx MMX:     %llx\n", features.rsv3, features.DS, features.ACPI, features.MMX);
+		printf(u8"FXSR:   %llx SSE:    %llx SSE2:   %llx SS:      %llx\n", features.FXSR, features.SSE, features.SSE2, features.SS);
+		printf(u8"HTT:    %llx TM:     %llx IA64:   %llx PBE:     %llx\n", features.HTT, features.TM, features.IA64, features.PBE);
 	}
 }
