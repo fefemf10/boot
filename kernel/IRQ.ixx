@@ -4,8 +4,7 @@ import IDT;
 import cpuio;
 import keyboard;
 import console;
-import PIT;
-import PIC;
+import APIC;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -29,10 +28,6 @@ export namespace IRQ
 		size_t code = regs.interruptCode - 0x20;
 		switch (code)
 		{
-		case 0:
-			PIT::tick();
-			PIC::eioPrimary();
-			break;
 		case 1:
 			u8 status;
 			u8 keycode;
@@ -43,17 +38,17 @@ export namespace IRQ
 				keycode = cpuio::inb(keyboard::KEYBOARD_PORT::DATA_PORT);
 				keyboard::standartKeyboard(keycode, keyboard::scancodes[keycode]);
 			}
-			PIC::eioPrimary();
+			APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 			break;
 		default:
-			PIC::eioSecondary();
+			APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 			break;
 		}
 	}
 	void initialize()
 	{
-		IDT::set(32, irq0); PIC::setMask(0, 1);
-		IDT::set(33, irq1); PIC::setMask(1, 0);
+		//IDT::set(32, irq0);
+		IDT::set(33, irq1);
 		//IDT::set(34, irq2);
 		//IDT::set(35, irq3);
 		//IDT::set(36, irq4);

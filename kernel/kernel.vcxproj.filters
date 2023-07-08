@@ -147,9 +147,6 @@
     <ClCompile Include="sl.compare.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="ACPI.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="PIT.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -332,6 +329,12 @@
     </ClCompile>
     <ClCompile Include="MADT.ixx">
       <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="ACPI.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="APIC.ixx">
+      <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

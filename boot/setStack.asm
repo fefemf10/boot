@@ -29,6 +29,7 @@ setStack:
 	;
 	;movapd xmm0, [rdx+96]
 	;movapd [rsp+96], xmm0
+	sub rsp, 40
 	jmp qword [main]
 getStack:
 	mov rax, rsp

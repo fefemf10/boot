@@ -3,11 +3,6 @@ import types;
 import SDT;
 export namespace ACPI
 {
-	struct MCFGHeader
-	{
-		SDT header;
-		u64 reserved;
-	};
 	struct DeviceConfig
 	{
 		u64 baseAddress;
@@ -16,4 +11,10 @@ export namespace ACPI
 		u8 endBus;
 		u32 reserved;
 	};
+	struct MCFG
+	{
+		SDT header;
+		u64 reserved;
+		DeviceConfig devices[1];
+	} *mcfg;
 }

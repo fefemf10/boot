@@ -39,7 +39,6 @@ export namespace console
 	} out{};
 	void initialize()
 	{
-		//serial::initialize();
 		currentPos = 0;
 		out = OUT::FRAMEBUFFER;
 		width = framebuffer.width / 8;

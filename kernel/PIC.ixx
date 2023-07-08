@@ -31,6 +31,12 @@ export namespace PIC
 		cpuio::outb(0xFF, PIC1_D);
 		cpuio::outb(0xFF, PIC2_D);
 	}
+	void deinitialize()
+	{
+		//Masking all interrupt
+		cpuio::outb(0xFF, PIC1_D);
+		cpuio::outb(0xFF, PIC2_D);
+	}
 	void setMask(u8 index, u8 value)
 	{
 		u16 port;

@@ -12,7 +12,7 @@ import console;
 export namespace memory
 {
 	extern void loadPLM(PageTable* plm4);
-	void initialize(BootInfo& bootInfo)
+	void initialize(const BootInfo& bootInfo)
 	{
 		allocator::initialize(bootInfo.map, bootInfo.mapEntries, bootInfo.descriptorSize);
 		if (reinterpret_cast<u64>(bootInfo.fb.baseAddress) < sizeRAM)

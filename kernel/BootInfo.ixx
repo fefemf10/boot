@@ -22,6 +22,7 @@ export
 		u64 mapSize;
 		u64 descriptorSize;
 		MapEntry memoryMapEntries[4];
+		u64 rsv;
 		ACPI::RSDP& RSDP;
 		//stack kernel
 		//kernel

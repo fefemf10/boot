@@ -6,8 +6,17 @@ import memory.allocator;
 export namespace memory
 {
 #pragma pack(1)
+	enum class Flags : u8
+	{
+		PRESENT = 1,
+		READ_WRITE = 2,
+		USER_SUPERVISOR = 4,
+		WRITE_THROUGH = 8,
+		CACHE_DISABLE = 16
+	};
 	struct PageDirectoryEntry
 	{
+		
 		u64 present : 1;
 		u64 readWrite : 1;
 		u64 userSupervisor : 1;
@@ -33,7 +42,7 @@ export namespace memory
 		{
 
 		}
-		void mapMemory(void* physicalMemory, void* virtualMemory)
+		void mapMemory(const void* physicalMemory, const void* virtualMemory, Flags flags = Flags((u32)Flags::PRESENT | (u32)Flags::READ_WRITE))
 		{
 			PageIndex index(reinterpret_cast<u64>(virtualMemory));
 			PageDirectoryEntry PDE = PLM4->entries[index.pdp];
@@ -85,12 +94,15 @@ export namespace memory
 			PDE.address = reinterpret_cast<u64>(physicalMemory) >> 12;
 			PDE.present = true;
 			PDE.readWrite = true;
+			PDE.present = ((u32)flags & (u32)Flags::PRESENT) == (u32)Flags::PRESENT;
+			PDE.readWrite = ((u32)flags & (u32)Flags::READ_WRITE) == (u32)Flags::READ_WRITE;
+			PDE.cacheDisable = ((u32)flags & (u32)Flags::CACHE_DISABLE) == (u32)Flags::CACHE_DISABLE;
 			PT->entries[index.p] = PDE;
 		}
-		void mapMemory(void* physicalMemory, void* virtualMemory, u64 countPages)
+		void mapMemory(const void* physicalMemory, const void* virtualMemory, u64 countPages)
 		{
-			u8* virt = reinterpret_cast<u8*>(virtualMemory);
-			u8* phys = reinterpret_cast<u8*>(physicalMemory);
+			u8* virt = reinterpret_cast<u8*>((u64)virtualMemory);
+			u8* phys = reinterpret_cast<u8*>((u64)physicalMemory);
 			for (size_t i = 0; i < countPages; ++i, virt += 0x1000, phys += 0x1000)
 			{
 				mapMemory(phys, virt);

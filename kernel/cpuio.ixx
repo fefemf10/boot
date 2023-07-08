@@ -9,6 +9,7 @@ export namespace cpuio
 		u64 interruptCode, errorCode;
 		u64 rip, cs, rflags, useresp, ss;
 	};
+#pragma pack(1)
 	struct Features
 	{
 		u64 SSE3 : 1;
@@ -75,10 +76,7 @@ export namespace cpuio
 		u64 TM : 1;
 		u64 IA64 : 1;
 		u64 PBE : 1;
-		u32 stepping : 4;
-		u32 model : 4;
-		u32 family : 4;
-		u32 type : 2;
+		u32 eax;
 	} features;
 	u8 inb(u16 port);
 	u16 inw(u16 port);
@@ -89,6 +87,8 @@ export namespace cpuio
 	void reboot();
 	void halt();
 	void loop();
+	void cli();
+	void sti();
 	void iowait();
 	void pause();
 	u64 cr2();
@@ -99,4 +99,7 @@ export namespace cpuio
 	void loadGDT(void* gdtDesciptor);
 	void loadIDTR(void* idtrDesciptor);
 	void getCPUFeatures(Features& features);
+	void setMSR(u64 msr, u64 value);
+	u64 getMSR(u64 msr);
+	u64 getRDTSC();
 }

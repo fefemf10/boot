@@ -101,7 +101,7 @@ export namespace GDT
 		GDTEntry userData;
 	};
 
-	_declspec(align(0x10)) GDT DefaultGDT =
+	_declspec(align(0x1000)) GDT DefaultGDT =
 	{
 		{0, 0, 0, 0x00, 0x00, 0},
 		{0, 0, 0, 0x9A, 0xA0, 0},

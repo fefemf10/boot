@@ -124,6 +124,7 @@ struct BootInfo
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
 	MapEntry memoryMapEntries[4];
+	uint64_t rsv;
 	void* ACPITable;
 };
 
@@ -338,7 +339,7 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	*reinterpret_cast<BootInfo*>(bootInfoAddress) = bootInfo;
 	BS->exitBootServices(imageHandle, mapKey);
 
-	setStack(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(stackAddress) + stackSize), &bootInfo);
+	setStack(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(stackAddress) + stackSize), reinterpret_cast<BootInfo*>(bootInfoAddress));
 
 	return efi::Status::SUCCESS;
 }
