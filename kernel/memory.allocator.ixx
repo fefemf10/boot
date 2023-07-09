@@ -2,6 +2,8 @@ export module memory.allocator;
 import types;
 import memory.utils;
 import memory.descriptor;
+import console;
+import cpuio;
 export namespace memory
 {
 	constinit const u64 PAGESIZE = 0x1000;
@@ -12,7 +14,10 @@ export namespace memory
 		for (size_t i = 0; i < mapEntries; i++)
 		{
 			const Descriptor* descriptor = (Descriptor*)((u64)map + (i * descriptorSize));
-			memorySizeBytes += descriptor->numberOfPages * PAGESIZE;
+			if (descriptor->type != 0)
+			{
+				memorySizeBytes += descriptor->numberOfPages * PAGESIZE;
+			}
 		}
 		return memorySizeBytes;
 	}
@@ -120,19 +125,22 @@ export namespace memory::allocator
 	{
 		sizeRAM = getMemorySize(map, mapEntries, descriptorSize);
 		void* largestFreeMemorySegment{};
-		u64 largestFreeMemorySegmentSize{};
+		u64 largestFreeMemorySegmentSize{ memory::allocator::countBlocks(sizeRAM >> BLOCKSIZE >> BLOCKSPERBYTE) };
+		
 		for (size_t i = 0; i < mapEntries; i++)
 		{
 			Descriptor* descriptor = (Descriptor*)((u64)map + (i * descriptorSize));
 			if (descriptor->type == 7)
 			{
-				if (descriptor->numberOfPages > largestFreeMemorySegmentSize)
+				if ((u64)descriptor->physicalAddress >> 12 >= 0x100 && descriptor->numberOfPages >= largestFreeMemorySegmentSize)
 				{
 					largestFreeMemorySegment = descriptor->physicalAddress;
 					largestFreeMemorySegmentSize = descriptor->numberOfPages;
+					break;
 				}
 			}
 		}
+		
 		initializeBitmap(largestFreeMemorySegment, sizeRAM);
 		setRegion(memoryMap, memory::allocator::countBlocks(maxBlocks >> BLOCKSPERBYTE));
 	}

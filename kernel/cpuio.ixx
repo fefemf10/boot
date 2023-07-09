@@ -91,6 +91,8 @@ export namespace cpuio
 	void sti();
 	void iowait();
 	void pause();
+	void enableSSE();
+	void enableAVX();
 	u64 cr2();
 	u64 cr3();
 	void ret16();

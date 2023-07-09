@@ -3,8 +3,10 @@ import types;
 import cpuio;
 export namespace PIT
 {
-	double timeSinceBoot{};
-	const u64 baseFrequency = 1193182;
+	double timeSinceBoot{0.0};
+	const i32 baseFrequency = 1193182;
+	u64 ticks = 0;
+	i32 frequency = 0;
 	u16 divisor = 65535;
 	void sleepd(double seconds)
 	{
@@ -18,23 +20,34 @@ export namespace PIT
 	{
 		sleepd(millisec / 1000.0);
 	}
-	void setDivisor(u16 divisor)
+	void setDivisor(i32 divisor)
 	{
-		if (divisor < 100) PIT::divisor = 100;
+		PIT::divisor = divisor;
+		cpuio::outb(0x34, 0x43);
 		cpuio::outb(static_cast<u8>(divisor & 0x00ff), 0x40);
-		cpuio::iowait();
 		cpuio::outb(static_cast<u8>((divisor & 0xff00) >> 8), 0x40);
 	}
-	u64 getFrequency()
+	double getFrequency()
 	{
 		return baseFrequency / divisor;
 	}
-	void setFrequency(u64 frequency)
+	void setFrequency(i32 frequency)
 	{
-		setDivisor(baseFrequency / frequency);
+		i32 f = baseFrequency / frequency;
+		PIT::frequency = frequency;
+		if (f < 1)
+		{
+			f = 1;
+		}
+		else if (f > 65535)
+		{
+			f = 65535;
+		}
+		setDivisor(f);
 	}
 	void tick()
 	{
+		++ticks;
 		timeSinceBoot += 1.0 / getFrequency();
 	}
 }

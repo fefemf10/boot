@@ -5,6 +5,7 @@ import cpuio;
 import keyboard;
 import console;
 import APIC;
+import PIT;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -28,6 +29,9 @@ export namespace IRQ
 		size_t code = regs.interruptCode - 0x20;
 		switch (code)
 		{
+		case 0:
+			PIT::tick();
+			break;
 		case 1:
 			u8 status;
 			u8 keycode;
@@ -40,14 +44,12 @@ export namespace IRQ
 			}
 			APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 			break;
-		default:
-			APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
-			break;
 		}
+		APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 	}
 	void initialize()
 	{
-		//IDT::set(32, irq0);
+		IDT::set(32, irq0);
 		IDT::set(33, irq1);
 		//IDT::set(34, irq2);
 		//IDT::set(35, irq3);

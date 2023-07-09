@@ -69,7 +69,7 @@ export namespace console
 	{
 		i64 cursorY = index / width;
 		framebuffer.drawRectangle(0, cursorY * 16, framebuffer.width, 16, clearColor);
-		setCursorPosition(index - clearColor % width);
+		setCursorPosition(index - index % width);
 	}
 	void clearGlyph(i64 index)
 	{
