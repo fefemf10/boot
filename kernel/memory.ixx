@@ -34,14 +34,13 @@ export namespace memory
 	{
 		allocator::initialize(bootInfo.map, bootInfo.mapEntries, bootInfo.descriptorSize);
 		if (reinterpret_cast<u64>(bootInfo.fb.baseAddress) < sizeRAM)
-			allocator::setRegion(bootInfo.fb.baseAddress, allocator::countBlocks(bootInfo.fb.bufferSize));
+			allocator::reserveBlocks(bootInfo.fb.baseAddress, allocator::countBlocks(bootInfo.fb.bufferSize));
 		for (size_t i = 0; i < bootInfo.mapEntries; i++)
 		{
 			const Descriptor* descriptor = (Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
 			switch (descriptor->type)
 			{
 			case 0:
-				console::printf(u8"000 %llx %llx %x\n", descriptor->physicalAddress, descriptor->numberOfPages, descriptor->type);
 			case 5:
 			case 6:
 			case 8:
@@ -52,21 +51,14 @@ export namespace memory
 			case 13:
 			case 14:
 			case 15:
-				allocator::setRegion(descriptor->physicalAddress, descriptor->numberOfPages);
+				allocator::reserveBlocks(descriptor->physicalAddress, descriptor->numberOfPages);
 				break;
 			}
 			
 		}
-		for (size_t i = 0; i < 20; i++)
-		{
-			const Descriptor* descriptor = (Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
-			if (true || (u64)descriptor->physicalAddress >> 12 >= 0 && (u64)descriptor->physicalAddress >> 12 <= 0x30C00)
-			{
-			console::printf(u8"%llx %llx %x %s\n", (u64)descriptor->physicalAddress >> 12, descriptor->numberOfPages, descriptor->type, types[descriptor->type]);
-
-			}
-		}
-		allocator::setRegion(nullptr, 1);
+		
+		allocator::reserveBlocks(nullptr, 1);
+		//allocator::setRegion((const void*)0xA0000, 0x10);
 		for (size_t i = 0; i < 4; i++)
 		{
 			allocator::setRegion(bootInfo.memoryMapEntries[i].address, bootInfo.memoryMapEntries[i].numberOfPages);
@@ -75,9 +67,26 @@ export namespace memory
 		PLM4 = reinterpret_cast<PageTable*>(allocator::allocBlocks(1));
 		set(PLM4, 0, sizeof(PageTable));
 		pageTableManager = PageTableManager(PLM4);
-		pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, 0x129FF);
+		
+		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, 0x10000-1);
 		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, 0x12BFF);
-		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, (sizeRAM >> 12) - 1);
+		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, (allocator::maxBlocks) - 1);
+		for (size_t i = 0; i < bootInfo.mapEntries; i++)
+		{
+			const Descriptor* descriptor = (Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
+			switch (descriptor->type)
+			{
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 7:
+				pageTableManager.mapMemory(descriptor->physicalAddress, descriptor->physicalAddress, descriptor->numberOfPages);
+				allocator::reserveBlocks(descriptor->physicalAddress, descriptor->numberOfPages);
+				break;
+			}
+
+		}
 		pageTableManager.mapMemory(bootInfo.fb.baseAddress, bootInfo.fb.baseAddress, allocator::countBlocks(bootInfo.fb.bufferSize));
 		//cpuio::loadPLM(PLM4);
 		//initializeHeap((void*)0x0000100000000000, 0x10);
