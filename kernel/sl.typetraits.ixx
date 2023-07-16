@@ -85,6 +85,9 @@ export namespace std
 	template <class T> inline constexpr bool is_arithmetic_v = is_integral_v<T> || is_floating_point_v<T>;
 	template <class T> struct is_arithmetic : bool_constant<is_arithmetic_v<T>> {};
 
+	template <class T> inline constexpr bool is_character_v = Is_any_of_v<remove_cv_t<T>, char, char8_t, char16_t, char32_t>;
+	template <class T> struct is_character : bool_constant<is_character_v<T>> {};
+
 	template <class T>
 	struct remove_reference {
 		using type = T;
@@ -140,6 +143,9 @@ export namespace std
 	template <class T> struct is_void : bool_constant<is_void_v<T>> {};
 
 	template <class... Types> using void_t = void;
+	template <class T>
+	struct _Identity { using type = T; };
+	template <class T> using _Identity_t [[msvc::known_semantics]] = typename _Identity<T>::type;
 
 	template <class T> struct add_const { using type = const T; };
 	template <class T> using add_const_t = typename add_const<T>::type;
@@ -308,6 +314,12 @@ export namespace std
 	template <class T> inline constexpr bool is_standard_layout_v = __is_standard_layout(T);
 	template <class T> struct is_standard_layout : bool_constant<__is_standard_layout(T)> {};
 
+	template <class T> inline constexpr bool is_trivial_v = __is_trivially_constructible(T) && __is_trivially_copyable(T);
+	template <class T> struct is_trivial : bool_constant<__is_trivially_constructible(T) && __is_trivially_copyable(T)> {};
+
+	template <class T> inline constexpr bool is_trivially_copyable_v = __is_trivially_copyable(T);
+	template <class T> struct is_trivially_copyable : bool_constant<__is_trivially_copyable(T)> {};
+
 	template <class T> inline constexpr bool has_virtual_destructor_v = __has_virtual_destructor(T);
 	template <class T> struct has_virtual_destructor : bool_constant<__has_virtual_destructor(T)> {};
 
@@ -336,12 +348,19 @@ export namespace std
 	template <class To, class From> inline constexpr bool is_assignable_v = __is_assignable(To, From);
 	template <class To, class From> struct is_assignable : bool_constant<__is_assignable(To, From)> {};
 
+	template <class _To, class _From> struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_precondition_check(_To, _From)> {};
+
+	template <class T> inline constexpr bool _Is_copy_assignable_unchecked_v = __is_assignable_no_precondition_check(add_lvalue_reference_t<T>, add_lvalue_reference_t<const T>);
+	template <class T> struct _Is_copy_assignable_no_precondition_check : bool_constant<__is_assignable_no_precondition_check( add_lvalue_reference_t<T>, add_lvalue_reference_t<const T>)> {};
 
 	template <class T> inline constexpr bool is_copy_assignable_v = __is_assignable(add_lvalue_reference_t<T>, add_lvalue_reference_t<const T>);
 	template <class T> struct is_copy_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<T>, add_lvalue_reference_t<const T>)> {};
 
 	template <class T> inline constexpr bool is_move_assignable_v = __is_assignable(add_lvalue_reference_t<T>, T);
 	template <class T> struct is_move_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<T>, T)> {};
+
+	template <class T> inline constexpr bool _Is_move_assignable_unchecked_v = __is_assignable_no_precondition_check(add_lvalue_reference_t<T>, T);
+	template <class T> struct _Is_move_assignable_no_precondition_check : bool_constant<__is_assignable_no_precondition_check(add_lvalue_reference_t<T>, T)> {};
 
 	template <class T> inline constexpr bool is_destructible_v = __is_destructible(T);
 	template <class T> struct is_destructible : bool_constant<__is_destructible(T)> {};
@@ -394,6 +413,41 @@ export namespace std
 	template <class T> inline constexpr bool is_nothrow_destructible_v = __is_nothrow_destructible(T);
 	template <class T> struct is_nothrow_destructible : bool_constant<__is_nothrow_destructible(T)> {};
 
+	template <class T> struct _Is_swappable;
+	template <class T> struct _Is_nothrow_swappable;
+
+
+	template <class T, enable_if_t<is_move_constructible_v<T>&& is_move_assignable_v<T>, int> = 0> constexpr void swap(T&, T&) noexcept(is_nothrow_move_constructible_v<T>&& is_nothrow_move_assignable_v<T>);
+	template <class T, size_t _Size, enable_if_t<_Is_swappable<T>::value, int> = 0> constexpr void swap(T(&)[_Size], T(&)[_Size]) noexcept(_Is_nothrow_swappable<T>::value);
+
+	template <class T1, class T2, class = void> struct _Swappable_with_helper : false_type {};
+
+	template <class T1, class T2> struct _Swappable_with_helper<T1, T2, void_t<decltype(swap(declval<T1>(), declval<T2>()))>> : true_type {};
+
+	template <class T1, class T2> struct _Is_swappable_with : bool_constant<conjunction_v<_Swappable_with_helper<T1, T2>, _Swappable_with_helper<T2, T1>>> {};
+
+	template <class T> struct _Is_swappable : _Is_swappable_with<add_lvalue_reference_t<T>, add_lvalue_reference_t<T>>::type {};
+
+	template <class T1, class T2> struct _Swap_cannot_throw : bool_constant<noexcept(swap(declval<T1>(), declval<T2>())) && noexcept(swap(declval<T2>(), declval<T1>()))> {};
+
+	template <class T1, class T2> struct _Is_nothrow_swappable_with : bool_constant<conjunction_v<_Is_swappable_with<T1, T2>, _Swap_cannot_throw<T1, T2>>> {};
+
+	template <class T> struct _Is_nothrow_swappable : _Is_nothrow_swappable_with<add_lvalue_reference_t<T>, add_lvalue_reference_t<T>>::type {};
+
+	template <class T1, class T2> inline constexpr bool is_swappable_with_v = conjunction_v<_Swappable_with_helper<T1, T2>, _Swappable_with_helper<T2, T1>>;
+	template <class T1, class T2> struct is_swappable_with : _Is_swappable_with<T1, T2>::type {};
+
+	template <class T> inline constexpr bool is_swappable_v = _Is_swappable<T>::value;
+	template <class T> struct is_swappable : _Is_swappable<T>::type {};
+
+	template <class T1, class T2> inline constexpr bool is_nothrow_swappable_with_v = _Is_nothrow_swappable_with<T1, T2>::value;
+	template <class T1, class T2> struct is_nothrow_swappable_with : _Is_nothrow_swappable_with<T1, T2>::type {};
+
+	template <class T> inline constexpr bool is_nothrow_swappable_v = _Is_nothrow_swappable<T>::value;
+	template <class T> struct is_nothrow_swappable : _Is_nothrow_swappable<T>::type {};
+
+
+
 	template <class T, bool = is_integral_v<T>>
 	struct _Sign_base
 	{
@@ -421,13 +475,13 @@ export namespace std
 	template <bool>
 	struct _Select
 	{
-		template <class _Ty1, class> using _Apply = _Ty1;
+		template <class T1, class> using _Apply = T1;
 	};
 
 	template <>
 	struct _Select<false>
 	{
-		template <class, class _Ty2> using _Apply = _Ty2;
+		template <class, class T2> using _Apply = T2;
 	};
 
 	template <size_t>
@@ -445,7 +499,7 @@ export namespace std
 
 	template <>
 	struct _Make_signed2<4> {
-		template <class _Ty> using _Apply = typename _Select<is_same_v<_Ty, long> || is_same_v<_Ty, unsigned long>>::template _Apply<long, int>;
+		template <class T> using _Apply = typename _Select<is_same_v<T, long> || is_same_v<T, unsigned long>>::template _Apply<long, int>;
 	};
 
 	template <>
@@ -453,21 +507,21 @@ export namespace std
 		template <class> using _Apply = long long;
 	};
 
-	template <class _Ty>
-	using _Make_signed1 = typename _Make_signed2<sizeof(_Ty)>::template _Apply<_Ty>;
+	template <class T>
+	using _Make_signed1 = typename _Make_signed2<sizeof(T)>::template _Apply<T>;
 
-	template <class _Ty>
+	template <class T>
 	struct make_signed
 	{
-		static_assert(_Is_nonbool_integral<_Ty> || is_enum_v<_Ty>,
+		static_assert(_Is_nonbool_integral<T> || is_enum_v<T>,
 			"make_signed<T> requires that T shall be a (possibly cv-qualified) "
 			"integral type or enumeration but not a bool type.");
 
-		using type = typename remove_cv<_Ty>::template _Apply<_Make_signed1>;
+		using type = typename remove_cv<T>::template _Apply<_Make_signed1>;
 	};
 
-	template <class _Ty>
-	using make_signed_t = typename make_signed<_Ty>::type;
+	template <class T>
+	using make_signed_t = typename make_signed<T>::type;
 
 	template <size_t>
 	struct _Make_unsigned2;
@@ -487,7 +541,7 @@ export namespace std
 	template <>
 	struct _Make_unsigned2<4>
 	{
-		template <class _Ty> using _Apply = typename _Select<is_same_v<_Ty, long> || is_same_v<_Ty, unsigned long>>::template _Apply<unsigned long, unsigned int>;
+		template <class T> using _Apply = typename _Select<is_same_v<T, long> || is_same_v<T, unsigned long>>::template _Apply<unsigned long, unsigned int>;
 	};
 
 	template <>
@@ -496,21 +550,21 @@ export namespace std
 		template <class> using _Apply = unsigned long long;
 	};
 
-	template <class _Ty>
-	using _Make_unsigned1 = typename _Make_unsigned2<sizeof(_Ty)>::template _Apply<_Ty>;
+	template <class T>
+	using _Make_unsigned1 = typename _Make_unsigned2<sizeof(T)>::template _Apply<T>;
 
-	template <class _Ty>
+	template <class T>
 	struct make_unsigned
 	{
-		static_assert(_Is_nonbool_integral<_Ty> || is_enum_v<_Ty>,
+		static_assert(_Is_nonbool_integral<T> || is_enum_v<T>,
 			"make_unsigned<T> requires that T shall be a (possibly cv-qualified) "
 			"integral type or enumeration but not a bool type.");
 
-		using type = typename remove_cv<_Ty>::template _Apply<_Make_unsigned1>;
+		using type = typename remove_cv<T>::template _Apply<_Make_unsigned1>;
 	};
 
-	template <class _Ty>
-	using make_unsigned_t = typename make_unsigned<_Ty>::type;
+	template <class T>
+	using make_unsigned_t = typename make_unsigned<T>::type;
 
 	template <class _Rep>
 	constexpr make_unsigned_t<_Rep> _Unsigned_value(_Rep _Val)
@@ -540,8 +594,8 @@ export namespace std
 		using type = typename _Select<is_array_v<T1>>::template _Apply<add_pointer<remove_extent_t<T1>>, T2>::type;
 	};
 
-	template <class _Ty>
-	using decay_t = typename decay<_Ty>::type;
+	template <class T>
+	using decay_t = typename decay<T>::type;
 
 	template <class... T>
 	struct common_type;

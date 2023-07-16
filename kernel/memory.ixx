@@ -68,28 +68,10 @@ export namespace memory
 		set(PLM4, 0, sizeof(PageTable));
 		pageTableManager = PageTableManager(PLM4);
 		
-		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, 0x10000-1);
-		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, 0x12BFF);
-		//pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, (allocator::maxBlocks) - 1);
-		for (size_t i = 0; i < bootInfo.mapEntries; i++)
-		{
-			const Descriptor* descriptor = (Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
-			switch (descriptor->type)
-			{
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 7:
-				pageTableManager.mapMemory(descriptor->physicalAddress, descriptor->physicalAddress, descriptor->numberOfPages);
-				allocator::reserveBlocks(descriptor->physicalAddress, descriptor->numberOfPages);
-				break;
-			}
-
-		}
+		pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, (allocator::maxBlocks) - 1);
 		pageTableManager.mapMemory(bootInfo.fb.baseAddress, bootInfo.fb.baseAddress, allocator::countBlocks(bootInfo.fb.bufferSize));
-		//cpuio::loadPLM(PLM4);
-		//initializeHeap((void*)0x0000100000000000, 0x10);
+		cpuio::loadPLM(PLM4);
+		initializeHeap((void*)0x0000100000000000, 0x10);
 	}
 }
 export

@@ -167,7 +167,7 @@ export namespace keyboard
 				console::setCursorPosition(console::currentPos + 1);
 				break;
 			case KEYBOARD_KEYS::K_ENTER://keypad enter
-				console::puts(u8"\n");
+				console::puts("\n");
 				break;
 			case KEYBOARD_KEYS::K_LEFTCTRL://right ctrl
 				rightCtrlPressed = true;
@@ -228,7 +228,7 @@ export namespace keyboard
 					rightCtrlPressed = false;
 					break;
 				case KEYBOARD_KEYS::K_ENTER://enter
-					console::puts(u8"\n");
+					console::puts("\n");
 					break;
 				case KEYBOARD_KEYS::K_CASPLOCK://capslock
 					capsLock ^= lastScancode != scancode;

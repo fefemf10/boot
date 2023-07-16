@@ -3,6 +3,7 @@ import sl.memory;
 import sl.compare;
 import sl.utility;
 import sl.type;
+import sl.typetraits;
 export namespace std
 {
 	template <class T>
@@ -300,5 +301,106 @@ export namespace std
 	{
 	public:
 		using iterator_type = T;
+		using iterator_concept = conditional_t<random_access_iterator<T>, random_access_iterator_tag, bidirectional_iterator_tag>;
+		using iterator_category = conditional_t<derived_from<_Iter_cat_t<T>, random_access_iterator_tag>, random_access_iterator_tag, _Iter_cat_t<T>>;
+		using value_type = _Iter_value_t<T>;
+		using difference_type = _Iter_diff_t<T>;
+		using pointer = typename iterator_traits<T>::pointer;
+		using reference = _Iter_ref_t<T>;
+
+		template <class>
+		friend class reverse_iterator;
+
+		constexpr reverse_iterator() = default;
+
+		constexpr explicit reverse_iterator(T right) noexcept(is_nothrow_move_constructible_v<T>) : current(move(right)) {}
+		template <class U> requires (!is_same_v<U, T>) && convertible_to<const U&, T>
+		constexpr reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(is_nothrow_constructible_v<T, const U&>): current(_Right.current) {}
+
+		template <class U> requires (!is_same_v<U, T>) && convertible_to<const U&, T> && assignable_from<T&, const U&>
+		constexpr reverse_iterator& operator=(const reverse_iterator<U>& _Right) noexcept(is_nothrow_assignable_v<T&, const U&>)
+		{
+			current = _Right.current;
+			return *this;
+		}
+
+		[[nodiscard]] constexpr T base() const noexcept(is_nothrow_copy_constructible_v<T>)
+		{
+			return current;
+		}
+
+		[[nodiscard]] constexpr reference operator*() const noexcept(is_nothrow_copy_constructible_v<T> && noexcept(*--(declval<T&>())))
+		{
+			T _Tmp = current;
+			return *--_Tmp;
+		}
+
+		[[nodiscard]] constexpr pointer operator->() const noexcept(is_nothrow_copy_constructible_v<T> && noexcept(--(declval<T&>())) && _Has_nothrow_operator_arrow<T&, pointer>)
+			requires (is_pointer_v<T> || requires(const T __i) { __i.operator->(); })
+		{
+			T _Tmp = current;
+			--_Tmp;
+			if constexpr (is_pointer_v<T>) {
+				return _Tmp;
+			}
+			else {
+				return _Tmp.operator->();
+			}
+		}
+
+		constexpr reverse_iterator& operator++() noexcept(noexcept(--current))
+		{
+			--current;
+			return *this;
+		}
+
+		constexpr reverse_iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<T> && noexcept(--current))
+		{
+			reverse_iterator _Tmp = *this;
+			--current;
+			return _Tmp;
+		}
+
+		constexpr reverse_iterator& operator--() noexcept(noexcept(++current))
+		{
+			++current;
+			return *this;
+		}
+
+		constexpr reverse_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<T> && noexcept(++current))
+		{
+			reverse_iterator _Tmp = *this;
+			++current;
+			return _Tmp;
+		}
+
+		[[nodiscard]] constexpr reverse_iterator operator+(const difference_type _Off) const noexcept(noexcept(reverse_iterator(current - _Off)))
+		{
+			return reverse_iterator(current - _Off);
+		}
+
+		constexpr reverse_iterator& operator+=(const difference_type _Off) noexcept(noexcept(current -= _Off))
+		{
+			current -= _Off;
+			return *this;
+		}
+
+		[[nodiscard]] constexpr reverse_iterator operator-(const difference_type _Off) const noexcept(noexcept(reverse_iterator(current + _Off)))
+		{
+			return reverse_iterator(current + _Off);
+		}
+
+		constexpr reverse_iterator& operator-=(const difference_type _Off) noexcept(noexcept(current += _Off))
+		{
+			current += _Off;
+			return *this;
+		}
+
+		[[nodiscard]] constexpr reference operator[](const difference_type _Off) const noexcept(noexcept(_Fake_copy_init<reference>(current[_Off])))
+		{
+			return current[static_cast<difference_type>(-_Off - 1)];
+		}
+		protected:
+			T current;
 	};
 }

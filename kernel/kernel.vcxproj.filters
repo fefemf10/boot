@@ -336,6 +336,18 @@
     <ClCompile Include="APIC.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="sl.format.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.string_view.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.chartraits.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.pair.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

@@ -136,5 +136,5 @@ export namespace std
 		T* m_last{};
 		T* m_end{};
 	};
-	using string = basic_string<char8_t>;
+	using string = basic_string<char>;
 }

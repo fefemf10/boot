@@ -24,42 +24,45 @@ import ISR;
 import IRQ;
 import IDT;
 import PIT;
+import sl.string_view;
+import sl.print;
 
 [[noreturn]] void mainCRTStartup(const BootInfo& bootInfo)
 {
 	framebuffer = bootInfo.fb;
 	font = bootInfo.font;
+	fontSize = bootInfo.memoryMapEntries[3].sizeOfBytes;
 	//cpuio::enableSSE();
-	//cpuio::enableAVX();
 	cpuio::loadGDT(&GDT::gdtDescriptor);
 	console::initialize();
-	console::clear();
 	IDT::initialize();
 	ISR::initialize();
 	IRQ::initialize();
 	cpuio::loadIDTR(&IDT::idtr);
-	//cpuio::getCPUFeatures(cpuio::features);
+	cpuio::getCPUFeatures(cpuio::features);
+	//if (cpuio::features.AVX)
+		//cpuio::enableAVX();
 	//console::printf(u8"%lli\n", sizeof(cpuio::features));
 	//console::putfeatures(cpuio::features);
-	//serial::initialize();
+	serial::initialize();
 	memory::initialize(bootInfo);
-	console::printf(u8"%llx %llx %llx %llx\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks);
-	console::printf(u8"%llx %llx %llx %llx\n", framebuffer.baseAddress, memory::allocator::memoryMap, memory::sizeRAM, memory::allocator::unusedBlocks);
+	console::unicode = (u16*)memory::allocator::allocBlocks(memory::allocator::countBlocks(0xFFFFu * 2));
+	console::unicodeInit();
+	console::clear();
 	console::color = console::CYAN;
+	constexpr const std::string_view fmt = "s\n";
+	constexpr const std::_Unicode_codepoint_iterator s(fmt.begin(), fmt.end());
+	console::puts(fmt);
+	console::printf("%llx %llx %llx %llx ", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks);
+	console::printf("%llx %llx %llx %llx ", framebuffer.baseAddress, memory::allocator::memoryMap, memory::sizeRAM, memory::allocator::unusedBlocks);
 	////PIT::setDivisor(PIT::divisor);
 	//PIT::setFrequency(10000);
-	///*uint32_t edx = 0;
-	//uint32_t eax = (apic & 0xfffff100) | IA32_APIC_BASE_MSR_ENABLE;
-	//cpuSetMSR(IA32_APIC_BASE_MSR, eax, edx);*/
-	////cpuio::getCPUFeatures(cpuio::features);
-	////console::printf(u8"%lli\n", sizeof(cpuio::features));
-	////console::putfeatures(cpuio::features);
 	//if (!(bootInfo.RSDP.isValid() && bootInfo.RSDP.XSDT.header.isValid()))
 	//{
 	//	console::printf(u8"RSDP or XSDT invalid\n");
 	//	cpuio::loop();
 	//}
-
+	//
 	//console::printf(u8"%llx\n", &bootInfo.RSDP);
 	//console::printf(u8"%llx\n", &bootInfo.RSDP.XSDT);
 	//ACPI::initialize(bootInfo.RSDP);
@@ -140,12 +143,10 @@ import PIT;
 	//	}
 	//	console::puts(u8"\n");
 	//}
-	//for (size_t i = 0; i < 100000; i++)
-	//{
-	//	console::clearLine(console::currentPos);
-	//	console::printf(u8"ticks: %llu times: %f", PIT::ticks, PIT::timeSinceBoot);
-	//	PIT::sleepd(1);
-	//}
+	constexpr const char* str = "Heelo world Привет мир хахах\n";
+	console::print(str);
+	console::print("Пиздос, баранов ты душный");
+	//console::printt(u8"{} {} {} {}", b, 5, c, u8"asdsad555");
 	//u64* a = new u64(5);
 	//u64* b = new u64(6);
 	//if (a!= nullptr)

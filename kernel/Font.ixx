@@ -9,4 +9,5 @@ export
 		u8 charSize;
 		u8 glyphBuffer[1];
 	} *font;
+	u64 fontSize;
 }

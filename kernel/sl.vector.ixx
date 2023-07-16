@@ -7,6 +7,7 @@ import sl.iterator;
 import sl.typetraits;
 import sl.concepts;
 import sl.type;
+
 export namespace std
 {
 	template <class T, class Allocator = allocator<T>>
@@ -65,25 +66,25 @@ export namespace std
 		{
 			return m_first;
 		}
-		[[nodiscard]] constexpr size_t size() const noexcept
+		[[nodiscard]] constexpr size_type size() const noexcept
 		{
-			return static_cast<size_t>(m_last - m_first);
+			return static_cast<size_type>(m_last - m_first);
 		}
-		[[nodiscard]] constexpr size_t capacity() const noexcept
+		[[nodiscard]] constexpr size_type capacity() const noexcept
 		{
-			return static_cast<size_t>(m_end - m_first);
+			return static_cast<size_type>(m_end - m_first);
 		}
 		[[nodiscard]] constexpr bool empty() const noexcept
 		{
 			return m_first == m_last;
 		}
-		[[nodiscard]] constexpr size_t max_size() const noexcept
+		[[nodiscard]] constexpr size_type max_size() const noexcept
 		{
-			return numeric_limits<size_t>::max();
+			return numeric_limits<size_type>::max();
 		}
 		constexpr void reserve(const size_type capacity)
 		{
-			if (capacity > static_cast<size_t>(m_end - m_first))
+			if (capacity > static_cast<size_type>(m_end - m_first))
 			{ 
 				reallocateExactly(capacity);
 			}
@@ -92,11 +93,11 @@ export namespace std
 		{
 
 		}
-		[[nodiscard]] constexpr T& operator[](const size_t pos) noexcept
+		[[nodiscard]] constexpr T& operator[](const size_type pos) noexcept
 		{
 			return m_first[pos];
 		}
-		[[nodiscard]] constexpr const T& operator[](const size_t pos) const noexcept
+		[[nodiscard]] constexpr const T& operator[](const size_type pos) const noexcept
 		{
 			return m_first[pos];
 		}
@@ -141,7 +142,7 @@ export namespace std
 			return *(m_last - 1);
 		}
 	private:
-		constexpr size_t calculateGrow(const size_t newSize) const noexcept
+		constexpr size_t calculateGrow(const size_type newSize) const noexcept
 		{
 			if (capacity() > max_size() >> 1)
 				return max_size();

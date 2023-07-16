@@ -5,7 +5,7 @@ export namespace ACPI
 {
 	struct SDT
 	{
-		char8_t signature[4];
+		char signature[4];
 		u32 length;
 		u8 revision;
 		u8 checksum;

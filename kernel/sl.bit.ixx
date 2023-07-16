@@ -15,6 +15,15 @@ export namespace std
 	{
 		return __builtin_is_constant_evaluated();
 	}
+
+	template <class To, class From,
+		enable_if_t<conjunction_v<bool_constant<sizeof(To) == sizeof(From)>, is_trivially_copyable<To>,
+		is_trivially_copyable<From>>,
+		int> = 0>
+	[[nodiscard]] constexpr To bit_cast(const From& value) noexcept {
+		return __builtin_bit_cast(To, value);
+	}
+
 	[[nodiscard]] constexpr unsigned short _Byteswap_ushort(const unsigned short value) noexcept
 	{
 		if (std::is_constant_evaluated()) {
