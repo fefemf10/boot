@@ -155,8 +155,13 @@ PSF1Font* loadPSF1Font(efi::FileHandle directory, const char16_t* path, efi::Han
 {
 	efi::FileHandle font = loadFile(directory, path, imageHangle);
 	if (font == nullptr) return nullptr;
-
+	efi::FileInfo* info;
+	BS->allocatePool(efi::MemoryType::LOADER_CODE, sizeof(efi::FileInfo) + 128, (void**)&info);
+	uint64_t sizeOfInfo = sizeof(efi::FileInfo) + 128;
+	font->getInfo(font, &efi::FILE_INFO, &sizeOfInfo, info);
 	numberOfPagesFont = 3;
+	fontSize = info->fileSize;
+	BS->freePool(info);
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesFont, fontAddress);
 	
 	PSF1Font* finishedFont = reinterpret_cast<PSF1Font*>(fontAddress);
@@ -166,11 +171,11 @@ PSF1Font* loadPSF1Font(efi::FileHandle directory, const char16_t* path, efi::Han
 		return nullptr;
 
 	uint64_t glyphBufferSize = finishedFont->charSize * 256;
-	if (finishedFont->mode == 1)
+	if ((finishedFont->mode & 1) == 1)
 	{
 		glyphBufferSize *= 2;
 	}
-	
+	glyphBufferSize += fontSize - glyphBufferSize - 4;
 	font->read(font, &glyphBufferSize, finishedFont->glyphBuffer);
 	return finishedFont;
 }
