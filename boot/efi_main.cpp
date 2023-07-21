@@ -77,7 +77,7 @@ Framebuffer* InitializeGOP()
 	for (uint64_t i = 0; i < gop->mode->maxMode; i++)
 	{
 		efi::Status s = gop->queryMode(gop, i, &sizeInfo, &modeInformation);
-		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution <= requirenmentWidth && modeInformation->verticalResolution <= requirenmentHeight && modeInformation->pixelFormat == efi::GraphicsPixelFormat::PIXEL_BLUE_GREEN_RED_RESERVED_8BIT_PER_COLOR)
+		if (s == efi::Status::SUCCESS && modeInformation->horizontalResolution <= requirenmentWidth && modeInformation->verticalResolution <= requirenmentHeight)
 		{
 			format = i;
 		}

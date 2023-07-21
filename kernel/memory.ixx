@@ -11,23 +11,23 @@ import console;
 
 export namespace memory
 {
-	const char8_t* types[] {
-		u8"EfiReservedMemoryType",
-		u8"EfiLoaderCode",
-		u8"EfiLoaderData",
-		u8"EfiBootServicesCode",
-		u8"EfiBootServicesData",
-		u8"EfiRuntimeServicesCode",
-		u8"EfiRuntimeServicesData",
-		u8"EfiConventionalMemory",
-		u8"EfiUnusableMemory",
-		u8"EfiACPIReclaimMemory",
-		u8"EfiACPIMemoryNVS",
-		u8"EfiMemoryMappedIO",
-		u8"EfiMemoryMappedIOPortSpace",
-		u8"EfiPalCode",
-		u8"EfiPersistentMemory",
-		u8"EfiMaxMemoryType"
+	const char* types[] {
+		"EfiReservedMemoryType",
+		"EfiLoaderCode",
+		"EfiLoaderData",
+		"EfiBootServicesCode",
+		"EfiBootServicesData",
+		"EfiRuntimeServicesCode",
+		"EfiRuntimeServicesData",
+		"EfiConventionalMemory",
+		"EfiUnusableMemory",
+		"EfiACPIReclaimMemory",
+		"EfiACPIMemoryNVS",
+		"EfiMemoryMappedIO",
+		"EfiMemoryMappedIOPortSpace",
+		"EfiPalCode",
+		"EfiPersistentMemory",
+		"EfiMaxMemoryType"
 	};
 	extern void loadPLM(PageTable* plm4);
 	void initialize(const BootInfo& bootInfo)

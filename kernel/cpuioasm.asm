@@ -112,7 +112,6 @@ enableAVX:
 
 loadIDTR:
 	lidt [rcx]
-	sti
 	ret
 
 loadPLM:

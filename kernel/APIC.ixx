@@ -2,6 +2,7 @@ export module APIC;
 import types;
 import memory.allocator;
 import memory.PageTableManager;
+import MADT;
 export namespace APIC
 {
 	void* lapic;
@@ -44,7 +45,10 @@ export namespace APIC
 		{
 			this->physicalAddress = physicalAddress;
 			virtualAddress = memory::allocator::allocBlocks(1);
-			memory::pageTableManager.mapMemory(physicalAddress, virtualAddress, memory::Flags((u32)memory::Flags::PRESENT | (u32)memory::Flags::READ_WRITE | (u32)memory::Flags::CACHE_DISABLE));
+			memory::pageTableManager.mapMemory(physicalAddress, virtualAddress, memory::MemoryFlags(memory::MemoryFlagsBits::ePRESENT | memory::MemoryFlagsBits::eREAD_WRITE | memory::MemoryFlagsBits::eCACHE_DISABLE));
+			id = read(Registers::ID) >> 24;
+			version = read(Registers::VERSION);
+			countLVT = (read(Registers::VERSION) >> 16) + 1;
 		}
 		u32 read(Registers registerOffset)
 		{
@@ -58,15 +62,17 @@ export namespace APIC
 		void* virtualAddress;
 		u8 id;
 		u8 processorId;
+		u8 version;
+		u8 countLVT;
 	};
 	struct IOAPIC
 	{
-		enum class DeliveryMode
+		enum class DeliveryMode : u64
 		{
 			EDGE,
 			LEVEL
 		};
-		enum class DesctinationMode
+		enum class DesctinationMode : u64
 		{
 			PHYSICAL,
 			LOGICAL
@@ -83,8 +89,8 @@ export namespace APIC
 			struct
 			{
 				u64 vector : 8;
-				u64 deliveryMode : 3;
-				u64 destinationMode : 1;
+				DeliveryMode deliveryMode : 3;
+				DesctinationMode destinationMode : 1;
 				u64 deliveryStatus : 1;
 				u64 pinPolarity : 1;
 				u64 remoteIRR : 1;
@@ -106,8 +112,8 @@ export namespace APIC
 		IOAPIC(void* physicalAddress, u32 GSIBase) : physicalAddress(physicalAddress)
 		{
 			virtualAddress = physicalAddress;
-			memory::pageTableManager.mapMemory(physicalAddress, virtualAddress, memory::Flags((u32)memory::Flags::PRESENT | (u32)memory::Flags::READ_WRITE | (u32)memory::Flags::CACHE_DISABLE));
-			id = read(Registers::ID);
+			memory::pageTableManager.mapMemory(physicalAddress, virtualAddress, memory::MemoryFlags(memory::MemoryFlagsBits::ePRESENT | memory::MemoryFlagsBits::eREAD_WRITE | memory::MemoryFlagsBits::eCACHE_DISABLE));
+			id = (read(Registers::ID) >> 24) & 0xF;
 			version = read(Registers::VERSION);
 			redirectionSize = (read(Registers::VERSION) >> 16) + 1;
 			this->GSIBase = GSIBase;
@@ -116,8 +122,8 @@ export namespace APIC
 		{
 			this->physicalAddress = physicalAddress;
 			virtualAddress = physicalAddress;
-			memory::pageTableManager.mapMemory(physicalAddress, virtualAddress, memory::Flags((u32)memory::Flags::PRESENT | (u32)memory::Flags::READ_WRITE | (u32)memory::Flags::CACHE_DISABLE));
-			id = read(Registers::ID);
+			memory::pageTableManager.mapMemory(physicalAddress, virtualAddress, memory::MemoryFlags(memory::MemoryFlagsBits::ePRESENT | memory::MemoryFlagsBits::eREAD_WRITE | memory::MemoryFlagsBits::eCACHE_DISABLE));
+			id = (read(Registers::ID) >> 24) & 0xF;
 			version = read(Registers::VERSION);
 			redirectionSize = (read(Registers::VERSION) >> 16) + 1;
 			this->GSIBase = GSIBase;
@@ -125,9 +131,9 @@ export namespace APIC
 		RedirectionEntry getRedirectionEntry(u8 entryIndex)
 		{
 			RedirectionEntry entry{};
-			if (entryIndex > redirectionSize)
+			if (entryIndex >= redirectionSize)
 				return entry;
-			entryIndex * 2;
+			entryIndex *= 2;
 			entryIndex += REDIRECTION_TABLE;
 			entry.lower = read(entryIndex);
 			entry.upper = read(entryIndex+1);
@@ -135,9 +141,9 @@ export namespace APIC
 		}
 		void setRedirectionEntry(u8 entryIndex, RedirectionEntry entry)
 		{
-			if (entryIndex > redirectionSize)
+			if (entryIndex >= redirectionSize)
 				return;
-			entryIndex * 2;
+			entryIndex *= 2;
 			entryIndex += REDIRECTION_TABLE;
 			write(entryIndex, entry.lower);
 			write(entryIndex+1, entry.upper);
@@ -162,4 +168,65 @@ export namespace APIC
 	};
 	APIC::LAPIC lapics[256];
 	APIC::IOAPIC ioapics[10];
+	void inittialize()
+	{
+		u8 numlapic = 0;
+		u8 numioapic = 0;
+		APIC::lapic = reinterpret_cast<void*>(ACPI::madt->lapic);
+		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
+		{
+			if (ACPI::madt->entries[i].type == ACPI::Type::IOAPIC)
+			{
+				ACPI::IOAPIC* ioapic = reinterpret_cast<ACPI::IOAPIC*>(&ACPI::madt->entries[i]);
+				if (ioapic->length == 12)
+				{
+					APIC::ioapics[numioapic++].initialize(reinterpret_cast<void*>(ioapic->address), ioapic->GSIBase);
+				}
+			}
+			if (ACPI::madt->entries[i].type == ACPI::Type::LAPICO)
+			{
+				ACPI::LAPICO* lapico = reinterpret_cast<ACPI::LAPICO*>(&ACPI::madt->entries[i]);
+				if (lapico->length == 12)
+				{
+					APIC::lapic = lapico->lapic;
+				}
+			}
+		}
+		APIC::lapics[0].initialize(APIC::lapic);
+		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
+		{
+			if (ACPI::madt->entries[i].type == ACPI::Type::PLAPIC)
+			{
+				ACPI::PLAPIC* plapic = reinterpret_cast<ACPI::PLAPIC*>(&ACPI::madt->entries[i]);
+				numlapic += plapic->length == 8 && plapic->flags == 1;
+			}
+		}
+		for (size_t i = 0; i < numioapic; i++)
+		{
+			for (size_t j = 0; j < APIC::ioapics[i].redirectionSize; j++)
+			{
+				APIC::IOAPIC::RedirectionEntry entry = APIC::ioapics[i].getRedirectionEntry(j);
+				entry.mask = 1;
+				APIC::ioapics[i].setRedirectionEntry(j, entry);
+			}
+		}
+		APIC::lapics[0].write(APIC::LAPIC::SPURIOUS_INTERRUPT_VECTOR, 0x1FF);
+		APIC::lapics[0].write(APIC::LAPIC::TASK_PRIORITY, 0);
+		APIC::IOAPIC::RedirectionEntry PITInterrupt{};
+		PITInterrupt.vector = 0x20;
+		PITInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
+		PITInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
+		PITInterrupt.pinPolarity = 0;
+		PITInterrupt.destination = APIC::lapics[0].id;
+		PITInterrupt.mask = 0;
+		APIC::ioapics[0].setRedirectionEntry(2, PITInterrupt);
+		APIC::IOAPIC::RedirectionEntry keyboardInterrupt{};
+		keyboardInterrupt.vector = 0x21;
+		keyboardInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
+		keyboardInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
+		keyboardInterrupt.pinPolarity = 0;
+		keyboardInterrupt.destination = APIC::lapics[0].id;
+		keyboardInterrupt.mask = 0;
+		APIC::ioapics[0].setRedirectionEntry(1, keyboardInterrupt);
+	}
 }

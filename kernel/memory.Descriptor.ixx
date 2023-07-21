@@ -4,7 +4,26 @@ export namespace memory
 {
 	struct Descriptor
 	{
-		u32 type;
+		enum Type : u32
+		{
+			RESERVEDMEMORY_TYPE,
+			LOADER_CODE,
+			LOADER_DATA,
+			BOOTSERVICES_CODE,
+			BOOTSERVICES_DATA,
+			RUNTIMESERVICES_CODE,
+			RUNTIMESERVICES_DATA,
+			CONVENTIONAL_MEMORY,
+			UNUSABLE_MEMORY,
+			ACPIRECLAIM_MEMORY,
+			ACPIMEMORYNVS,
+			MEMORYMAPPEDIO,
+			MEMORYMAPPEDIOPORTSPACE,
+			PALCODE,
+			PERSISTENT_MEMORY,
+			MAXMEMORY_TYPE
+		};
+		Type type;
 		u32 pad;
 		void* physicalAddress;
 		void* virtualAddress;

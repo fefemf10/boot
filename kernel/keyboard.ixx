@@ -1,4 +1,4 @@
-export module keyboard;
+﻿export module keyboard;
 import types;
 import cpuio;
 import console;
@@ -103,7 +103,7 @@ export namespace keyboard
 		K_F11,
 		K_F12
 	};
-	constexpr char8_t scancodes[]{
+	constexpr char scancodes[]{
 		  0, 0, '1', '2',
 		  '3', '4', '5', '6',
 		  '7', '8', '9', '0',

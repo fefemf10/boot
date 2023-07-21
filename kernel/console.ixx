@@ -1,4 +1,4 @@
-export module console;
+﻿export module console;
 import "stdarg.h";
 import serial;
 import cpuio;
@@ -64,6 +64,7 @@ export namespace console
 	i64 width;
 	i64 height;
 	u16* unicode;
+	i8 buffer[32]{};
 	enum class OUT
 	{
 		FRAMEBUFFER,
@@ -234,7 +235,6 @@ export namespace console
 	}
 	void printf_unsigned(u64 number, i32 radix, i64 width, bool skipfirst = false)
 	{
-		i8 buffer[32]{};
 		i8 pos = 0;
 		do
 		{
@@ -294,7 +294,6 @@ export namespace console
 	template <std::signed_integral T>
 	constexpr void printt(T first)
 	{
-		i8 buffer[32]{};
 		i8 pos = 0;
 		constexpr u32 radix = 10;
 		const bool isSignedAndSign = first < 0;
@@ -320,7 +319,6 @@ export namespace console
 	template <std::unsigned_integral T>
 	constexpr void printt(T first)
 	{
-		i8 buffer[32]{};
 		i8 pos = 0;
 		constexpr u32 radix = 10;
 		do
@@ -542,10 +540,12 @@ export namespace console
 	}
 	void puthex(const void* data, u64 size)
 	{
-		for (size_t i = 1; i <= size / 8; i++)
+		for (size_t i = 1; i <= size; i++)
 		{
-			printf((i % 4 == 0) ? "%016llx\n" : "%016llx ", std::byteswap(reinterpret_cast<const u64*>(data)[i - 1]));
+			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i-1]);
 		}
+		if (size % 16 != 0)
+			puts("\n");
 	}
 	void putregs(const cpuio::regs& regs)
 	{

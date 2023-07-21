@@ -3,20 +3,34 @@ import types;
 import memory.utils;
 import memory.PageIndex;
 import memory.allocator;
+import sl.Flags;
+import sl.compare;
+
 export namespace memory
 {
 #pragma pack(1)
-	enum class Flags : u8
+	enum class MemoryFlagsBits : u8
 	{
-		PRESENT = 1,
-		READ_WRITE = 2,
-		USER_SUPERVISOR = 4,
-		WRITE_THROUGH = 8,
-		CACHE_DISABLE = 16
+		ePRESENT = 1,
+		eREAD_WRITE = 2,
+		eUSER_SUPERVISOR = 4,
+		eWRITE_THROUGH = 8,
+		eCACHE_DISABLE = 16
+	};
+	using MemoryFlags = Flags<MemoryFlagsBits>;
+	template <>
+	struct FlagTraits<MemoryFlagsBits>
+	{
+		static constexpr bool isBitmask = true;
+		static constexpr MemoryFlags allFlags =
+			MemoryFlagsBits::ePRESENT |
+			MemoryFlagsBits::eREAD_WRITE |
+			MemoryFlagsBits::eUSER_SUPERVISOR |
+			MemoryFlagsBits::eWRITE_THROUGH |
+			MemoryFlagsBits::eCACHE_DISABLE;
 	};
 	struct PageDirectoryEntry
 	{
-		
 		u64 present : 1;
 		u64 readWrite : 1;
 		u64 userSupervisor : 1;
@@ -42,7 +56,7 @@ export namespace memory
 		{
 
 		}
-		void mapMemory(const void* physicalMemory, const void* virtualMemory, Flags flags = Flags((u32)Flags::PRESENT | (u32)Flags::READ_WRITE))
+		void mapMemory(const void* physicalMemory, const void* virtualMemory, MemoryFlags flags = MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE)
 		{
 			PageIndex index(reinterpret_cast<u64>(virtualMemory));
 			PageDirectoryEntry PDE = PLM4->entries[index.pdp];
@@ -94,9 +108,9 @@ export namespace memory
 			PDE.address = reinterpret_cast<u64>(physicalMemory) >> 12;
 			PDE.present = true;
 			PDE.readWrite = true;
-			PDE.present = ((u32)flags & (u32)Flags::PRESENT) == (u32)Flags::PRESENT;
-			PDE.readWrite = ((u32)flags & (u32)Flags::READ_WRITE) == (u32)Flags::READ_WRITE;
-			PDE.cacheDisable = ((u32)flags & (u32)Flags::CACHE_DISABLE) == (u32)Flags::CACHE_DISABLE;
+			PDE.present = static_cast<bool>(flags & MemoryFlagsBits::ePRESENT);
+			PDE.readWrite = static_cast<bool>(flags & MemoryFlagsBits::eREAD_WRITE);
+			PDE.cacheDisable = static_cast<bool>(flags & MemoryFlagsBits::eCACHE_DISABLE);
 			PT->entries[index.p] = PDE;
 		}
 		void mapMemory(const void* physicalMemory, const void* virtualMemory, u64 countPages)

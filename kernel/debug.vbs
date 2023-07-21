@@ -20,7 +20,6 @@ QEMU_EXE   = "qemu-system-x86_64w"
 
 call shell.Run("cmd /c mkdir ""..\image\efi\boot""", 0, true)
 call fso.CopyFile(TARGET_DIR & "boot.efi", "..\image\efi\boot\" & BOOT_NAME, true)
-call fso.CopyFile("zap-ext-vga16.psf", "..\image\zap-ext-vga16.psf", true)
 call fso.CopyFile(TARGET_DIR & "kernel.exe", "..\image\kernel.exe", true)
 call shell.Run(QEMU_EXE + " -machine q35 -m 1G -cpu max -smp sockets=1,cores=2,threads=2 -serial file:serial.txt -net none -monitor none -parallel none -drive file=" & BOOT_DIR & OVMFCODE & ",if=pflash,index=0,format=raw,readonly=on -drive file=" & IMAGE_DIR & OVMFVARS & ",if=pflash,index=1,format=raw -hda fat:rw:..\image")
 

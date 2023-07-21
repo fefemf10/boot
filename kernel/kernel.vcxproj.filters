@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Исходные файлы\std">
-      <UniqueIdentifier>{6455a9c7-d02a-4c5f-bbc1-d8aa25b49389}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Исходные файлы\driver">
       <UniqueIdentifier>{17ae28ec-bc7c-439e-97a8-43d2c7be5e1e}</UniqueIdentifier>
     </Filter>
@@ -102,51 +99,6 @@
     <ClCompile Include="hash-sha.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="sl.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.allocator.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.concepts.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.initializer_list.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.iterator.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.memory.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.numeric_limits.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.span.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.type.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.typetraits.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.vector.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.source_location.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.utility.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.ratio.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.compare.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
     <ClCompile Include="PIT.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -167,12 +119,6 @@
     </ClCompile>
     <ClCompile Include="driver.AHCI.structures.ixx">
       <Filter>Исходные файлы\driver</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.bit.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.numbers.ixx">
-      <Filter>Исходные файлы\std</Filter>
     </ClCompile>
     <ClCompile Include="memory.ixx">
       <Filter>Исходные файлы\memory</Filter>
@@ -255,12 +201,6 @@
     <ClCompile Include="glm.transform.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
-    <ClCompile Include="sl.math.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.print.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
     <ClCompile Include="glm.geometric.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
@@ -273,17 +213,11 @@
     <ClCompile Include="SMBIOS.structures.ixx">
       <Filter>Исходные файлы\SMBIOS</Filter>
     </ClCompile>
-    <ClCompile Include="sl.algorithm.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
     <ClCompile Include="glm.matrix.ixx">
       <Filter>Исходные файлы\glm</Filter>
     </ClCompile>
     <ClCompile Include="vfs.file.ixx">
       <Filter>Исходные файлы\vfs</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.string.ixx">
-      <Filter>Исходные файлы\std</Filter>
     </ClCompile>
     <ClCompile Include="fs.exFAT.Volume.ixx">
       <Filter>Исходные файлы\fs\exFAT</Filter>
@@ -336,18 +270,6 @@
     <ClCompile Include="APIC.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="sl.format.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.string_view.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.chartraits.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
-    <ClCompile Include="sl.pair.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -364,9 +286,6 @@
     </FASM>
     <FASM Include="memset.asm">
       <Filter>Исходные файлы</Filter>
-    </FASM>
-    <FASM Include="mathasm.asm">
-      <Filter>Исходные файлы\std</Filter>
     </FASM>
     <FASM Include="memcpy.asm">
       <Filter>Исходные файлы</Filter>

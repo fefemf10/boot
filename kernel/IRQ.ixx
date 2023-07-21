@@ -3,7 +3,6 @@ import types;
 import IDT;
 import cpuio;
 import keyboard;
-import console;
 import APIC;
 import PIT;
 export namespace IRQ
@@ -42,7 +41,6 @@ export namespace IRQ
 				keycode = cpuio::inb(keyboard::KEYBOARD_PORT::DATA_PORT);
 				keyboard::standartKeyboard(keycode, keyboard::scancodes[keycode]);
 			}
-			APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 			break;
 		}
 		APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
