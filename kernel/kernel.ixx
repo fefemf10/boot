@@ -37,7 +37,6 @@ import PIT;
 	IRQ::initialize();
 	cpuio::loadIDTR(&IDT::idtr);
 	cpuio::getCPUFeatures(cpuio::features);
-
 	console::initialize();
 	serial::initialize();
 	memory::initialize(bootInfo);
@@ -45,11 +44,9 @@ import PIT;
 	console::unicodeInit();
 	console::clear();
 	console::color = console::CYAN;
-	
-	//console::putfeatures(cpuio::features);
+	console::putfeatures(cpuio::features);
 	console::printf("%llx %llx %llx %llx\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks);
 	console::printf("%llx %llx %llx %llx\n", framebuffer.baseAddress, memory::allocator::memoryMap, memory::sizeRAM, memory::allocator::unusedBlocks);
-	////PIT::setDivisor(PIT::divisor);
 	PIT::setFrequency(10000);
 	if (!(bootInfo.RSDP.isValid() && bootInfo.RSDP.XSDT.header.isValid()))
 	{

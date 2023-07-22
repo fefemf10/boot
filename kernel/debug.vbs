@@ -23,9 +23,9 @@ call shell.Run("cmd /c mkdir ""..\image\efi\boot""", 0, true)
 call fso.CopyFile(TARGET_DIR & "boot.efi", "..\image\efi\boot\" & BOOT_NAME, true)
 call fso.CopyFile(TARGET_DIR & "kernel.exe", "..\image\kernel.exe", true)
 
-call shell.Run(QEMU_EXE + " -machine q35 -m 1G -cpu max -smp sockets=1,cores=2,threads=2 -serial file:serial.txt -net none -monitor none -parallel none -drive file=" & BOOT_DIR & OVMF & ",if=pflash,index=0,format=raw -hda fat:rw:..\image")
+'call shell.Run(QEMU_EXE + " -machine q35 -m 1G -cpu max -smp sockets=1,cores=2,threads=2 -serial file:serial.txt -net none -monitor none -parallel none -drive file=" & BOOT_DIR & OVMF & ",if=pflash,index=0,format=raw -hda fat:rw:..\image")
 
-'call shell.Run(QEMU_EXE + " -machine q35 -m 1G -cpu max -d cpu_reset -net none -monitor stdio -parallel none -drive file=" & BOOT_DIR & OVMFCODE & ",if=pflash,index=0,format=raw,readonly=on -drive file=" & IMAGE_DIR & OVMFVARS & ",if=pflash,index=1,format=raw -hda fat:rw:..\image")
+call shell.Run(QEMU_EXE + " -machine q35 -m 1G -cpu max -smp sockets=1,cores=2,threads=2 -serial file:serial.txt -net none -monitor none -parallel none -drive file=" & BOOT_DIR & OVMFCODE & ",if=pflash,index=0,format=raw,readonly=on -drive file=" & IMAGE_DIR & OVMFVARS & ",if=pflash,index=1,format=raw -hda fat:rw:..\image")
 
 
 'call shell.Run(QEMU_EXE + " -machine q35 -m 256m -cpu qemu64,aes=on,avx=on,sse4.1=on,sse4.2=on,ssse3=on,x2apic=on,xsave=on -accel whpx,kernel-irqchip=off -serial file:serial.txt -net none -monitor none -parallel none -bios " & BOOT_DIR & OVMFCODE & "  -hda fat:rw:..\image")
