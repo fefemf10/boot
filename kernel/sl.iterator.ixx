@@ -296,6 +296,7 @@ export namespace std
 	private:
 		using base = const_linear_iterator<T>;
 	};
+	
 	template <class T>
 	class reverse_iterator
 	{
@@ -315,7 +316,7 @@ export namespace std
 
 		constexpr explicit reverse_iterator(T right) noexcept(is_nothrow_move_constructible_v<T>) : current(move(right)) {}
 		template <class U> requires (!is_same_v<U, T>) && convertible_to<const U&, T>
-		constexpr reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(is_nothrow_constructible_v<T, const U&>): current(_Right.current) {}
+		constexpr reverse_iterator(const reverse_iterator<U>& _Right) noexcept(is_nothrow_constructible_v<T, const U&>): current(_Right.current) {}
 
 		template <class U> requires (!is_same_v<U, T>) && convertible_to<const U&, T> && assignable_from<T&, const U&>
 		constexpr reverse_iterator& operator=(const reverse_iterator<U>& _Right) noexcept(is_nothrow_assignable_v<T&, const U&>)

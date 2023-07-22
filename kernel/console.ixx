@@ -357,7 +357,7 @@ export namespace console
 		bool number{};
 		bool fp{};
 		std::_Unicode_codepoint_iterator s(fmt.begin(), fmt.end());
-		while (*s && s != std::default_sentinel)
+		while (*s)
 		{
 			switch (state)
 			{

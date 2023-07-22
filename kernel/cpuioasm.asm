@@ -137,10 +137,10 @@ loadGDT:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-	pop rdi
+	pop rbp
 	mov rax, 0x08
 	push rax
-	push rdi
+	push rbp
 	retfq
 
 getCPUFeatures:

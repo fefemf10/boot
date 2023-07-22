@@ -19,7 +19,7 @@ export
 		constexpr Flags(Flags<BitType> const& rhs) noexcept = default;
 		constexpr explicit Flags(MaskType flags) noexcept : m_mask(flags) {}
 
-		auto operator<=>(Flags<BitType> const&) const = default;
+		std::partial_ordering operator<=>(Flags<BitType> const&) const = default;
 
 		constexpr bool operator!() const noexcept { return !m_mask; }
 
@@ -39,7 +39,6 @@ export
 		MaskType m_mask;
 	};
 
-	// bitwise operators
 	template <typename BitType>
 	constexpr Flags<BitType> operator&(BitType bit, Flags<BitType> const& flags) noexcept { return flags.operator&(bit); }
 

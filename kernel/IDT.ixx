@@ -44,7 +44,7 @@ export namespace IDT
 	IDTR idtr{ .size = 0x0FFF, .offset = reinterpret_cast<u64>(idt) };
 	void initialize()
 	{
-		memory::set(&idt, 0x00, sizeof(idt));
+		memory::set(idt, 0x00, sizeof(idt));
 	}
 	void set(size_t index, void(*function)())
 	{

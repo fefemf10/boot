@@ -51,6 +51,7 @@
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.exe</TargetExt>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -63,13 +64,15 @@
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <SourcePath>$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <PublicModuleDirectories>
+    </PublicModuleDirectories>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>
-      </PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -115,7 +118,8 @@
       </TurnOffAssemblyGeneration>
       <StackCommitSize>8192</StackCommitSize>
       <StackReserveSize>8192</StackReserveSize>
-      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
@@ -135,8 +139,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>
-      </PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -162,6 +165,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <BuildStlModules>false</BuildStlModules>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalBMIDirectories>
+      </AdditionalBMIDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
@@ -201,7 +206,8 @@
       </MergeSections>
       <StackReserveSize>8192</StackReserveSize>
       <StackCommitSize>8192</StackCommitSize>
-      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
@@ -434,6 +440,35 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="sl.algorithm.ixx" />
+    <ClCompile Include="sl.allocator.ixx" />
+    <ClCompile Include="sl.bit.ixx" />
+    <ClCompile Include="sl.chartraits.ixx" />
+    <ClCompile Include="sl.compare.ixx" />
+    <ClCompile Include="sl.concepts.ixx" />
+    <ClCompile Include="sl.Flags.ixx" />
+    <ClCompile Include="sl.format.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="sl.initializer_list.ixx" />
+    <ClCompile Include="sl.iterator.ixx" />
+    <ClCompile Include="sl.ixx" />
+    <ClCompile Include="sl.math.ixx" />
+    <ClCompile Include="sl.memory.ixx" />
+    <ClCompile Include="sl.numbers.ixx" />
+    <ClCompile Include="sl.numeric_limits.ixx" />
+    <ClCompile Include="sl.pair.ixx" />
+    <ClCompile Include="sl.print.ixx" />
+    <ClCompile Include="sl.ratio.ixx" />
+    <ClCompile Include="sl.source_location.ixx" />
+    <ClCompile Include="sl.span.ixx" />
+    <ClCompile Include="sl.string.ixx" />
+    <ClCompile Include="sl.string_view.ixx" />
+    <ClCompile Include="sl.type.ixx" />
+    <ClCompile Include="sl.typetraits.ixx" />
+    <ClCompile Include="sl.utility.ixx" />
+    <ClCompile Include="sl.vector.ixx" />
     <ClCompile Include="SMBIOS.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -494,6 +529,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </FASM>
+    <FASM Include="mathasm.asm" />
     <FASM Include="memcpy.asm">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -542,11 +578,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.vbs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\std\std.vcxproj">
-      <Project>{7373389a-f0f9-460d-9d10-7668601728ba}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

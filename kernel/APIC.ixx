@@ -168,7 +168,7 @@ export namespace APIC
 	};
 	APIC::LAPIC lapics[256];
 	APIC::IOAPIC ioapics[10];
-	void inittialize()
+	void initialize()
 	{
 		u8 numlapic = 0;
 		u8 numioapic = 0;

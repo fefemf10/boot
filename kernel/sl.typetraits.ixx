@@ -641,6 +641,12 @@ export namespace std
 	template <class From, class To>
 	inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<From, To>;
 
+	template <class _Iter, class _Pointer, bool = is_pointer_v<_Remove_cvref_t<_Iter>>>
+	inline constexpr bool _Has_nothrow_operator_arrow = _Is_nothrow_convertible_v<_Iter, _Pointer>;
+
+	template <class _Iter, class _Pointer>
+	inline constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> = noexcept(_Fake_copy_init<_Pointer>(declval<_Iter>().operator->()));
+
 	template <class From, class To>
 	using is_nothrow_convertible = _Is_nothrow_convertible<From, To>;
 

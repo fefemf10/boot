@@ -56,7 +56,7 @@ export namespace memory
 		{
 
 		}
-		void mapMemory(const void* physicalMemory, const void* virtualMemory, MemoryFlags flags = MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE)
+		void mapMemory(const void* physicalMemory, const void* virtualMemory, MemoryFlags flags = MemoryFlags(MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE))
 		{
 			PageIndex index(reinterpret_cast<u64>(virtualMemory));
 			PageDirectoryEntry PDE = PLM4->entries[index.pdp];
