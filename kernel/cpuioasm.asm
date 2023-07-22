@@ -2,11 +2,8 @@ format MS64 COFF
 public enableSSE as '?enableSSE@cpuio@@YAXXZ::<!cpuio>'
 public enableAVX as '?enableAVX@cpuio@@YAXXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@cpuio@@YAXPEAX@Z::<!cpuio>'
-public loadPLM as '?loadPLM@cpuio@@YAXPEAX@Z::<!cpuio>'
 public loadGDT as '?loadGDT@cpuio@@YAXPEAX@Z::<!cpuio>'
 public getCPUFeatures as '?getCPUFeatures@cpuio@@YAXAEAUFeatures@1@@Z::<!cpuio>'
-public setMSR as '?setMSR@cpuio@@YAX_K0@Z::<!cpuio>'
-public getMSR as '?getMSR@cpuio@@YA_K_K@Z::<!cpuio>'
 
 section '.text$mn' code readable executable
 use16
@@ -39,10 +36,6 @@ loadIDTR:
 	lidt [rcx]
 	ret
 
-loadPLM:
-	mov cr3, rcx
-	ret
-
 loadGDT:
 	lgdt [rcx]
 	mov ax, 0x10
@@ -72,16 +65,4 @@ getCPUFeatures:
 	pop rcx
 	pop rbx
 	pop rax
-	ret
-
-setMSR:
-	mov ecx, edx
-	shr edx, 32
-	wrmsr
-	ret
-
-getMSR:
-	rdmsr
-	shl edx, 32
-	or edx, eax
 	ret

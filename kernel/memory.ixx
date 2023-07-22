@@ -8,6 +8,7 @@ import types;
 import cpuio;
 import BootInfo;
 import console;
+import intrinsic;
 
 export namespace memory
 {
@@ -70,7 +71,7 @@ export namespace memory
 		
 		pageTableManager.mapMemory((void*)0x1000, (void*)0x1000, (allocator::maxBlocks) - 1);
 		pageTableManager.mapMemory(bootInfo.fb.baseAddress, bootInfo.fb.baseAddress, allocator::countBlocks(bootInfo.fb.bufferSize));
-		cpuio::loadPLM(PLM4);
+		__writecr3(reinterpret_cast<u64>(PLM4));
 		initializeHeap((void*)0x0000100000000000, 0x10);
 	}
 }

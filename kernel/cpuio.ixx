@@ -80,10 +80,7 @@ export namespace cpuio
 	} features;
 	void enableSSE();
 	void enableAVX();
-	void loadPLM(void* plm4);
 	void loadGDT(void* gdtDesciptor);
 	void loadIDTR(void* idtrDesciptor);
 	void getCPUFeatures(Features& features);
-	void setMSR(u64 msr, u64 value);
-	u64 getMSR(u64 msr);
 }
