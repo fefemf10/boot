@@ -56,13 +56,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.exe</TargetExt>
-    <LibraryWPath>$(LibraryWPath)</LibraryWPath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
-    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(IncludePath)</IncludePath>
-    <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <ReferencePath>$(ReferencePath)</ReferencePath>
-    <SourcePath>$(SourcePath)</SourcePath>
+    <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <ExecutablePath>$(VC_ExecutablePath_x64);$(CommonExecutablePath)</ExecutablePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
+    <ReferencePath>$(VC_ReferencesPath_x64);</ReferencePath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
     <LinkIncremental>false</LinkIncremental>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
     <PublicModuleDirectories>
@@ -78,7 +78,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <BuildStlModules>false</BuildStlModules>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
@@ -90,6 +90,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
@@ -156,7 +157,7 @@
       <FloatingPointModel>Precise</FloatingPointModel>
       <ShowIncludes>false</ShowIncludes>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <OmitDefaultLibName>true</OmitDefaultLibName>
@@ -337,6 +338,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="intrinsic0.ixx" />
+    <ClCompile Include="intrinsic1.ixx" />
+    <ClCompile Include="intrinsic2.ixx" />
+    <ClCompile Include="intrinsic3.ixx" />
+    <ClCompile Include="intrinsicTypes.ixx" />
     <ClCompile Include="MADT.ixx" />
     <ClCompile Include="MCFG.ixx" />
     <ClCompile Include="memory.Heap.ixx">
@@ -397,8 +403,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="intrinsic.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="IRQ.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

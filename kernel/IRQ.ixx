@@ -5,6 +5,7 @@ import cpuio;
 import keyboard;
 import APIC;
 import PIT;
+import intrinsic1;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -35,10 +36,10 @@ export namespace IRQ
 			u8 status;
 			u8 keycode;
 
-			status = cpuio::inb(keyboard::KEYBOARD_PORT::STATUS_PORT);
+			status = __inbyte(keyboard::KEYBOARD_PORT::STATUS_PORT);
 			if (status & 0x01)
 			{
-				keycode = cpuio::inb(keyboard::KEYBOARD_PORT::DATA_PORT);
+				keycode = __inbyte(keyboard::KEYBOARD_PORT::DATA_PORT);
 				keyboard::standartKeyboard(keycode, keyboard::scancodes[keycode]);
 			}
 			break;

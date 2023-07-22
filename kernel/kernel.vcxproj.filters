@@ -43,6 +43,9 @@
     <Filter Include="Исходные файлы\std">
       <UniqueIdentifier>{96b9f62e-f63d-4c0e-9f36-9eef3c43a622}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\intrinsic">
+      <UniqueIdentifier>{7b9854e1-a525-4ed1-ae7c-455ee790b4b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.ixx">
@@ -94,9 +97,6 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="hash-crc.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="intrinsic.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="hash-sha.ixx">
@@ -350,6 +350,24 @@
     </ClCompile>
     <ClCompile Include="sl.vector.ixx">
       <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsic.ixx">
+      <Filter>Исходные файлы\intrinsic</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsic0.ixx">
+      <Filter>Исходные файлы\intrinsic</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsic1.ixx">
+      <Filter>Исходные файлы\intrinsic</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsic2.ixx">
+      <Filter>Исходные файлы\intrinsic</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsicTypes.ixx">
+      <Filter>Исходные файлы\intrinsic</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsic3.ixx">
+      <Filter>Исходные файлы\intrinsic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@ import IDT;
 import cpuio;
 import console;
 import Framebuffer;
+import intrinsic;
 export namespace ISR
 {
 	extern "C" void isr0();
@@ -95,8 +96,8 @@ export namespace ISR
 			u8 supervisor = regs.errorCode & 0x4;
 			u8 reservedBits = regs.errorCode & 0x8;
 			u8 instructionFetch = regs.errorCode & 0x10;
-			console::printf("CR3: %llx\n", cpuio::cr3());
-			console::printf("ADDRESS: %llx\n", cpuio::cr2());
+			console::printf("CR3: %llx\n", __readcr3());
+			console::printf("ADDRESS: %llx\n", __readcr2());
 			console::printf("REASON: ");
 			if (notPresent) console::puts("(NOT PRESET)");
 			if (access) console::puts("(READ-ONLY)");
@@ -106,7 +107,7 @@ export namespace ISR
 			console::puts("\n");
 		}
 		console::putregs(regs);
-		cpuio::halt();
+		while (true) _mm_pause();
 	}
 	void initialize()
 	{

@@ -1,6 +1,8 @@
 export module PIT;
 import types;
 import cpuio;
+import intrinsic0;
+import intrinsic1;
 export namespace PIT
 {
 	double timeSinceBoot{0.0};
@@ -13,7 +15,7 @@ export namespace PIT
 		double start = timeSinceBoot;
 		while (timeSinceBoot < start + seconds)
 		{
-			cpuio::halt();
+			_mm_pause();
 		}
 	}
 	void sleep(u64 millisec)
@@ -23,9 +25,9 @@ export namespace PIT
 	void setDivisor(i32 divisor)
 	{
 		PIT::divisor = divisor;
-		cpuio::outb(0x34, 0x43);
-		cpuio::outb(static_cast<u8>(divisor & 0x00ff), 0x40);
-		cpuio::outb(static_cast<u8>((divisor & 0xff00) >> 8), 0x40);
+		__outbyte(0x43, 0x34);
+		__outbyte(0x40, static_cast<u8>(divisor & 0x00ff));
+		__outbyte(0x40, static_cast<u8>((divisor & 0xff00) >> 8));
 	}
 	double getFrequency()
 	{

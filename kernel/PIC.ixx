@@ -1,6 +1,7 @@
 export module PIC;
 import cpuio;
 import types;
+import intrinsic1;
 export namespace PIC
 {
 	enum PIC : u8
@@ -16,26 +17,26 @@ export namespace PIC
 	void initialize()
 	{
 		//ICW1
-		cpuio::outb(ICW1 | ICW4, PIC1_C);
-		cpuio::outb(ICW1 | ICW4, PIC2_C);
+		__outbyte(PIC1_C, ICW1 | ICW4);
+		__outbyte(PIC2_C, ICW1 | ICW4);
 		//ICW2
-		cpuio::outb(0x20, PIC1_D);
-		cpuio::outb(0x28, PIC2_D);
+		__outbyte(PIC1_D, 0x20);
+		__outbyte(PIC2_D, 0x28);
 		//ICW3
-		cpuio::outb(0x04, PIC1_D);
-		cpuio::outb(0x02, PIC2_D);
+		__outbyte(PIC1_D, 0x04);
+		__outbyte(PIC2_D, 0x02);
 		//ICW4
-		cpuio::outb(ICW_8086, PIC1_D);
-		cpuio::outb(ICW_8086, PIC2_D);
+		__outbyte(PIC1_D, ICW_8086);
+		__outbyte(PIC2_D, ICW_8086);
 		//Masking all interrupt
-		cpuio::outb(0xFF, PIC1_D);
-		cpuio::outb(0xFF, PIC2_D);
+		__outbyte(PIC1_D, 0xFF);
+		__outbyte(PIC2_D, 0xFF);
 	}
 	void deinitialize()
 	{
 		//Masking all interrupt
-		cpuio::outb(0xFF, PIC1_D);
-		cpuio::outb(0xFF, PIC2_D);
+		__outbyte(PIC1_D, 0xFF);
+		__outbyte(PIC2_D, 0xFF);
 	}
 	void setMask(u8 index, u8 value)
 	{
@@ -50,7 +51,7 @@ export namespace PIC
 			port = PIC2_D;
 			index -= 8;
 		}
-		data = cpuio::inb(port);
+		data = __inbyte(port);
 		if (value > 0)
 		{
 			data |= (1 << index);
@@ -59,15 +60,15 @@ export namespace PIC
 		{
 			data &= ~(1 << index);
 		}
-		cpuio::outb(data, port);
+		__outbyte(port, data);
 	}
 	void eioPrimary()
 	{
-		cpuio::outb(0x20, PIC::PIC1_C);
+		__outbyte(PIC1_C, 0x20);
 	}
 	void eioSecondary()
 	{
-		cpuio::outb(0x20, PIC::PIC2_C);
-		cpuio::outb(0x20, PIC::PIC1_C);
+		__outbyte(PIC2_C, 0x20);
+		__outbyte(PIC1_C, 0x20);
 	}
 }

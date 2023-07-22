@@ -245,9 +245,6 @@ export namespace keyboard
 				case KEYBOARD_KEYS::K_PMUL:
 					console::putc(scancodes[KEYBOARD_KEYS::K_PMUL]);
 					break;
-				case KEYBOARD_KEYS::K_ESC://reboot 
-					cpuio::reboot();
-					break;
 				}
 				if (numLock)
 				{
