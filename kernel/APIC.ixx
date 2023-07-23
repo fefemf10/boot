@@ -2,7 +2,10 @@ export module APIC;
 import types;
 import memory.allocator;
 import memory.PageTableManager;
+import memory.utils;
 import MADT;
+import PIT;
+import intrinsic0;
 export namespace APIC
 {
 	void* lapic;
@@ -49,6 +52,11 @@ export namespace APIC
 			id = read(Registers::ID) >> 24;
 			version = read(Registers::VERSION);
 			countLVT = (read(Registers::VERSION) >> 16) + 1;
+		}
+		void initialize(u8 id, u8 processordId)
+		{
+			this->id = id;
+			this->processorId = processorId;
 		}
 		u32 read(Registers registerOffset)
 		{
@@ -136,7 +144,7 @@ export namespace APIC
 			entryIndex *= 2;
 			entryIndex += REDIRECTION_TABLE;
 			entry.lower = read(entryIndex);
-			entry.upper = read(entryIndex+1);
+			entry.upper = read(entryIndex + 1);
 			return entry;
 		}
 		void setRedirectionEntry(u8 entryIndex, RedirectionEntry entry)
@@ -146,7 +154,7 @@ export namespace APIC
 			entryIndex *= 2;
 			entryIndex += REDIRECTION_TABLE;
 			write(entryIndex, entry.lower);
-			write(entryIndex+1, entry.upper);
+			write(entryIndex + 1, entry.upper);
 		}
 		void* physicalAddress;
 		void* virtualAddress;
@@ -168,10 +176,10 @@ export namespace APIC
 	};
 	APIC::LAPIC lapics[256];
 	APIC::IOAPIC ioapics[10];
+	u8 numlapic = 0;
+	u8 numioapic = 0;
 	void initialize()
 	{
-		u8 numlapic = 0;
-		u8 numioapic = 0;
 		APIC::lapic = reinterpret_cast<void*>(ACPI::madt->lapic);
 		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
 		{
@@ -192,13 +200,16 @@ export namespace APIC
 				}
 			}
 		}
-		APIC::lapics[0].initialize(APIC::lapic);
+		APIC::lapics[numlapic++].initialize(APIC::lapic);
 		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
 		{
 			if (ACPI::madt->entries[i].type == ACPI::Type::PLAPIC)
 			{
 				ACPI::PLAPIC* plapic = reinterpret_cast<ACPI::PLAPIC*>(&ACPI::madt->entries[i]);
-				numlapic += plapic->length == 8 && plapic->flags == 1;
+				if (plapic->length == 8 && plapic->flags == 1 && APIC::lapics[0].id != plapic->apicId)
+				{
+					APIC::lapics[numlapic++].initialize(plapic->apicId, plapic->processorId);
+				}
 			}
 		}
 		for (size_t i = 0; i < numioapic; i++)
@@ -228,5 +239,32 @@ export namespace APIC
 		keyboardInterrupt.destination = APIC::lapics[0].id;
 		keyboardInterrupt.mask = 0;
 		APIC::ioapics[0].setRedirectionEntry(1, keyboardInterrupt);
+	}
+	extern volatile u8 aprunning = 0;  // count how many APs have started
+	extern u8 bspdone = 0;      // BSP id and spinlock flag
+	void BSPInitialize()
+	{
+		u64 lapic = reinterpret_cast<u64>(APIC::lapic);
+		for (size_t i = 1; i < numlapic; i++)
+		{
+			*((volatile u32*)(lapic + 0x280)) = 0;
+			*((volatile u32*)(lapic + 0x310)) = (*((volatile u32*)(lapic + 0x310)) & 0x00ffffff) | (APIC::lapics[i].id << 24);
+			*((volatile u32*)(lapic + 0x300)) = (*((volatile u32*)(lapic + 0x300)) & 0xfff00000) | 0x00C500;
+			do { _mm_pause(); } while (*((volatile u32*)(lapic + 0x300)) & (1 << 12));
+			*((volatile u32*)(lapic + 0x310)) = (*((volatile u32*)(lapic + 0x310)) & 0x00ffffff) | (APIC::lapics[i].id << 24);
+			*((volatile u32*)(lapic + 0x300)) = (*((volatile u32*)(lapic + 0x300)) & 0xfff00000) | 0x008500;
+			do { _mm_pause(); } while (*((volatile u32*)(lapic + 0x300)) & (1 << 12));
+			PIT::sleep(10);
+			// send STARTUP IPI (twice)
+			for (size_t j = 0; j < 2; j++)
+			{
+				*((volatile u32*)(lapic + 0x280)) = 0;
+				*((volatile u32*)(lapic + 0x310)) = (*((volatile u32*)(lapic + 0x310)) & 0x00ffffff) | (i << 24);
+				*((volatile u32*)(lapic + 0x300)) = (*((volatile u32*)(lapic + 0x300)) & 0xfff0f800) | 0x000608;
+				PIT::sleep(1);
+				do { _mm_pause(); } while (*((volatile u32*)(lapic + 0x300)) & (1 << 12));
+			}
+		}
+		bspdone = 1;
 	}
 }

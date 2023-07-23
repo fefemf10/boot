@@ -448,6 +448,7 @@
     </ClCompile>
     <ClCompile Include="sl.algorithm.ixx" />
     <ClCompile Include="sl.allocator.ixx" />
+    <ClCompile Include="sl.atomic.ixx" />
     <ClCompile Include="sl.bit.ixx" />
     <ClCompile Include="sl.chartraits.ixx" />
     <ClCompile Include="sl.compare.ixx" />
@@ -469,6 +470,7 @@
     <ClCompile Include="sl.ratio.ixx" />
     <ClCompile Include="sl.source_location.ixx" />
     <ClCompile Include="sl.span.ixx" />
+    <ClCompile Include="sl.spinlock.ixx" />
     <ClCompile Include="sl.string.ixx" />
     <ClCompile Include="sl.string_view.ixx" />
     <ClCompile Include="sl.type.ixx" />
@@ -515,6 +517,10 @@
     <ClCompile Include="XSDT.ixx" />
   </ItemGroup>
   <ItemGroup>
+    <FASM Include="apinit.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FASM>
     <FASM Include="bootloader.asm">
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\%(FileName).bin</Outputs>
       <NoLogo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</NoLogo>
@@ -536,6 +542,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </FASM>
     <FASM Include="mathasm.asm" />
+    <FASM Include="memcmp.asm" />
     <FASM Include="memcpy.asm">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>

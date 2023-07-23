@@ -1,6 +1,5 @@
 export module serial;
 import types;
-import cpuio;
 import intrinsic1;
 export namespace serial
 {

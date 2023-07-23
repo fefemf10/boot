@@ -369,6 +369,12 @@
     <ClCompile Include="intrinsic3.ixx">
       <Filter>Исходные файлы\intrinsic</Filter>
     </ClCompile>
+    <ClCompile Include="sl.atomic.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.spinlock.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">
@@ -391,6 +397,12 @@
     </FASM>
     <FASM Include="mathasm.asm">
       <Filter>Исходные файлы\std</Filter>
+    </FASM>
+    <FASM Include="memcmp.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
+    <FASM Include="apinit.asm">
+      <Filter>Исходные файлы</Filter>
     </FASM>
   </ItemGroup>
   <ItemGroup>

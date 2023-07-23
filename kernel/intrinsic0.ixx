@@ -48,7 +48,7 @@ export extern "C"
 		__int64 _InterlockedXor64(__int64 volatile* _Value, __int64 _Mask);
 		__int64 _interlockedxor64(__int64 volatile* _Value, __int64 _Mask);
 		char _InterlockedXor8(char volatile* _Value, char _Mask);
-		void _ReadWriteBarrier(void);
+		void _ReadWriteBarrier();
 		__int16 __iso_volatile_load16(const volatile __int16*);
 		__int32 __iso_volatile_load32(const volatile __int32*);
 		__int64 __iso_volatile_load64(const volatile __int64*);
@@ -57,7 +57,7 @@ export extern "C"
 		void __iso_volatile_store32(volatile __int32*, __int32);
 		void __iso_volatile_store64(volatile __int64*, __int64);
 		void __iso_volatile_store8(volatile __int8*, __int8);
-		void _mm_pause(void);
+		void _mm_pause();
 		unsigned int __lzcnt(unsigned int);
 		unsigned short __lzcnt16(unsigned short);
 		unsigned __int64 __lzcnt64(unsigned __int64);

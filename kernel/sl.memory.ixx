@@ -267,3 +267,7 @@ export namespace std
 	void copy(void* destination, const void* source, size_t size);
 	void move(void* destination, const void* source, size_t size);
 }
+export
+{
+	[[nodiscard]] int memcmp(void const* buf1, void const* buf2, size_t size);
+}

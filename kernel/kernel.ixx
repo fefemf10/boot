@@ -26,7 +26,9 @@ import IDT;
 import PIT;
 import intrinsic;
 import sl.math;
-
+import sl.memory;
+import sl.atomic;
+import sl.spinlock;
 [[noreturn]] void mainCRTStartup(const BootInfo& bootInfo)
 {
 	framebuffer = bootInfo.fb;
@@ -59,6 +61,8 @@ import sl.math;
 		PIC::deinitialize();
 	APIC::initialize();
 	_enable();
+	//APIC::BSPInitialize();
+	//console::printf("%i %i", APIC::aprunning, APIC::bspdone);
 	//u64* a = new u64(5);
 	//u64* b = new u64(6);
 	//if (a!= nullptr)
