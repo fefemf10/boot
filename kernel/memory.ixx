@@ -59,7 +59,7 @@ export namespace memory
 		}
 		
 		allocator::reserveBlocks(nullptr, 1);
-		//allocator::setRegion((const void*)0xA0000, 0x10);
+		allocator::setRegion((const void*)0x1000, 5);
 		for (size_t i = 0; i < 4; i++)
 		{
 			allocator::setRegion(bootInfo.memoryMapEntries[i].address, bootInfo.memoryMapEntries[i].numberOfPages);

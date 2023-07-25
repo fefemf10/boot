@@ -51,7 +51,7 @@
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.exe</TargetExt>
-    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -64,7 +64,7 @@
     <ReferencePath>$(VC_ReferencesPath_x64);</ReferencePath>
     <SourcePath>$(VC_SourcePath);</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
     <PublicModuleDirectories>
     </PublicModuleDirectories>
   </PropertyGroup>
@@ -126,10 +126,11 @@
       <SubSystem>Native</SubSystem>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /y /b $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)image\$(TargetName)$(TargetExt)</Command>
+      <Command>copy /y /b $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)image\$(TargetName)$(TargetExt)
+fasm $(ProjectDir)apinit.asm</Command>
     </PostBuildEvent>
     <CopyFileToFolders>
-      <DestinationFolders>%(DestinationFolders)</DestinationFolders>
+      <DestinationFolders>$(SolutionDir)image\;%(DestinationFolders)</DestinationFolders>
       <TreatOutputAsContent>
       </TreatOutputAsContent>
     </CopyFileToFolders>
@@ -215,13 +216,14 @@
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /y /b $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)image\$(TargetName)$(TargetExt)</Command>
+      <Command>copy /y /b $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)image\$(TargetName)$(TargetExt)
+fasm $(ProjectDir)apinit.asm</Command>
     </PostBuildEvent>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <CopyFileToFolders>
-      <DestinationFolders>%(DestinationFolders)</DestinationFolders>
+      <DestinationFolders>$(SolutionDir)image\;%(DestinationFolders)</DestinationFolders>
       <TreatOutputAsContent>
       </TreatOutputAsContent>
     </CopyFileToFolders>
@@ -232,6 +234,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="APIC.ixx" />
+    <FASM Include="apinit3.asm">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FASM>
     <ClCompile Include="BootInfo.ixx" />
     <ClCompile Include="driver.AHCI.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -521,6 +528,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FASM>
+    <FASM Include="apinit2.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </FASM>
     <FASM Include="bootloader.asm">
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\%(FileName).bin</Outputs>
       <NoLogo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</NoLogo>
@@ -590,6 +601,9 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="apinit.bin">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="debug.vbs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

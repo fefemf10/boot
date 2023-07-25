@@ -404,6 +404,12 @@
     <FASM Include="apinit.asm">
       <Filter>Исходные файлы</Filter>
     </FASM>
+    <FASM Include="apinit2.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
+    <FASM Include="apinit3.asm">
+      <Filter>Исходные файлы</Filter>
+    </FASM>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdarg.h">
@@ -415,6 +421,9 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="zap-ext-vga16.psf" />
+    <CopyFileToFolders Include="apinit.bin">
+      <Filter>Исходные файлы</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.vbs" />

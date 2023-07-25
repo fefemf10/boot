@@ -55,6 +55,7 @@ extern "C" void printf_unsigned(uint64_t number, int32_t radix, int64_t width)
 		SS->conOut->outputString(SS->conOut, u"0");
 	while (--pos >= 0)
 		putc(buffer[pos]);
+	print(u"\n\r");
 }
 
 Framebuffer* InitializeGOP()
@@ -131,8 +132,8 @@ struct BootInfo
 void (*mainCRTStartup)(BootInfo&);
 extern void setStack(void* address, BootInfo* bootInfo);
 extern uint64_t getStack();
-
-void* stackAddress = reinterpret_cast<void*>(0x1000);
+constexpr uint64_t countPagesForInitAP = 5;
+void* stackAddress = reinterpret_cast<void*>(0x1000 + 0x1000 * countPagesForInitAP);
 uint64_t stackSize;
 uint64_t numberOfPagesStack;
 void* kernelAddress;
@@ -293,11 +294,13 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	efi::FileHandle volume = loadVolume(imageHandle);
 	Framebuffer* newBuffer = InitializeGOP();
 	
+	efi::FileHandle apinitFile = loadFile(volume, u"apinit.bin", imageHandle);
+	size_t readSize = 256;
+	apinitFile->read(apinitFile, &readSize, (void*)(0x1000));
 	efi::FileHandle kernel = loadFile(volume, u"kernel.exe", imageHandle);
 	PE::PE kernelPE;
 	loadPE(kernel, kernelPE);
 	PSF1Font* newFont = loadPSF1Font(volume, u"zap-ext-vga16.psf", imageHandle);
-	
 	efi::MemoryDescriptor* map{};
 	uint64_t mapSize{}, mapKey{};
 	uint64_t descriptorSize{};

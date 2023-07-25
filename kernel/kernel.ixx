@@ -29,7 +29,7 @@ import sl.math;
 import sl.memory;
 import sl.atomic;
 import sl.spinlock;
-[[noreturn]] void mainCRTStartup(const BootInfo& bootInfo)
+[[noreturn]] void mainCRTStartup(const BootInfo bootInfo)
 {
 	framebuffer = bootInfo.fb;
 	font = bootInfo.font;
@@ -61,8 +61,13 @@ import sl.spinlock;
 		PIC::deinitialize();
 	APIC::initialize();
 	_enable();
-	//APIC::BSPInitialize();
-	//console::printf("%i %i", APIC::aprunning, APIC::bspdone);
+	APIC::BSPInitialize(bootInfo);
+	while (true)
+	{
+		console::clearLine(console::currentPos);
+		console::printf("%i %i ", APIC::aprunning, APIC::bspdone);
+		PIT::sleep(10);
+	}
 	//u64* a = new u64(5);
 	//u64* b = new u64(6);
 	//if (a!= nullptr)

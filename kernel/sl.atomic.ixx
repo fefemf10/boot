@@ -73,17 +73,10 @@ enum
 // #undefed in vcruntime as well
 
 extern "C" [[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
-#ifndef _INVALID_MEMORY_ORDER
-#ifdef _DEBUG
-#define _INVALID_MEMORY_ORDER _STL_REPORT_ERROR("Invalid memory order")
-#else // ^^^ _DEBUG / !_DEBUG vvv
-#define _INVALID_MEMORY_ORDER
-#endif // _DEBUG
-#endif // _INVALID_MEMORY_ORDER
 
 extern "C" void _Check_memory_order(const unsigned int _Order) {
 	if (_Order > _Atomic_memory_order_seq_cst) {
-		_INVALID_MEMORY_ORDER;
+		;
 	}
 }
 // note: these macros are _not_ always safe to use with a trailing semicolon,
@@ -107,7 +100,7 @@ extern "C" void _Check_memory_order(const unsigned int _Order) {
 	case _Atomic_memory_order_release:                  \
 	case _Atomic_memory_order_acq_rel:                  \
 	default:                                            \
-		_INVALID_MEMORY_ORDER;                          \
+		;                          \
 		break;                                          \
 	}
 
@@ -127,7 +120,7 @@ extern "C" void _Check_memory_order(const unsigned int _Order) {
 	case _Atomic_memory_order_consume:                    \
 	case _Atomic_memory_order_acquire:                    \
 	case _Atomic_memory_order_acq_rel:                    \
-		_INVALID_MEMORY_ORDER;                            \
+		;                            \
 		[[fallthrough]];
 
 #define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
@@ -240,7 +233,7 @@ export namespace std
 		case memory_order_acquire:
 		case memory_order_acq_rel:
 		default:
-			_INVALID_MEMORY_ORDER;
+			;
 			break;
 		}
 	}
@@ -256,7 +249,7 @@ export namespace std
 		case memory_order_release:
 		case memory_order_acq_rel:
 		default:
-			_INVALID_MEMORY_ORDER;
+			;
 			break;
 		}
 	}
