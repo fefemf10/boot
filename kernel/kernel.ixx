@@ -62,12 +62,11 @@ import sl.spinlock;
 	APIC::initialize();
 	_enable();
 	APIC::BSPInitialize(bootInfo);
-	while (true)
-	{
-		console::clearLine(console::currentPos);
-		console::printf("%i %i ", APIC::aprunning, APIC::bspdone);
-		PIT::sleep(10);
-	}
+	//while (true)
+	//{
+	//	console::clearLine(console::currentPos);
+	//	console::printf("%i %i ", APIC::aprunning, APIC::bspdone);
+	//}
 	//u64* a = new u64(5);
 	//u64* b = new u64(6);
 	//if (a!= nullptr)
@@ -82,5 +81,5 @@ import sl.spinlock;
 	//a = new u64(10);
 	//console::printf(u8"%llx %llx %llx\n", *a, a, *b);
 	
-	while(true) _mm_pause();
+	while(true) __halt();
 }

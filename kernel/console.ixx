@@ -93,32 +93,32 @@ export namespace console
 			}
 			unicode[start[i]] = glyph;
 		}
-			/*u16 uc = (u16)((u16*)s[0]);
-			if (uc == 0xFF) {
-				glyph++;
-				s++;
-				continue;
-			}
-			else if (uc & 128)
+		/*u16 uc = (u16)((u16*)s[0]);
+		if (uc == 0xFF) {
+			glyph++;
+			s++;
+			continue;
+		}
+		else if (uc & 128)
+		{
+			if ((uc & 32) == 0)
 			{
-				if ((uc & 32) == 0)
-				{
-					uc = ((s[0] & 0x1F) << 6) + (s[1] & 0x3F);
-					s++;
-				}
-				else if ((uc & 16) == 0)
-				{
-					uc = ((((s[0] & 0xF) << 6) + (s[1] & 0x3F)) << 6) + (s[2] & 0x3F);
-					s += 2;
-				}
-				else if ((uc & 8) == 0)
-				{
-					uc = ((((((s[0] & 0x7) << 6) + (s[1] & 0x3F)) << 6) + (s[2] & 0x3F)) << 6) + (s[3] & 0x3F);
-					s += 3;
-				}
-				else
-					uc = 0;
-			}*/
+				uc = ((s[0] & 0x1F) << 6) + (s[1] & 0x3F);
+				s++;
+			}
+			else if ((uc & 16) == 0)
+			{
+				uc = ((((s[0] & 0xF) << 6) + (s[1] & 0x3F)) << 6) + (s[2] & 0x3F);
+				s += 2;
+			}
+			else if ((uc & 8) == 0)
+			{
+				uc = ((((((s[0] & 0x7) << 6) + (s[1] & 0x3F)) << 6) + (s[2] & 0x3F)) << 6) + (s[3] & 0x3F);
+				s += 3;
+			}
+			else
+				uc = 0;
+		}*/
 	}
 	void clear()
 	{
@@ -213,13 +213,8 @@ export namespace console
 	}
 	void putc(char32_t c)
 	{
-		if (out == OUT::FRAMEBUFFER)
-		{
-			drawChar(c, currentPos);
-			setCursorPosition(currentPos + 1);
-		}
-		else
-			serial::write(c);
+		drawChar(c, currentPos);
+		setCursorPosition(currentPos + 1);
 	}
 	void puts(std::string_view str)
 	{
@@ -542,7 +537,7 @@ export namespace console
 	{
 		for (size_t i = 1; i <= size; i++)
 		{
-			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i-1]);
+			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
 		}
 		if (size % 16 != 0)
 			puts("\n");

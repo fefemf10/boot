@@ -6,6 +6,7 @@ import memory.utils;
 import MADT;
 import PIT;
 import intrinsic0;
+import intrinsic1;
 import BootInfo;
 import console;
 import serial;
@@ -269,32 +270,22 @@ export namespace APIC
 		ap_stack = memory::allocator::allocBlocks((numlapic-1) * ap_stackNumberPagesPerCore);
 		console::printf("ap_stackNumberPagesPerCore: %llx\n", ap_stackNumberPagesPerCore);
 		console::printf("ap_stack: %llx\n", ap_stack);
-		console::printf("lapic 0x280: %llx\n", APIC::lapics[0].read(APIC::LAPIC::Registers(0x280)));
-		console::printf("lapic 0x310: %llx\n", APIC::lapics[0].read(APIC::LAPIC::Registers(0x310)));
-		console::printf("lapic 0x300: %llx\n", APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)));
 		u64 lapic = reinterpret_cast<u64>(APIC::lapic);
 		for (size_t i = 1; i < numlapic; i++)
 		{
 			APIC::lapics[0].write(APIC::LAPIC::Registers(0x280), 0);
 			APIC::lapics[0].write(APIC::LAPIC::Registers(0x310), APIC::lapics[0].read(APIC::LAPIC::Registers(0x310)) & 0x00ffffff | (APIC::lapics[i].id << 24));
 			APIC::lapics[0].write(APIC::LAPIC::Registers(0x300), APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)) & 0xfff00000 | 0x00C500);
-			//((volatile u32*)(lapic + 0x310)) = (*((volatile u32*)(lapic + 0x310)) & 0x00ffffff) | (APIC::lapics[i].id << 24);
-			//*((volatile u32*)(lapic + 0x300)) = (*((volatile u32*)(lapic + 0x300)) & 0xfff00000) | 0x00C500;
 			do { _mm_pause(); } while (APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)) & (1 << 12));
 			APIC::lapics[0].write(APIC::LAPIC::Registers(0x310), APIC::lapics[0].read(APIC::LAPIC::Registers(0x310)) & 0x00ffffff | (APIC::lapics[i].id << 24));
 			APIC::lapics[0].write(APIC::LAPIC::Registers(0x300), APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)) & 0xfff00000 | 0x008500);
 			do { _mm_pause(); } while (APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)) & (1 << 12));
 			PIT::sleep(10);
-			console::printf("lapic 0x280: %llx\n", APIC::lapics[0].read(APIC::LAPIC::Registers(0x280)));
-			console::printf("lapic 0x310: %llx\n", APIC::lapics[0].read(APIC::LAPIC::Registers(0x310)));
-			console::printf("lapic 0x300: %llx\n", APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)));
-			// send STARTUP IPI (twice)
 			for (size_t j = 0; j < 2; j++)
 			{
 				APIC::lapics[0].write(APIC::LAPIC::Registers(0x280), 0);
 				APIC::lapics[0].write(APIC::LAPIC::Registers(0x310), APIC::lapics[0].read(APIC::LAPIC::Registers(0x310)) & 0x00ffffff | (APIC::lapics[i].id << 24));
 				APIC::lapics[0].write(APIC::LAPIC::Registers(0x300), APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)) & 0xfff0f800 | 0x000601);
-				//*((volatile u32*)(lapic + 0x300)) = (*((volatile u32*)(lapic + 0x300)) & 0xfff0f800) | 0x000601;
 				PIT::sleep(10);
 				do { _mm_pause(); } while (APIC::lapics[0].read(APIC::LAPIC::Registers(0x300)) & (1 << 12));
 			}
@@ -303,10 +294,6 @@ export namespace APIC
 	}
 	void ap_main(const u8 apicId)
 	{
-		while (true)
-		{
-			++APIC::aprunning;
-			_mm_pause();
-		}
+		while (true) __halt();
 	}
 }
