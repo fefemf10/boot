@@ -375,6 +375,9 @@
     <ClCompile Include="sl.spinlock.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
+    <ClCompile Include="APICTimer.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

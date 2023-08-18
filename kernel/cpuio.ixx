@@ -1,17 +1,22 @@
 export module cpuio;
 import types;
+import intrinsic1;
 export namespace cpuio
 {
+
 	struct regs
 	{
 		u64 rax, rbx, rcx, rdx, rsi, rdi, rsp, rbp, r8, r9, r10, r11, r12, r13, r14, r15;
-		//u64 rflags, cr0, cr2, cr3, cr4, cr8;
 		u64 interruptCode, errorCode;
 		u64 rip, cs, rflags, useresp, ss;
 	};
+
 #pragma pack(1)
 	struct Features
 	{
+		u32 eax;
+		u32 ebx;
+
 		u64 SSE3 : 1;
 		u64 PCLMUL : 1;
 		u64 DTES64 : 1;
@@ -44,6 +49,7 @@ export namespace cpuio
 		u64 F16C : 1;
 		u64 RDRAND : 1;
 		u64 HYPERVISOR : 1;
+		
 		u64 FPU : 1;
 		u64 VME : 1;
 		u64 DE : 1;
@@ -76,11 +82,15 @@ export namespace cpuio
 		u64 TM : 1;
 		u64 IA64 : 1;
 		u64 PBE : 1;
-		u32 eax;
 	} features;
+	u64 busFrequencyHz;
+	u64 coreFrequencyMHz;
 	void enableSSE();
 	void enableAVX();
 	void loadGDT(void* gdtDesciptor);
 	void loadIDTR(void* idtrDesciptor);
-	void getCPUFeatures(Features& features);
+	void getCPUFeatures(Features& features)
+	{
+		__cpuid(reinterpret_cast<int*>(&features), 0x1);
+	}
 }

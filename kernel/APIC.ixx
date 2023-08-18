@@ -178,10 +178,11 @@ export namespace APIC
 			*(u32 volatile*)(reinterpret_cast<u64>(virtualAddress) + 0x10) = value;
 		}
 	};
-	APIC::LAPIC lapics[256];
+	APIC::LAPIC lapics[64];
 	APIC::IOAPIC ioapics[10];
 	u8 numlapic = 0;
 	u8 numioapic = 0;
+	bool isDiscrete = true;
 	void initialize()
 	{
 		numlapic = 0;
@@ -207,6 +208,7 @@ export namespace APIC
 			}
 		}
 		APIC::lapics[numlapic++].initialize(APIC::lapic);
+		isDiscrete = !(APIC::lapics[0].version & 0x10);
 		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
 		{
 			if (ACPI::madt->entries[i].type == ACPI::Type::PLAPIC)

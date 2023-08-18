@@ -3,7 +3,6 @@ public enableSSE as '?enableSSE@cpuio@@YAXXZ::<!cpuio>'
 public enableAVX as '?enableAVX@cpuio@@YAXXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@cpuio@@YAXPEAX@Z::<!cpuio>'
 public loadGDT as '?loadGDT@cpuio@@YAXPEAX@Z::<!cpuio>'
-public getCPUFeatures as '?getCPUFeatures@cpuio@@YAXAEAUFeatures@1@@Z::<!cpuio>'
 
 section '.text$mn' code readable executable
 use16
@@ -49,20 +48,3 @@ loadGDT:
 	push rax
 	push rbp
 	retfq
-
-getCPUFeatures:
-	push rax
-	push rbx
-	push rcx
-	push rdx
-	mov eax, 1
-	mov r8, rcx
-	cpuid
-	mov dword [r8], ecx 
-	mov dword [r8+4], edx
-	mov dword [r8+8], eax
-	pop rdx
-	pop rcx
-	pop rbx
-	pop rax
-	ret

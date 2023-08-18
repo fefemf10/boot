@@ -6,6 +6,7 @@ import keyboard;
 import APIC;
 import PIT;
 import intrinsic1;
+import APICTimer;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -43,6 +44,9 @@ export namespace IRQ
 				keyboard::standartKeyboard(keycode, keyboard::scancodes[keycode]);
 			}
 			break;
+		case 2:
+			APICTimer::tick();
+			break;
 		}
 		APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 	}
@@ -50,6 +54,7 @@ export namespace IRQ
 	{
 		IDT::set(32, irq0);
 		IDT::set(33, irq1);
+		IDT::set(34, irq2);
 		//IDT::set(34, irq2);
 		//IDT::set(35, irq3);
 		//IDT::set(36, irq4);

@@ -44,10 +44,10 @@ export
 		}
 		void drawRectangle(i64 x, i64 y, i64 width, i64 height, u32 color)
 		{
-			for (u32 i = y; i < y + height; ++i)
+			for (i32 i = y; i < y + height; ++i)
 			{
 				const u64 pixels = reinterpret_cast<u64>(baseAddress) + (i * pixelsPerScanline * 4);
-				for (u32 j = x; j < x + width; j++)
+				for (i32 j = x; j < x + width; j++)
 				{
 					reinterpret_cast<u32*>(pixels)[j] = color;
 				}
