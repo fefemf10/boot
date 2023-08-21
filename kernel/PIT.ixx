@@ -5,7 +5,7 @@ import intrinsic0;
 import intrinsic1;
 export namespace PIT
 {
-	double timeSinceBoot{0.0};
+	double timeSinceBoot{ 0.0 };
 	const i32 baseFrequency = 1193182;
 	u64 ticks = 0;
 	i32 frequency = 0;

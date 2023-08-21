@@ -10,6 +10,7 @@ import sl.concepts;
 import sl.typetraits;
 import sl.print;
 import sl.string_view;
+import intrinsic1;
 
 namespace console
 {
@@ -60,7 +61,11 @@ export namespace console
 	};
 	u32 color = 0x00FFFFFF;
 	u32 clearColor = Color::BLACK;
-	i64 currentPos;
+	struct Point
+	{
+		int x;
+		int y;
+	} currentPos;
 	i64 width;
 	i64 height;
 	u16* unicode;
@@ -70,9 +75,21 @@ export namespace console
 		FRAMEBUFFER,
 		SERIAL
 	} out{};
+	void clamp(Point& point)
+	{
+		if (point.x < 0)
+			point.x = 0;
+		else if (point.x >= width)
+			point.x = width - 1;
+		if (point.y < 0)
+			point.y = 0;
+		else if (point.y >= height)
+			point.y = height - 1;
+	}
 	void initialize()
 	{
-		currentPos = 0;
+		currentPos.x = 0;
+		currentPos.y = 0;
 		out = OUT::FRAMEBUFFER;
 		width = framebuffer.width / 8;
 		height = framebuffer.height / font->charSize;
@@ -123,59 +140,82 @@ export namespace console
 	void clear()
 	{
 		framebuffer.clear(clearColor);
-		currentPos = 0;
+		currentPos.x = 0;
+		currentPos.y = 0;
 	}
-	void setCursorPosition(i64 position)
+	void setCursorPosition(Point position)
 	{
 		currentPos = position;
-		if (currentPos < 0)
-			currentPos = 0;
-		else if (currentPos >= width * height)
-			currentPos = width * height;
+		clamp(currentPos);
+	}
+	void setCursorPosition(int x, int y)
+	{
+		currentPos.x = x;
+		currentPos.y = y;
+		clamp(currentPos);
+	}
+	void moveCursorPosition(Point position)
+	{
+		currentPos.x += position.x;
+		currentPos.y += position.y;
+		clamp(currentPos);
+	}
+	void moveCursorPosition(int x, int y)
+	{
+		currentPos.x += x;
+		if (currentPos.x < 0)
+		{
+			currentPos.x = width - 1;
+			--currentPos.y;
+		}
+		else if (currentPos.x >= width)
+		{
+			currentPos.x = 0;
+			++currentPos.y;
+		}
+		currentPos.y += y;
+		if (currentPos.y < 0)
+		{
+			currentPos.y = 0;
+			currentPos.x = 0;
+		}
+		else if (currentPos.y >= height)
+		{
+			currentPos.y = height - 1;
+			currentPos.x = width - 1;
+		}
+		clamp(currentPos);
 	}
 	void upCursorPosition()
 	{
-		setCursorPosition(currentPos - width);
+		moveCursorPosition(0, -1);
 	}
 	void downCursorPosition()
 	{
-		setCursorPosition(currentPos + width);
+		moveCursorPosition(0, 1);
 	}
-	void clearLine(i64 index)
+	void clearLine(u8 countChar)
 	{
-		i64 cursorY = index / width;
-		framebuffer.drawRectangle(0, cursorY * font->charSize, framebuffer.width, font->charSize, clearColor);
-		setCursorPosition(index - index % width);
+		currentPos.x = 0;
+		framebuffer.drawRectangle(0, currentPos.y * font->charSize, countChar * 8, font->charSize, clearColor);
 	}
-	void clearGlyph(i64 index)
+	void clearGlyph(Point position)
 	{
-		if (index < 0)
-			index = 0;
-		else if (index >= width * height)
-			index = width * height - 1;
-		i64 cursorY = index / width;
-		i64 cursorX = index % width;
-		framebuffer.drawRectangle(cursorX * 8, cursorY * font->charSize, 8, font->charSize, clearColor);
+		framebuffer.drawRectangle(position.x * 8, position.y * font->charSize, 8, font->charSize, clearColor);
 	}
 
-	void drawChar(char32_t c, i64 position)
+	void drawChar(char32_t c, Point position)
 	{
-		if (position < 0)
-			position = 0;
-		else if (position >= width * height)
-			position = width * height - 1;
-		i64 cursorY = position / width * font->charSize;
-		i64 cursorX = position % width * 8;
 		clearGlyph(position);
 		u32* pixels = (u32*)framebuffer.baseAddress;
 		if (font->mode & 2)
 			c = unicode[c];
 		char* fontPtr = reinterpret_cast<char*>(&font->glyphBuffer) + (c * font->charSize);
-		for (size_t y = cursorY; y < cursorY + font->charSize; y++)
+		for (size_t y = position.y * font->charSize; y < position.y * font->charSize + font->charSize; y++)
 		{
-			for (size_t x = cursorX; x < cursorX + 8; x++)
+			for (size_t x = position.x * 8; x < position.x * 8 + 8; x++)
 			{
-				if ((*fontPtr & (0b10000000 >> (x - cursorX))) > 0)
+				if ((*fontPtr & (0b10000000 >> (x - position.x * 8))) > 0)
 				{
 					*(u32*)(pixels + x + (y * framebuffer.pixelsPerScanline)) = color;
 				}
@@ -183,39 +223,34 @@ export namespace console
 			++fontPtr;
 		}
 	}
-
-	void print(std::string_view str)
+	void putc(char32_t c)
 	{
-		i64 index = currentPos;
-		//u64 a = sizeString(str);
-		std::_Unicode_codepoint_iterator s(str.begin(), str.end());
+		drawChar(c, currentPos);
+		moveCursorPosition(1, 0);
+	}
+	void print(const std::string_view str)
+	{
+		std::_Unicode_codepoint_iterator s(str.cbegin(), str.cend());
 		while (*s)
 		{
 			switch (*s)
 			{
 			case '\n':
-				index += width;
-				index -= index % width;
+				setCursorPosition(0, currentPos.y+1);
 				break;
 			default:
-				drawChar(*s, index);
-				++index;
+				putc(*s);
 				break;
 			}
 			++s;
 		}
-		setCursorPosition(index);
 	}
 
 	void setOut(OUT outt)
 	{
 		out = outt;
 	}
-	void putc(char32_t c)
-	{
-		drawChar(c, currentPos);
-		setCursorPosition(currentPos + 1);
-	}
+	
 	void puts(std::string_view str)
 	{
 		if (out == OUT::FRAMEBUFFER)

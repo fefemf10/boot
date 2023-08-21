@@ -102,7 +102,7 @@ export namespace std
 		using value_type = char32_t;
 		using difference_type = ptrdiff_t;
 
-		constexpr _Unicode_codepoint_iterator(string_view str) noexcept : first(str.begin()), last(str.end())
+		constexpr _Unicode_codepoint_iterator(const string_view str) noexcept : first(str.cbegin()), last(str.cend())
 		{
 			next = _Decode_utf(first, last, value).nextPtr;
 		}
@@ -117,7 +117,8 @@ export namespace std
 		constexpr _Unicode_codepoint_iterator& operator++() noexcept
 		{
 			first = next;
-			if (first != last) {
+			if (first != last && *first != '\0' && *next != '\0')
+			{
 				next = _Decode_utf(first, last, value).nextPtr;
 			}
 			else

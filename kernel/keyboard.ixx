@@ -161,13 +161,13 @@ export namespace keyboard
 				console::upCursorPosition();
 				break;
 			case KEYBOARD_KEYS::K_P4:
-				console::setCursorPosition(console::currentPos - 1);
+				console::moveCursorPosition(-1, 0);
 				break;
 			case KEYBOARD_KEYS::K_P6:
-				console::setCursorPosition(console::currentPos + 1);
+				console::moveCursorPosition(1, 0);
 				break;
 			case KEYBOARD_KEYS::K_ENTER://keypad enter
-				console::puts("\n");
+				console::setCursorPosition(0, console::currentPos.y + 1);
 				break;
 			case KEYBOARD_KEYS::K_LEFTCTRL://right ctrl
 				rightCtrlPressed = true;
@@ -184,21 +184,24 @@ export namespace keyboard
 			if (c && scancode < 0x3A)
 			{
 				bool additional = scancode == KEYBOARD_KEYS::K_TILDE || scancode == KEYBOARD_KEYS::K_SEMICOLON || scancode == KEYBOARD_KEYS::K_RSQUO || scancode == KEYBOARD_KEYS::K_LEFTBRACKET || scancode == KEYBOARD_KEYS::K_RIGHTBRACKET || scancode == KEYBOARD_KEYS::K_BACKSLASH || scancode >= KEYBOARD_KEYS::K_1 && scancode <= KEYBOARD_KEYS::K_PLUS;
-				if ((leftShiftPressed || rightShiftPressed) && additional)
+				if (additional)
 				{
-					console::putc(scancodes[scancode + 64]);
+					if ((leftShiftPressed || rightShiftPressed))
+						console::putc(scancodes[scancode + 64]);
+					else
+						console::putc(c);
 				}
 				else
 				{
-					switch (((leftShiftPressed | rightShiftPressed) ^ capsLock) && !additional)
+					if (((leftShiftPressed || rightShiftPressed) ^ capsLock))
 					{
-					case true:
-						console::putc(static_cast<i8>(c - 32));
-						break;
-					case false:
-						console::putc(c);
-						break;
+						if (scancode == KEYBOARD_KEYS::K_SPACEBAR)
+							console::putc(' ');
+						else
+							console::putc(static_cast<i8>(c - 32));
 					}
+					else
+						console::putc(c);
 				}
 			}
 			else
@@ -206,8 +209,8 @@ export namespace keyboard
 				switch (scancode)
 				{
 				case KEYBOARD_KEYS::K_BACKSPACE://backspace
-					console::clearGlyph(console::currentPos - 1);
-					console::setCursorPosition(console::currentPos - 1);
+					console::moveCursorPosition(-1, 0);
+					console::clearGlyph(console::currentPos);
 					break;
 				case KEYBOARD_KEYS::K_LEFTSHIFT://left shift
 					leftShiftPressed = true;
@@ -228,7 +231,7 @@ export namespace keyboard
 					rightCtrlPressed = false;
 					break;
 				case KEYBOARD_KEYS::K_ENTER://enter
-					console::puts("\n");
+					console::setCursorPosition(0, console::currentPos.y+1);
 					break;
 				case KEYBOARD_KEYS::K_CASPLOCK://capslock
 					capsLock ^= lastScancode != scancode;

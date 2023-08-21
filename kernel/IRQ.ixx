@@ -52,9 +52,9 @@ export namespace IRQ
 	}
 	void initialize()
 	{
-		IDT::set(32, irq0);
-		IDT::set(33, irq1);
-		IDT::set(34, irq2);
+		IDT::set(0x20, irq0);
+		IDT::set(0x21, irq1);
+		//IDT::set(0x22, irq2);
 		//IDT::set(34, irq2);
 		//IDT::set(35, irq3);
 		//IDT::set(36, irq4);
