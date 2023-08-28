@@ -1,18 +1,26 @@
-export module PIT;
+﻿export module PIT;
 import types;
 import cpuio;
 import intrinsic0;
 import intrinsic1;
+import console;
 export namespace PIT
 {
-	double timeSinceBoot{ 0.0 };
+	volatile f64 timeSinceBoot{ 0.0 };
 	const i32 baseFrequency = 1193182;
-	u64 ticks = 0;
-	i32 frequency = 0;
+	volatile u64 ticks = 0;
+	f64 frequency = 0.0;
 	u16 divisor = 65535;
-	void sleepd(double seconds)
+	void initialize()
 	{
-		double start = timeSinceBoot;
+		timeSinceBoot = 0.0;
+		ticks = 0;
+		frequency = 0.0;
+		divisor = 65535;
+	}
+	void sleepd(f64 seconds)
+	{
+		volatile f64 start = timeSinceBoot;
 		while (timeSinceBoot < start + seconds)
 		{
 			_mm_pause();
@@ -29,13 +37,13 @@ export namespace PIT
 		__outbyte(0x40, static_cast<u8>(divisor & 0x00ff));
 		__outbyte(0x40, static_cast<u8>((divisor & 0xff00) >> 8));
 	}
-	double getFrequency()
+	f64 getFrequency()
 	{
-		return baseFrequency / divisor;
+		return (f64)(baseFrequency) / divisor;
 	}
-	void setFrequency(i32 frequency)
+	void setFrequency(f64 frequency)
 	{
-		i32 f = baseFrequency / frequency;
+		f64 f = baseFrequency / frequency;
 		PIT::frequency = frequency;
 		if (f < 1)
 		{

@@ -2,6 +2,7 @@ export module memory.Heap;
 import types;
 import memory.allocator;
 import memory.PageTableManager;
+import memory.PageTable;
 export namespace memory
 {
 	struct HeapSegment;

@@ -3,12 +3,23 @@ import types;
 import intrinsic0;
 export namespace APICTimer
 {
-	double timeSinceBoot{ 0.0 };
-	u64 ticks = 0;
-	u64 frequency = 0;
-	void sleepd(double seconds)
+	enum
 	{
-		double start = timeSinceBoot;
+		DISABLE = 0x10000,
+		PERIODIC = 0x20000,
+	};
+	volatile f64 timeSinceBoot{ 0.0 };
+	volatile u64 ticks = 0;
+	f64 frequency = 0;
+	void initialize()
+	{
+		timeSinceBoot = 0.0;
+		ticks = 0;
+		frequency = 0.0;
+	}
+	void sleepd(f64 seconds)
+	{
+		volatile f64 start = timeSinceBoot;
 		while (timeSinceBoot < start + seconds)
 		{
 			_mm_pause();

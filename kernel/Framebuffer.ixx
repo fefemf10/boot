@@ -18,7 +18,7 @@ export
 		u32 height;
 		u32 pixelsPerScanline;
 		GraphicsPixelFormat format;
-		void clear(u32 color)
+		void clear(u32 color) const
 		{
 			for (u32 i = 0; i < height; ++i)
 			{
@@ -29,7 +29,7 @@ export
 				}
 			}
 		}
-		void clearLine(i64 line, u32 color)
+		void clearLine(i64 line, u32 color) const
 		{
 			const u64 pixels = reinterpret_cast<u64>(baseAddress) + (line * pixelsPerScanline * 4);
 			for (u32 i = 0; i < width; i++)
@@ -37,12 +37,12 @@ export
 				reinterpret_cast<u32*>(pixels)[i] = color;
 			}
 		}
-		void clearPixel(i64 x, i64 y, u32 color)
+		void clearPixel(i64 x, i64 y, u32 color) const
 		{
 			const u64 pixels = reinterpret_cast<u64>(baseAddress) + (y * pixelsPerScanline * 4);
 			reinterpret_cast<u32*>(pixels)[x] = color;
 		}
-		void drawRectangle(i64 x, i64 y, i64 width, i64 height, u32 color)
+		void drawRectangle(i64 x, i64 y, i64 width, i64 height, u32 color) const
 		{
 			for (i32 i = y; i < y + height; ++i)
 			{

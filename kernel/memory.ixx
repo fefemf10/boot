@@ -1,6 +1,7 @@
 export module memory;
 import memory.allocator;
 import memory.descriptor;
+import memory.PageTable;
 import memory.PageTableManager;
 import memory.utils;
 import memory.Heap;

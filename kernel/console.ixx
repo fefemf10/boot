@@ -228,7 +228,14 @@ export namespace console
 		drawChar(c, currentPos);
 		moveCursorPosition(1, 0);
 	}
-	void print(const std::string_view str)
+	constexpr size_t utf8_codepoint_size(u8 c)
+	{
+		if ((c & 0b10000000) == 0) return 1;
+		if ((c & 0b11100000) == 0b11000000) return 2;
+		if ((c & 0b11110000) == 0b11100000) return 3;
+		return 4;
+	}
+	void print(std::string_view str)
 	{
 		std::_Unicode_codepoint_iterator s(str.cbegin(), str.cend());
 		while (*s)
@@ -245,7 +252,6 @@ export namespace console
 			++s;
 		}
 	}
-
 	void setOut(OUT outt)
 	{
 		out = outt;
@@ -575,7 +581,7 @@ export namespace console
 			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
 		}
 		if (size % 16 != 0)
-			puts("\n");
+			putc('\n');
 	}
 	void putregs(const cpuio::regs& regs)
 	{

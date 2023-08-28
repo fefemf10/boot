@@ -1,53 +1,13 @@
 export module memory.PageTableManager;
 import types;
+import memory.PageTable;
 import memory.utils;
 import memory.PageIndex;
 import memory.allocator;
-import sl.Flags;
-import sl.compare;
-import console;
+import memory.flags;
 
 export namespace memory
 {
-	enum class MemoryFlagsBits : u8
-	{
-		ePRESENT = 1,
-		eREAD_WRITE = 2,
-		eUSER_SUPERVISOR = 4,
-		eWRITE_THROUGH = 8,
-		eCACHE_DISABLE = 16
-	};
-	using MemoryFlags = Flags<MemoryFlagsBits>;
-	template <>
-	struct FlagTraits<MemoryFlagsBits>
-	{
-		static constexpr bool isBitmask = true;
-		static constexpr MemoryFlags allFlags =
-			MemoryFlagsBits::ePRESENT |
-			MemoryFlagsBits::eREAD_WRITE |
-			MemoryFlagsBits::eUSER_SUPERVISOR |
-			MemoryFlagsBits::eWRITE_THROUGH |
-			MemoryFlagsBits::eCACHE_DISABLE;
-	};
-	struct PageDirectoryEntry
-	{
-		u64 present : 1;
-		u64 readWrite : 1;
-		u64 userSupervisor : 1;
-		u64 writeThrough : 1;
-		u64 cacheDisable : 1;
-		u64 accessed : 1;
-		u64 dirty : 1;
-		u64 pageAttributeTable : 1;
-		u64 global : 1;
-		u64 available : 3;
-		u64 address : 52;
-	};
-	__declspec(align(0x1000)) struct PageTable
-	{
-		PageDirectoryEntry entries[512];
-	};
-
 	struct PageTableManager
 	{
 		PageTable* plm4;
@@ -56,7 +16,7 @@ export namespace memory
 		{
 
 		}
-		void fixedMapMemory(u64 allocStart, const void* physicalMemory, const void* virtualMemory, MemoryFlags flags = MemoryFlags(MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE))
+		void fixedMapMemory(u64 allocStart, const void* physicalMemory, const void* virtualMemory, MemoryFlagsBits flags = MemoryFlagsBits(MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE))
 		{
 			PageIndex index(reinterpret_cast<u64>(virtualMemory));
 			PageDirectoryEntry PDE = plm4->entries[index.pdp];
@@ -116,7 +76,7 @@ export namespace memory
 			PDE.cacheDisable = static_cast<bool>(flags & MemoryFlagsBits::eCACHE_DISABLE);
 			PT->entries[index.p] = PDE;
 		}
-		void mapMemory(const void* physicalMemory, const void* virtualMemory, MemoryFlags flags = MemoryFlags(MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE))
+		void mapMemory(const void* physicalMemory, const void* virtualMemory, MemoryFlagsBits flags = MemoryFlagsBits(MemoryFlagsBits::ePRESENT | MemoryFlagsBits::eREAD_WRITE))
 		{
 			PageIndex index(reinterpret_cast<u64>(virtualMemory));
 			PageDirectoryEntry PDE = plm4->entries[index.pdp];

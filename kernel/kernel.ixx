@@ -32,6 +32,9 @@ import sl.spinlock;
 import APICTimer;
 import sl.string_view;
 import sl.print;
+import HPET;
+import RTC;
+import FADT;
 [[noreturn]] void mainCRTStartup(BootInfo& bootInfo)
 {
 	framebuffer = bootInfo.fb;
@@ -43,7 +46,9 @@ import sl.print;
 	ISR::initialize();
 	IRQ::initialize();
 	cpuio::loadIDTR(&IDT::idtr);
-	//cpuio::getCPUFeatures(cpuio::features);
+	cpuio::getCPUFeatures(cpuio::features);
+	int cpuid[4];
+	__cpuid(cpuid, 0x00);
 	console::initialize();
 	serial::initialize();
 	memory::initialize(bootInfo);
@@ -52,11 +57,11 @@ import sl.print;
 	console::unicodeInit();
 	console::clear();
 	console::color = console::CYAN;
-	//console::putfeatures(cpuio::features);
-	//console::printf("%llx %llx %llx %llx %lli MiB\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks, memory::sizeRAM / 1024 / 1024);
-	PIT::setFrequency(10000);
-	PIT::timeSinceBoot = 0.0;
-	PIT::ticks = 0;
+	console::printf("%i %04c%04c%04c\n", cpuid[0], &cpuid[1], &cpuid[3], &cpuid[2]);
+	console::putfeatures(cpuio::features);
+	console::printf("%llx %llx %llx %llx %lli MiB\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks, memory::sizeRAM / 1024 / 1024);
+	PIT::initialize();
+	PIT::setFrequency(50);
 	if (!(bootInfo.RSDP.isValid() && bootInfo.RSDP.XSDT.header.isValid()))
 	{
 		console::printf("RSDP or XSDT invalid\n");
@@ -64,53 +69,43 @@ import sl.print;
 	}
 	ACPI::initialize(bootInfo.RSDP);
 	if (ACPI::madt->flags)
-		PIC::initialize();
+		PIC::deinitialize();
 	APIC::initialize();
 	_enable();
-	//int cpuid0[4];
-	//int cpuid1[4];
-	//__cpuid(cpuid0, 0x15);
-	//__cpuid(cpuid1, 0x16);
-	//console::printf("%i %i %i\n", cpuid0[0], cpuid0[1], cpuid0[2]);
-	//console::printf("%i %i %i\n", cpuid1[0], cpuid1[1], cpuid1[2]);
-	//APIC::lapics[0].write(APIC::LAPIC::DIVIDE_CONFIGURATION, 0x3);
-	//APIC::lapics[0].write(APIC::LAPIC::INITIAL_COUNT, 0xFFFFFFFF);
-	//PIT::sleep(1000);
-	//APIC::lapics[0].write(APIC::LAPIC::LVT_TIMER, 0x10000);
-	//u32 ticksIn10ms = 0xFFFFFFFF - APIC::lapics[0].read(APIC::LAPIC::CURRENT_COUNT);
-	//APIC::lapics[0].write(APIC::LAPIC::LVT_TIMER, 32 | 0x20022);
-	//APIC::lapics[0].write(APIC::LAPIC::DIVIDE_CONFIGURATION, 0x3);
-	//APIC::lapics[0].write(APIC::LAPIC::INITIAL_COUNT, ticksIn10ms);
-	//APICTimer::frequency = ticksIn10ms;
+	if (cpuid[0] >= 0x15)
+	{
+		int cpuid0[4];
+		__cpuid(cpuid0, 0x15);
+		console::printf("%i %i %i\n", cpuid0[0] & 0xFFFF, cpuid0[1] & 0xFFFF, cpuid0[2] & 0xFFFF);
+	}
+	APICTimer::initialize();
+	APIC::lapics[0].write(APIC::LAPIC::DIVIDE_CONFIGURATION, 0b11);
+	APIC::lapics[0].write(APIC::LAPIC::INITIAL_COUNT, 0xFFFFFFFF);
+	PIT::sleep(10);
+	APIC::lapics[0].write(APIC::LAPIC::LVT_TIMER, APICTimer::DISABLE);
+	u32 ticksIn10ms = 0xFFFFFFFF - APIC::lapics[0].read(APIC::LAPIC::CURRENT_COUNT);
+	APIC::lapics[0].write(APIC::LAPIC::LVT_TIMER, APICTimer::PERIODIC | 0x22);
+	APIC::lapics[0].write(APIC::LAPIC::DIVIDE_CONFIGURATION, 0b11);
+	APIC::lapics[0].write(APIC::LAPIC::INITIAL_COUNT, 10000);
+	APICTimer::frequency = 10000;
+	
+	console::printf("%u\n", 10000);
+	console::printf("%f\n", PIT::getFrequency());
+	console::printf("%f\n", APICTimer::frequency);
+	RTC::initialize();
+	RTC::read();
+	RTC::enable();
+	console::printf("%u:%u:%u %u.%u.%u\n", RTC::hours, RTC::minutes, RTC::seconds, RTC::day, RTC::month, RTC::year);
 	//APICTimer::ticks = 0;
 	//APICTimer::timeSinceBoot = 0.0;
-	//console::printf("%u\n", ticksIn10ms);
-	constexpr const std::string_view s("a");
-	std::_Unicode_codepoint_iterator s1(s.cbegin(), s.cend());
-	++s1;
-	const bool is = *s1 == '\0';
-	console::printf("%i\n", is);
-
-	while (1)
-	{
-		console::print("as");
-		//console::printf("%llu", PIT::ticks);
-		//i64 index = console::currentPos;
-		//console::setCursorPosition(index - index % console::width);
-	}
-	//while (true)
-	//{
-	//	//i64 index = console::currentPos;
-	//	//i64 cursorY = console::currentPos / console::width;
-	//	//console::printf("%i %i %i %i %i", 0, cursorY * font->charSize, framebuffer.width, font->charSize, 0x00000000);
-	//	//framebuffer.drawRectangle(0, cursorY * font->charSize, framebuffer.width, font->charSize, 0x00000000);
-	//	//console::setCursorPosition(index - index % console::width);
-	//	
-	//	console::printf("%llu %llu ", APICTimer::frequency, ticksIn10ms);
-	//	PIT::sleep(1000);
-	//	console::clearLine(console::currentPos);
-	//	PIT::sleep(1000);
-	//}
+	//PIT::ticks = 0;
+	//PIT::timeSinceBoot = 0.0;
+	//console::printf("%llu %llu %f %f\n", APICTimer::ticks, PIT::ticks, APICTimer::timeSinceBoot, PIT::timeSinceBoot);
+	console::printf("%llu %llu %f %f\n", APICTimer::ticks, PIT::ticks, APICTimer::timeSinceBoot, PIT::timeSinceBoot);
+	//console::setCursorPosition(0, console::currentPos.y);
+	_disable();
+	ACPI::hpet->initialize();
+	console::printf("%llu", ACPI::hpet->read(ACPI::HPET::Registers::GCID) >> 32);
 	//APIC::BSPInitialize(bootInfo);
 	//u64* a = new u64(5);
 	//u64* b = new u64(6);

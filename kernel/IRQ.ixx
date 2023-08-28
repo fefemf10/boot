@@ -1,4 +1,4 @@
-export module IRQ;
+﻿export module IRQ;
 import types;
 import IDT;
 import cpuio;
@@ -7,6 +7,10 @@ import APIC;
 import PIT;
 import intrinsic1;
 import APICTimer;
+import console;
+import serial;
+import sl.string_view;
+import RTC;
 export namespace IRQ
 {
 	extern "C" void irq0();
@@ -27,16 +31,14 @@ export namespace IRQ
 	extern "C" void irq15();
 	extern "C" void irqHandler(const cpuio::regs& regs)
 	{
-		size_t code = regs.interruptCode - 0x20;
+		const size_t code = regs.interruptCode - 0x20;
+		u8 status, keycode;
 		switch (code)
 		{
 		case 0:
 			PIT::tick();
 			break;
 		case 1:
-			u8 status;
-			u8 keycode;
-
 			status = __inbyte(keyboard::KEYBOARD_PORT::STATUS_PORT);
 			if (status & 0x01)
 			{
@@ -47,6 +49,11 @@ export namespace IRQ
 		case 2:
 			APICTimer::tick();
 			break;
+		case 8:
+			RTC::tick();
+			__outbyte(0x70, 0x0C);
+			__inbyte(0x71);
+			break;
 		}
 		APIC::lapics[0].write(APIC::LAPIC::Registers::EOI, 0);
 	}
@@ -54,14 +61,14 @@ export namespace IRQ
 	{
 		IDT::set(0x20, irq0);
 		IDT::set(0x21, irq1);
-		//IDT::set(0x22, irq2);
+		IDT::set(0x22, irq2);
 		//IDT::set(34, irq2);
 		//IDT::set(35, irq3);
 		//IDT::set(36, irq4);
 		//IDT::set(37, irq5);
 		//IDT::set(38, irq6);
 		//IDT::set(39, irq7);
-		//IDT::set(40, irq8);
+		IDT::set(0x28, irq8);
 		//IDT::set(41, irq9);
 		//IDT::set(42, irq10);
 		//IDT::set(43, irq11);

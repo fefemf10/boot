@@ -1,4 +1,4 @@
-export module hash.crc;
+﻿export module hash.crc;
 import types;
 export namespace hash::crc::table
 {

@@ -378,6 +378,27 @@
     <ClCompile Include="APICTimer.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="LAPIC.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="IOAPIC.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="SMP.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.PageTable.ixx">
+      <Filter>Исходные файлы\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.flags.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="HPET.ixx">
+      <Filter>Исходные файлы\ACPI</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC.ixx">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

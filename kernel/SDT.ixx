@@ -1,6 +1,5 @@
 export module SDT;
 import types;
-import memory.PageTableManager;
 export namespace ACPI
 {
 	struct SDT

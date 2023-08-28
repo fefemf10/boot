@@ -93,4 +93,14 @@ export namespace cpuio
 	{
 		__cpuid(reinterpret_cast<int*>(&features), 0x1);
 	}
+	void enableNMI()
+	{
+		__outbyte(0x70, __inbyte(0x70) & 0x7F);
+		__inbyte(0x71);
+	}
+	void disableNMI()
+	{
+		__outbyte(0x70, __inbyte(0x70) | 0x80);
+		__inbyte(0x71);
+	}
 }

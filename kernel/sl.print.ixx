@@ -78,14 +78,14 @@ export namespace std
 			break;
 		}
 
-		for (int _Idx = 1; _Idx < _Num_bytes; ++_Idx)
+		for (int i = 1; i < _Num_bytes; ++i)
 		{
-			if (first + _Idx >= last || static_cast<unsigned char>(first[_Idx]) < 0x80 || static_cast<unsigned char>(first[_Idx]) > 0xBF)
+			if (first + i >= last || static_cast<unsigned char>(first[i]) < 0x80 || static_cast<unsigned char>(first[i]) > 0xBF)
 			{
 				value = 0xFFFD;
-				return { first + _Idx, false };
+				return { first + i, false };
 			}
-			value = (value << 6) | (static_cast<unsigned char>(first[_Idx]) & 0b11'1111u);
+			value = (value << 6) | (static_cast<unsigned char>(first[i]) & 0b11'1111u);
 		}
 		return { first + _Num_bytes, true };
 	}
@@ -117,7 +117,7 @@ export namespace std
 		constexpr _Unicode_codepoint_iterator& operator++() noexcept
 		{
 			first = next;
-			if (first != last && *first != '\0' && *next != '\0')
+			if (first != last)
 			{
 				next = _Decode_utf(first, last, value).nextPtr;
 			}

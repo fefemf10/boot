@@ -37,6 +37,9 @@ export namespace PIC
 		//Masking all interrupt
 		__outbyte(PIC1_D, 0xFF);
 		__outbyte(PIC2_D, 0xFF);
+
+		__outbyte(0x22, 0x70);
+		__outbyte(0x23, 0x01);
 	}
 	void setMask(u8 index, u8 value)
 	{

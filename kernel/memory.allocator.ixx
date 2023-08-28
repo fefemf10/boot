@@ -2,8 +2,6 @@ export module memory.allocator;
 import types;
 import memory.utils;
 import memory.descriptor;
-import console;
-import cpuio;
 export namespace memory
 {
 	constinit const u64 PAGESIZE = 0x1000;

@@ -1,4 +1,4 @@
-export module sl.string_view;
+﻿export module sl.string_view;
 import sl.type;
 import sl.typetraits;
 import sl.chartraits;
@@ -30,8 +30,16 @@ export namespace std
 
 		constexpr basic_string_view() noexcept : m_data(), m_size(0) {}
 
-		constexpr basic_string_view(const basic_string_view&) noexcept = default;
-		constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
+		constexpr basic_string_view(const basic_string_view& strv) noexcept : m_data(strv.m_data), m_size(strv.m_size)
+		{
+
+		}
+		constexpr basic_string_view& operator=(const basic_string_view& strv) noexcept
+		{
+			m_data = strv.m_data;
+			m_size = strv.m_size;
+			return *this;
+		}
 
 		constexpr basic_string_view(const const_pointer str) : m_data(str), m_size(traits_type::length(str)) {}
 

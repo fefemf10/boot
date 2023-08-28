@@ -348,13 +348,17 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="HPET.ixx" />
     <ClCompile Include="intrinsic0.ixx" />
     <ClCompile Include="intrinsic1.ixx" />
     <ClCompile Include="intrinsic2.ixx" />
     <ClCompile Include="intrinsic3.ixx" />
     <ClCompile Include="intrinsicTypes.ixx" />
+    <ClCompile Include="IOAPIC.ixx" />
+    <ClCompile Include="LAPIC.ixx" />
     <ClCompile Include="MADT.ixx" />
     <ClCompile Include="MCFG.ixx" />
+    <ClCompile Include="memory.flags.ixx" />
     <ClCompile Include="memory.Heap.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -367,6 +371,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="memory.PageTable.ixx" />
     <ClCompile Include="pci.structures.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -452,6 +457,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="RTC.ixx" />
     <ClCompile Include="serial.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -496,6 +502,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="SDT.ixx" />
+    <ClCompile Include="SMP.ixx" />
     <ClCompile Include="string.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
