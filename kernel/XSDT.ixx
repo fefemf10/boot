@@ -3,7 +3,7 @@ import SDT;
 import FADT;
 export namespace ACPI
 {
-#pragma pack(1)
+#pragma pack(4)
 	struct XSDT
 	{
 		SDT header;

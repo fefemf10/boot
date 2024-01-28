@@ -4,7 +4,7 @@ import XSDT;
 import console;
 export namespace ACPI
 {
-#pragma pack(push, 1)
+#pragma pack(4)
 	struct RSDP
 	{
 		u8 signature[8];
@@ -31,5 +31,4 @@ export namespace ACPI
 			return sum1 == 0 && sum2 == 0;
 		}
 	};
-#pragma pack(pop,1)
 }

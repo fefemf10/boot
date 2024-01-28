@@ -349,12 +349,14 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="HPET.ixx" />
+    <ClCompile Include="HPETTimer.ixx" />
     <ClCompile Include="intrinsic0.ixx" />
     <ClCompile Include="intrinsic1.ixx" />
     <ClCompile Include="intrinsic2.ixx" />
     <ClCompile Include="intrinsic3.ixx" />
     <ClCompile Include="intrinsicTypes.ixx" />
     <ClCompile Include="IOAPIC.ixx" />
+    <ClCompile Include="IRQ.Number.ixx" />
     <ClCompile Include="LAPIC.ixx" />
     <ClCompile Include="MADT.ixx" />
     <ClCompile Include="MCFG.ixx" />

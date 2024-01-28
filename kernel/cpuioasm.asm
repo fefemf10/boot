@@ -3,6 +3,7 @@ public enableSSE as '?enableSSE@cpuio@@YAXXZ::<!cpuio>'
 public enableAVX as '?enableAVX@cpuio@@YAXXZ::<!cpuio>'
 public loadIDTR as '?loadIDTR@cpuio@@YAXPEAX@Z::<!cpuio>'
 public loadGDT as '?loadGDT@cpuio@@YAXPEAX@Z::<!cpuio>'
+public isEnabledInterrupt as '?isEnabledInterrupt@cpuio@@YA_NXZ::<!cpuio>'
 
 section '.text$mn' code readable executable
 use16
@@ -48,3 +49,10 @@ loadGDT:
 	push rax
 	push rbp
 	retfq
+
+isEnabledInterrupt:
+	pushfq
+	pop rax
+	and rax, 1000000000b
+	shr rax, 9
+	ret

@@ -17,13 +17,15 @@ export namespace APIC
 	{
 		numlapic = 0;
 		numioapic = 0;
+		//current lapic
 		APIC::lapic = reinterpret_cast<void*>(ACPI::madt->lapic);
+		//find ioapic and local apic override
 		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
 		{
 			if (ACPI::madt->entries[i].type == ACPI::Type::IOAPIC)
 			{
 				ACPI::IOAPIC* ioapic = reinterpret_cast<ACPI::IOAPIC*>(&ACPI::madt->entries[i]);
-				if (ioapic->length == 12)
+				if (ioapic->isValid())
 				{
 					APIC::ioapics[numioapic++].initialize(reinterpret_cast<void*>(ioapic->address), ioapic->GSIBase);
 				}
@@ -31,25 +33,29 @@ export namespace APIC
 			if (ACPI::madt->entries[i].type == ACPI::Type::LAPICO)
 			{
 				ACPI::LAPICO* lapico = reinterpret_cast<ACPI::LAPICO*>(&ACPI::madt->entries[i]);
-				if (lapico->length == 12)
+				if (lapico->isValid())
 				{
 					APIC::lapic = lapico->lapic;
 				}
 			}
 		}
+		//init currect logical core by index numlapic 0
 		APIC::lapics[numlapic++].initialize(APIC::lapic);
+
 		isDiscrete = !(APIC::lapics[0].version & 0x10);
+		//find plalic == find logical cores on cpu
 		for (size_t i = 0; i < ACPI::madt->sizeEntries(); i++)
 		{
 			if (ACPI::madt->entries[i].type == ACPI::Type::PLAPIC)
 			{
 				ACPI::PLAPIC* plapic = reinterpret_cast<ACPI::PLAPIC*>(&ACPI::madt->entries[i]);
-				if (plapic->length == 8 && plapic->flags == 1 && APIC::lapics[0].id != plapic->apicId)
+				if (plapic->isValid() && plapic->isOnline() && APIC::lapics[0].id != plapic->apicId)
 				{
 					APIC::lapics[numlapic++].initialize(plapic->apicId, plapic->processorId);
 				}
 			}
 		}
+		//mask all interrupt
 		for (size_t i = 0; i < numioapic; i++)
 		{
 			for (size_t j = 0; j < APIC::ioapics[i].redirectionSize; j++)
@@ -59,32 +65,8 @@ export namespace APIC
 				APIC::ioapics[i].writeREDTBL(j, entry);
 			}
 		}
-		APIC::lapics[0].write(APIC::LAPIC::SPURIOUS_INTERRUPT_VECTOR, 0x1FF);
-		APIC::lapics[0].write(APIC::LAPIC::TASK_PRIORITY, 0);
-		APIC::IOAPIC::REDTBLEntry RTCInterrupt{};
-		RTCInterrupt.vector = 0x28;
-		RTCInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
-		RTCInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
-		RTCInterrupt.pinPolarity = 0;
-		RTCInterrupt.destination = APIC::lapics[0].id;
-		RTCInterrupt.mask = 0;
-		APIC::ioapics[0].writeREDTBL(8, RTCInterrupt);
-		APIC::IOAPIC::REDTBLEntry PITInterrupt{};
-		PITInterrupt.vector = 0x20;
-		PITInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
-		PITInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
-		PITInterrupt.pinPolarity = 0;
-		PITInterrupt.destination = APIC::lapics[0].id;
-		PITInterrupt.mask = 0;
-		APIC::ioapics[0].writeREDTBL(2, PITInterrupt);
-		APIC::IOAPIC::REDTBLEntry keyboardInterrupt{};
-		keyboardInterrupt.vector = 0x21;
-		keyboardInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
-		keyboardInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
-		keyboardInterrupt.pinPolarity = 0;
-		keyboardInterrupt.destination = APIC::lapics[0].id;
-		keyboardInterrupt.mask = 0;
-		APIC::ioapics[0].writeREDTBL(1, keyboardInterrupt);
+		APIC::lapics[0].write(APIC::LAPIC::SPURIOUS_INTERRUPT_VECTOR, 0xFF | 0x100); // 0xFF spurious interrupt 0x100 enable APIC
+		APIC::lapics[0].write(APIC::LAPIC::TASK_PRIORITY, 0); // lapic will ignore interrupts below this level 0
 	}
 	extern volatile u8 aprunning = 0;  // count how many APs have started
 	extern u8 bspdone = 0;      // BSP id and spinlock flag

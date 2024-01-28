@@ -13,10 +13,10 @@ export namespace PIT
 	u16 divisor = 65535;
 	void initialize()
 	{
-		timeSinceBoot = 0.0;
 		ticks = 0;
-		frequency = 0.0;
 		divisor = 65535;
+		timeSinceBoot = 0.0;
+		frequency = 0.0;
 	}
 	void sleepd(f64 seconds)
 	{

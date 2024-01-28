@@ -2,6 +2,9 @@ export module SDT;
 import types;
 export namespace ACPI
 {
+	/// <summary>
+	/// System Description Table
+	/// </summary>
 	struct SDT
 	{
 		char signature[4];

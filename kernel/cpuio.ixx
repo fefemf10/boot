@@ -93,6 +93,7 @@ export namespace cpuio
 	{
 		__cpuid(reinterpret_cast<int*>(&features), 0x1);
 	}
+	bool isEnabledInterrupt();
 	void enableNMI()
 	{
 		__outbyte(0x70, __inbyte(0x70) & 0x7F);

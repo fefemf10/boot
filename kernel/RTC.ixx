@@ -2,6 +2,7 @@ export module RTC;
 import types;
 import intrinsic0;
 import intrinsic1;
+import cpuio;
 export namespace RTC
 {
 	enum Registers
@@ -21,7 +22,7 @@ export namespace RTC
 }
 namespace RTC
 {
-	constexpr auto CURRENT_YEAR = 2023;
+	constexpr auto CURRENT_YEAR = 2024;
 	int get_update_in_progress_flag()
 	{
 		__outbyte(0x70, 0x0A);
@@ -57,12 +58,23 @@ export namespace RTC
 	}
 	void enable()
 	{
+		bool isEnabledInterrupt = cpuio::isEnabledInterrupt();
 		_disable();
 		__outbyte(0x70, 0x8B);
 		char prev = __inbyte(0x71);
 		__outbyte(0x70, 0x8B);
+		__outbyte(0x71, prev | 0x40);
+		if(isEnabledInterrupt) _enable();
+	}
+	void changeRate()
+	{
+		bool isEnabledInterrupt = cpuio::isEnabledInterrupt();
+		_disable();
+		__outbyte(0x70, 0x8A);
+		char prev = __inbyte(0x71);
+		__outbyte(0x70, 0x8A);
 		__outbyte(0x71, (prev & 0xF0) | rate);
-		_enable();
+		if (isEnabledInterrupt) _enable();
 	}
 	void tick()
 	{

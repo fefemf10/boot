@@ -199,6 +199,17 @@ export namespace console
 		currentPos.x = 0;
 		framebuffer.drawRectangle(0, currentPos.y * font->charSize, countChar * 8, font->charSize, clearColor);
 	}
+	void clearLine(u16 y, u8 countChar)
+	{
+		currentPos.x = 0;
+		framebuffer.drawRectangle(0, y * font->charSize, countChar * 8, font->charSize, clearColor);
+	}
+	void clearBox(u16 x, u16 y, u8 width, u8 height)
+	{
+		currentPos.x = x;
+		currentPos.y = y;
+		framebuffer.drawRectangle(x * 8, y * font->charSize, width * 8, height * font->charSize, clearColor);
+	}
 	void clearGlyph(Point position)
 	{
 		framebuffer.drawRectangle(position.x * 8, position.y * font->charSize, 8, font->charSize, clearColor);
