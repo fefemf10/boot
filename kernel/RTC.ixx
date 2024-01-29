@@ -68,6 +68,7 @@ export namespace RTC
 	}
 	void changeRate()
 	{
+		rate &= 0x0F;
 		bool isEnabledInterrupt = cpuio::isEnabledInterrupt();
 		_disable();
 		__outbyte(0x70, 0x8A);

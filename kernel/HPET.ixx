@@ -98,7 +98,7 @@ export namespace ACPI
 					mcv.type = true;
 					for (size_t j = 0; j < 32; j++)
 					{
-						if (((mcv.intRouteCapability >> j) & 1))
+						if (((mcv.intRouteCapability >> j) & 1) && j > 2 && j != 8)
 						{
 							mcv.intRoute = j; //enable IRQ0
 							mcv.valueSet = true;
