@@ -21,12 +21,13 @@ export
 		u64 mapEntries;
 		u64 mapSize;
 		u64 descriptorSize;
-		MapEntry memoryMapEntries[4];
+		MapEntry memoryMapEntries[5];
 		u64 rsv;
 		ACPI::RSDP& RSDP;
 		//stack kernel
 		//kernel
 		//bootinfo
 		//font
+		//VHD RAMDISK 32MB
 	};
 }

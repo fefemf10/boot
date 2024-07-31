@@ -243,6 +243,9 @@ fasm $(ProjectDir)apinit.asm</Command>
     </FASM>
     <ClCompile Include="APICTimer.ixx" />
     <ClCompile Include="BootInfo.ixx" />
+    <ClCompile Include="disk.layout.gpt.ixx" />
+    <ClCompile Include="disk.layout.mbr.ixx" />
+    <ClCompile Include="disk.RAMDisk.ixx" />
     <ClCompile Include="driver.AHCI.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -255,6 +258,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="driver.RAMDisk.ixx" />
     <ClCompile Include="FADT.ixx" />
     <ClCompile Include="fltused.ixx" />
     <ClCompile Include="Font.ixx" />
@@ -267,6 +271,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="fs.FAT32.structures.ixx" />
     <ClCompile Include="GAS.ixx" />
     <ClCompile Include="glm.geometric.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -529,10 +534,12 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="vfs.directory.ixx" />
     <ClCompile Include="vfs.file.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="vfs.filesystem.ixx" />
     <ClCompile Include="XSDT.ixx" />
   </ItemGroup>
   <ItemGroup>

@@ -124,7 +124,7 @@ struct BootInfo
 	uint64_t mapEntries;
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
-	MapEntry memoryMapEntries[4];
+	MapEntry memoryMapEntries[5];
 	uint64_t rsv;
 	void* ACPITable;
 };
@@ -145,6 +145,9 @@ uint64_t numberOfPagesBootInfo;
 void* fontAddress;
 uint64_t fontSize;
 uint64_t numberOfPagesFont;
+void* ramDiskAddress;
+uint64_t ramDiskSize;
+uint64_t numberOfPagesRamDisk;
 
 constexpr const uint64_t BLOCKSIZE = 12;
 constexpr uint64_t countPages(uint64_t size)
@@ -160,7 +163,6 @@ PSF1Font* loadPSF1Font(efi::FileHandle directory, const char16_t* path, efi::Han
 	BS->allocatePool(efi::MemoryType::LOADER_CODE, sizeof(efi::FileInfo) + 128, (void**)&info);
 	uint64_t sizeOfInfo = sizeof(efi::FileInfo) + 128;
 	font->getInfo(font, &efi::FILE_INFO, &sizeOfInfo, info);
-	numberOfPagesFont = 3;
 	fontSize = info->fileSize;
 	BS->freePool(info);
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesFont, fontAddress);
@@ -199,17 +201,20 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 		file->read(file, &sizeForRead, &sections[i]);
 	}
 	
-	numberOfPagesStack = countPages(pe.optionalHeader.sizeOfStackCommit);
-	numberOfPagesKernel = countPages(pe.optionalHeader.sizeOfImage);
-	numberOfPagesBootInfo = countPages(sizeof(BootInfo));
-
 	stackSize = pe.optionalHeader.sizeOfStackCommit;
 	kernelSize = pe.optionalHeader.sizeOfImage;
 	bootInfoSize = sizeof(BootInfo);
 
+	numberOfPagesStack = countPages(stackSize);
+	numberOfPagesKernel = countPages(kernelSize);
+	numberOfPagesBootInfo = countPages(bootInfoSize);
+	numberOfPagesFont = 3;
+	
+
 	kernelAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(stackAddress) + (numberOfPagesStack << BLOCKSIZE));
 	bootInfoAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(kernelAddress) + (numberOfPagesKernel << BLOCKSIZE));
 	fontAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(bootInfoAddress) + (numberOfPagesBootInfo << BLOCKSIZE));
+	ramDiskAddress = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(fontAddress) + (numberOfPagesFont << BLOCKSIZE));
 	
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesStack, stackAddress);
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesKernel, kernelAddress);
@@ -301,6 +306,16 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	PE::PE kernelPE;
 	loadPE(kernel, kernelPE);
 	PSF1Font* newFont = loadPSF1Font(volume, u"zap-ext-vga16.psf", imageHandle);
+	efi::FileHandle ramDiskFile = loadFile(volume, u"ramdisk.vhd", imageHandle);
+	efi::FileInfo* info;
+	BS->allocatePool(efi::MemoryType::LOADER_CODE, sizeof(efi::FileInfo) + 128, (void**)&info);
+	uint64_t sizeOfInfo = sizeof(efi::FileInfo) + 128;
+	ramDiskFile->getInfo(ramDiskFile, &efi::FILE_INFO, &sizeOfInfo, info);
+	ramDiskSize = info->fileSize;
+	BS->freePool(info);
+	readSize = ramDiskSize;
+	ramDiskFile->read(ramDiskFile, &readSize, ramDiskAddress);
+	numberOfPagesRamDisk = countPages(ramDiskSize);
 	efi::MemoryDescriptor* map{};
 	uint64_t mapSize{}, mapKey{};
 	uint64_t descriptorSize{};
@@ -334,7 +349,11 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	bootInfo.memoryMapEntries[3].address = fontAddress;
 	bootInfo.memoryMapEntries[3].sizeOfBytes = fontSize;
 	bootInfo.memoryMapEntries[3].numberOfPages = numberOfPagesFont;
-	
+	//VHD RAMDISK 32MB
+	bootInfo.memoryMapEntries[4].address = ramDiskAddress;
+	bootInfo.memoryMapEntries[4].sizeOfBytes = ramDiskSize;
+	bootInfo.memoryMapEntries[4].numberOfPages = numberOfPagesRamDisk;
+
 	for (size_t i = 0; i < SS->numberOfTableEntries; i++)
 	{
 		if (SS->configurationTables[i].vendorGUID == efi::ACPI_20)

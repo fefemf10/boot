@@ -1,13 +1,11 @@
-export module vfs;
+export module vfs.File;
+import types;
 
 export namespace vfs
 {
-	struct PhysicalDisk
-	{
-		 
-	};
-	struct Entity
+	struct File
 	{
 		char8_t name;
+
 	};
 }
