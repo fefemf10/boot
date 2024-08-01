@@ -429,11 +429,17 @@
     <ClCompile Include="vfs.filesystem.ixx">
       <Filter>Исходные файлы\disk\vfs</Filter>
     </ClCompile>
-    <ClCompile Include="disk.RAMDisk.ixx">
+    <ClCompile Include="disk.PhysicalRAMDisk.ixx">
       <Filter>Исходные файлы\disk</Filter>
     </ClCompile>
     <ClCompile Include="driver.RAMDisk.ixx">
       <Filter>Исходные файлы\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="disk.VirtualRAMDisk.ixx">
+      <Filter>Исходные файлы\disk</Filter>
+    </ClCompile>
+    <ClCompile Include="disk.Manager.ixx">
+      <Filter>Исходные файлы\disk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

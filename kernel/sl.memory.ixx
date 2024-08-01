@@ -171,14 +171,87 @@ namespace std
 	template <class _Void, class... _Types>
 	struct _Has_no_allocator_construct : true_type {};
 
-	template <class _Alloc, class _Ptr, class... _Args>
+	template <class T, class _Ptr, class... _Args>
 	struct _Has_no_allocator_construct<
-		void_t<decltype(std::declval<_Alloc&>().construct(std::declval<_Ptr>(), std::declval<_Args>()...))>, _Alloc, _Ptr, _Args...> : false_type {};
+		void_t<decltype(std::declval<T&>().construct(std::declval<_Ptr>(), std::declval<_Args>()...))>, T, _Ptr, _Args...> : false_type {};
 
 	
+	template <size_t _Align, class _Traits = _Default_allocate_traits>
+	__declspec(allocator) constexpr void* _Allocate(const size_t _Bytes) {
+		// allocate _Bytes
+		if (_Bytes == 0) {
+			return nullptr;
+		}
 
-	template <class _Alloc>
+		if (std::is_constant_evaluated()) {
+			return _Traits::_Allocate(_Bytes);
+		}
+
+		if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+			size_t _Passed_align = _Align;
+			if (_Bytes >= _Big_allocation_threshold) {
+				// boost the alignment of big allocations to help autovectorization
+				_Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+			}
+			return _Traits::_Allocate_aligned(_Bytes, _Passed_align);
+		}
+		else
+		{
+			if (_Bytes >= _Big_allocation_threshold) {
+				// boost the alignment of big allocations to help autovectorization
+				return _Allocate_manually_vector_aligned<_Traits>(_Bytes);
+			}
+			return _Traits::_Allocate(_Bytes);
+		}
+	}
+
+	template <size_t _Align>
+	constexpr void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
+		// deallocate storage allocated by _Allocate
+		if (std::is_constant_evaluated()) {
+			::operator delete(_Ptr);
+			return;
+		}
+
+		if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+			size_t _Passed_align = _Align;
+			if (_Bytes >= _Big_allocation_threshold) {
+				// boost the alignment of big allocations to help autovectorization
+				_Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+			}
+			::operator delete(_Ptr, _Bytes, align_val_t{ _Passed_align });
+		}
+		else
+		{
+			if (_Bytes >= _Big_allocation_threshold) {
+				// boost the alignment of big allocations to help autovectorization
+				_Adjust_manually_vector_aligned(_Ptr, _Bytes);
+			}
+			::operator delete(_Ptr, _Bytes);
+		}
+	}
+
+	template <size_t _Ty_size>
+	[[nodiscard]] constexpr size_t _Get_size_of_n(const size_t _Count) {
+		constexpr bool _Overflow_is_possible = _Ty_size > 1;
+
+		if constexpr (_Overflow_is_possible) {
+			constexpr size_t _Max_possible = static_cast<size_t>(-1) / _Ty_size;
+			if (_Count > _Max_possible) {
+				_Throw_bad_array_new_length(); // multiply overflow
+			}
+		}
+
+		return _Count * _Ty_size;
+	}
+
+	template <class T>
+	inline constexpr size_t _New_alignof = (std::max)(alignof(T), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+
+
+	template <class T>
 	struct allocator_traits;
+
 	template <class T>
 	struct _Default_allocator_traits
 	{
@@ -203,6 +276,64 @@ namespace std
 
 		template <class U>
 		using rebind_traits = allocator_traits<allocator<U>>;
+
+		[[nodiscard]] static constexpr __declspec(allocator) pointer allocate(T& alloc, const size_type _Count)
+		{
+			if (std::is_constant_evaluated()) {
+				return alloc.allocate(_Count);
+			}
+			else
+			{
+				(void)alloc;
+				return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
+			}
+		}
+
+		[[nodiscard]] static constexpr __declspec(allocator) pointer allocate(T& alloc, const size_type _Count, const_void_pointer)
+		{
+			if (std::is_constant_evaluated()) {
+				return alloc.allocate(_Count);
+			}
+			else
+			{
+				(void)alloc;
+				return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
+			}
+		}
+
+		[[nodiscard]] static constexpr allocation_result<pointer, size_type> allocate_at_least(T& alloc,  const size_type _Count) {
+			return { alloc.allocate(_Count), _Count };
+		}
+
+		static constexpr void deallocate(T& alloc, const pointer _Ptr, const size_type _Count) {
+			// no overflow check on the following multiply; we assume _Allocate did that check
+			if (std::is_constant_evaluated()) {
+				alloc.deallocate(_Ptr, _Count);
+			}
+			else
+			{
+				(void)alloc;
+				std::_Deallocate<_New_alignof<value_type>>(_Ptr, sizeof(value_type) * _Count);
+			}
+		}
+
+		template <class _Objty, class... _Types>
+		static constexpr void construct(T&, _Objty* const _Ptr, _Types&&... _Args) {
+			std::construct_at(_Ptr, _STD forward<_Types>(_Args)...);
+		}
+
+		template <class _Uty>
+		static constexpr void destroy(T&, _Uty* const _Ptr) {
+			std::destroy_at(_Ptr);
+		}
+
+		[[nodiscard]] static constexpr size_type max_size(const T&) noexcept {
+			return static_cast<size_t>(-1) / sizeof(value_type);
+		}
+
+		[[nodiscard]] static constexpr T select_on_container_copy_construction(const T& alloc) {
+			return alloc;
+		}
 	};
 
 	template <class T>
@@ -234,9 +365,9 @@ namespace std
 
 export namespace std
 {
-	template <class _Alloc, class _Ptr, class... _Args>
+	template <class T, class _Ptr, class... _Args>
 	using _Uses_default_construct =
-		disjunction<_Is_default_allocator<_Alloc>, _Has_no_allocator_construct<void, _Alloc, _Ptr, _Args...>>;
+		disjunction<_Is_default_allocator<T>, _Has_no_allocator_construct<void, T, _Ptr, _Args...>>;
 
 	template <class T>
 	struct allocator_traits : conditional_t<_Is_default_allocator<T>::value, _Default_allocator_traits<T>,

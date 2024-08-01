@@ -9,15 +9,23 @@ export namespace driver
 		RAMDisk(void* memory, u64 sectorCount) : memory(memory), sectorCount(sectorCount){}
 		void read(const u64 lba, const u32 sectorCount, void* buffer)
 		{
-			if (lba > this->sectorCount || lba + sectorCount > this->sectorCount)
+			if (lba + sectorCount > this->sectorCount || sectorCount <= 0)
 				return;
 			memory::copy(buffer, reinterpret_cast<u8*>(memory) + lba * sectorSize, sectorCount * sectorSize);
 		}
-		void write(const u64 lba, const u32 sectorCount, void* buffer)
+		void write(const u64 lba, const u32 sectorCount, const void* buffer)
 		{
-			if (lba > this->sectorCount || lba + sectorCount > this->sectorCount)
+			if (lba + sectorCount > this->sectorCount || sectorCount <= 0)
 				return;
 			memory::copy(reinterpret_cast<u8*>(memory) + lba * sectorSize, buffer, sectorCount * sectorSize);
+		}
+		const u64 getSectorCount() const
+		{
+			return sectorCount;
+		}
+		const u16 getSectorSize() const
+		{
+			return sectorSize;
 		}
 	private:
 		void* memory;

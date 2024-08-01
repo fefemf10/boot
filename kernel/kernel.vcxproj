@@ -245,7 +245,9 @@ fasm $(ProjectDir)apinit.asm</Command>
     <ClCompile Include="BootInfo.ixx" />
     <ClCompile Include="disk.layout.gpt.ixx" />
     <ClCompile Include="disk.layout.mbr.ixx" />
-    <ClCompile Include="disk.RAMDisk.ixx" />
+    <ClCompile Include="disk.Manager.ixx" />
+    <ClCompile Include="disk.PhysicalRAMDisk.ixx" />
+    <ClCompile Include="disk.VirtualRAMDisk.ixx" />
     <ClCompile Include="driver.AHCI.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

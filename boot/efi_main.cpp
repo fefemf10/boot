@@ -314,6 +314,7 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	ramDiskSize = info->fileSize;
 	BS->freePool(info);
 	readSize = ramDiskSize;
+	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesRamDisk, ramDiskAddress);
 	ramDiskFile->read(ramDiskFile, &readSize, ramDiskAddress);
 	numberOfPagesRamDisk = countPages(ramDiskSize);
 	efi::MemoryDescriptor* map{};

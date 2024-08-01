@@ -23,6 +23,10 @@ export namespace disk::layout::gpt
 			u8 rsv6;
 		} attributes;
 		char8_t partitionName[72];
+		const bool isUsed() const
+		{
+			return partitionTypeGUID[0] || partitionTypeGUID[1];
+		}
 	};
 	struct GPT
 	{
