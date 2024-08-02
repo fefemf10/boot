@@ -14,6 +14,8 @@ export namespace std
 	template <class From, class To>
 	concept convertible_to = is_convertible_v<From, To>&& requires {static_cast<To>(declval<From>()); };
 
+	template <class T> concept cis_union =  __is_union(T);
+
 	template <class From, class To>
 	concept _Implicitly_convertible_to = is_convertible_v<From, To>;
 

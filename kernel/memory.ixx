@@ -42,24 +42,24 @@ export namespace memory
 			const Descriptor* descriptor = (Descriptor*)((u64)bootInfo.map + (i * bootInfo.descriptorSize));
 			switch (descriptor->type)
 			{
-			case 0:
-			case 5:
-			case 6:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-			case 12:
-			case 13:
-			case 14:
-			case 15:
+			case Descriptor::RESERVEDMEMORY_TYPE:
+			case Descriptor::RUNTIMESERVICES_CODE:
+			case Descriptor::RUNTIMESERVICES_DATA:
+			case Descriptor::UNUSABLE_MEMORY:
+			case Descriptor::ACPIRECLAIM_MEMORY:
+			case Descriptor::ACPIMEMORYNVS:
+			case Descriptor::MEMORYMAPPEDIO:
+			case Descriptor::MEMORYMAPPEDIOPORTSPACE:
+			case Descriptor::PALCODE:
+			case Descriptor::PERSISTENT_MEMORY:
+			case Descriptor::MAXMEMORY_TYPE:
 				allocator::reserveBlocks(descriptor->physicalAddress, descriptor->numberOfPages);
 				break;
 			}
-			
 		}
 		
 		allocator::reserveBlocks(nullptr, 1);
+		//countPagesForInitAP check efi_main.cpp in boot project
 		allocator::setRegion((const void*)0x1000, 5);
 		for (size_t i = 0; i < 4; i++)
 		{

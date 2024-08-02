@@ -38,7 +38,7 @@ import RTC;
 import FADT;
 import IOAPIC;
 import HPETTimer;
-[[noreturn]] void mainCRTStartup(BootInfo& bootInfo)
+void mainCRTStartup(BootInfo& bootInfo)
 {
 	framebuffer = bootInfo.fb;
 	font = bootInfo.font;
@@ -57,10 +57,12 @@ import HPETTimer;
 	console::unicodeInit();
 	console::clear();
 	console::color = console::CYAN;
+	console::printf("%llx\n", &bootInfo);
+	console::printf("%llx\n", bootInfo.memoryMapEntries[1].address);
+	console::printf("%llx\n", &mainCRTStartup);
 	console::putfeatures(cpuio::features);
 	console::printf("%llx %llx %llx %llx %lli MiB\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks, memory::sizeRAM / 1024 / 1024);
-	PIT::initialize();
-	PIT::setFrequency(1000);
+	
 	if (!(bootInfo.RSDP.isValid() && bootInfo.RSDP.XSDT.header.isValid()))
 	{
 		console::printf("RSDP or XSDT invalid\n");
@@ -70,38 +72,29 @@ import HPETTimer;
 	if (ACPI::madt->flags)
 		PIC::deinitialize();
 	APIC::initialize();
-	IRQ::initialize();
-	_enable();
-	/*APIC::IOAPIC::REDTBLEntry PITInterrupt = APIC::ioapics[0].readREDTBL(2);
-	PITInterrupt.mask = 1;
-	APIC::ioapics[0].writeREDTBL(2, PITInterrupt);*/
-	RTC::initialize();
-	RTC::changeRate();
-	RTC::enable();
-	RTC::read();
-	
+	PIT::initialize();
+	PIT::setFrequency(100);
 	ACPI::hpet->initialize();
-	APIC::IOAPIC::REDTBLEntry hpetInterrupt{};
-	hpetInterrupt.vector = IRQ::Number::HPET;
-	hpetInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
-	hpetInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
-	hpetInterrupt.pinPolarity = 0;
-	hpetInterrupt.destination = APIC::lapics[0].id;
-	hpetInterrupt.mask = 0;
-	APIC::ioapics[0].writeREDTBL(ACPI::currentTimerIRQLine, hpetInterrupt);
-	console::printf("%u %u\n", ACPI::currentTimerIRQLine, ACPI::indexCurrentTimer);
-	HPETTimer::initialize();
 	HPETTimer::frequency = 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 100000;
-	console::printf("HPET frequency: %.2f MHz tick = %f ns\n", 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 1000000, 1.0 / (1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod) * 1000000000);
+	ACPI::hpet->enableTimerN(ACPI::indexCurrentTimer);
 	ACPI::hpet->writeTimerComparatorN(ACPI::indexCurrentTimer, ACPI::hpet->readMainTimer() + 100000);
 	ACPI::hpet->writeTimerComparatorN(ACPI::indexCurrentTimer, 100000);
-	ACPI::hpet->enableTimerN(ACPI::indexCurrentTimer);
 	ACPI::hpet->enable();
+	HPETTimer::initialize();
+	RTC::initialize();
+	RTC::changeRate();
+	RTC::read();
+	IRQ::initialize();
+	_enable();
+
+	
+	//console::printf("HPET frequency: %.2f MHz tick = %f ns\n", 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 1000000, 1.0 / (1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod) * 1000000000);
+	
 	/*console::printf("%llu\n", ACPI::hpet->readTimerComparatorN(ACPI::indexCurrentTimer));
 	console::printf("%llu %llu\n", ACPI::currentTimerIRQLine, ACPI::indexCurrentTimer);*/
 	/*RTC::read();
 	u32 secondsStart = RTC::minutes * 60 + RTC::seconds;*/
-	APICTimer::initialize();
+	/*APICTimer::initialize();
 	APIC::lapics[0].write(APIC::LAPIC::DIVIDE_CONFIGURATION, 0b0);
 	APIC::lapics[0].write(APIC::LAPIC::INITIAL_COUNT, 0xFFFFFFFF);
 	HPETTimer::sleep(1);
@@ -111,19 +104,7 @@ import HPETTimer;
 	APIC::lapics[0].write(APIC::LAPIC::DIVIDE_CONFIGURATION, 0b0);
 	APIC::lapics[0].write(APIC::LAPIC::INITIAL_COUNT, ticksIn10ms);
 	APICTimer::frequency = HPETTimer::frequency;
-	console::printf("%u\n", ticksIn10ms);
-	while (true)
-	{
-		/*RTC::read();
-		u32 secondsCurrent = RTC::minutes * 60 + RTC::seconds;*/
-		console::printf("RTC: %llu %f\n", RTC::ticks, RTC::timeSinceBoot);
-		console::printf("PIT: %llu %f\n", PIT::ticks, PIT::timeSinceBoot);
-		console::printf("APIC: %llu %f\n", APICTimer::ticks, APICTimer::timeSinceBoot);
-		console::printf("HPET: %llu %f\n", HPETTimer::ticks, HPETTimer::timeSinceBoot);
-		console::printf("HPETMain: %llu %f\n", ACPI::hpet->readMainTimer(), ACPI::hpet->readMainTimer() / 1000000000000000.0 * ACPI::hpet->getGCID().counterClkPeriod);
-		HPETTimer::sleep(1);
-		console::clearBox(0, 21, 60, 5);
-	}
+	console::printf("%u\n", ticksIn10ms);*/
 	//APIC::BSPInitialize(bootInfo);
 	//u64* a = new u64(5);
 	//u64* b = new u64(6);
@@ -138,6 +119,5 @@ import HPETTimer;
 	//delete b;
 	//a = new u64(10);
 	//console::printf(u8"%llx %llx %llx\n", *a, a, *b);
-
 	while (true) _mm_pause();
 }

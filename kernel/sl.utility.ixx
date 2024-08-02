@@ -3,6 +3,8 @@ import sl.typetraits;
 import sl.bit;
 import sl.type;
 import sl.concepts;
+import sl.compare;
+import sl.typetraits;
 namespace std
 {
 	template <class T>
@@ -961,4 +963,512 @@ export namespace std
 
 	template <class T>
 	using _Enable_if_execution_policy_t = typename remove_reference_t<T>::_Standard_execution_policy;
+
+	template <class _Iter>
+	constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
+
+	template <class _Iter>
+	[[nodiscard]] constexpr auto _To_address(const _Iter& _Val) noexcept
+	{
+		return to_address(_Val);
+	}
+
+	template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
+	struct _Unwrap_enum { // if _Elem is an enum, gets its underlying type; otherwise leaves _Elem unchanged
+		using type = underlying_type_t<_Elem>;
+	};
+
+	template <class _Elem>
+	struct _Unwrap_enum<_Elem, false> { // passthrough non-enum type
+		using type = _Elem;
+	};
+
+	template <class _Elem>
+	using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
+
+	template <class _Source, class _Dest, class _SourceRef, class _DestRef>
+	struct _Trivial_cat {
+		using _USource = _Unwrap_enum_t<_Source>;
+		using _UDest = _Unwrap_enum_t<_Dest>;
+
+		static constexpr bool _Same_size_and_compatible =
+			sizeof(_Source) == sizeof(_Dest)
+			// If _UDest is bool, _USource also needs to be bool
+			// Conversion from non-bool => non-bool | bool => bool | bool => non-bool is fine.
+			// Conversion from non-bool => bool is not fine.
+			&& is_same_v<bool, _USource> >= is_same_v<bool, _UDest>
+			&& (is_same_v<_USource, _UDest> || (is_integral_v<_USource> && is_integral_v<_UDest>)
+				|| (is_floating_point_v<_USource> && is_floating_point_v<_UDest>));
+
+		static constexpr bool _Bitcopy_constructible =
+			_Same_size_and_compatible && is_trivially_constructible_v<_Dest, _SourceRef>;
+
+		static constexpr bool _Bitcopy_assignable =
+			_Same_size_and_compatible && is_trivially_assignable_v<_DestRef, _SourceRef>;
+	};
+
+	template <class _Source, class _Dest>
+	constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
+		|| is_void_v<_Dest>
+		|| is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>
+		|| is_pointer_interconvertible_base_of_v<_Dest, _Source>
+
+		template <class _Source, class _Dest, class _SourceRef, class _DestRef>
+	struct _Trivial_cat<_Source*, _Dest*, _SourceRef, _DestRef> {
+		static constexpr bool _Bitcopy_constructible =
+			_Is_pointer_address_convertible<_Source, _Dest>&& is_trivially_constructible_v<_Dest*, _SourceRef>;
+
+		static constexpr bool _Bitcopy_assignable =
+			_Is_pointer_address_convertible<_Source, _Dest>&& is_trivially_assignable_v<_DestRef, _SourceRef>;
+	};
+
+	struct _False_trivial_cat {
+		static constexpr bool _Bitcopy_constructible = false;
+		static constexpr bool _Bitcopy_assignable = false;
+	};
+
+	template <class _Iter1, class _Iter2>
+	constexpr bool _Iterators_are_contiguous = _Iterator_is_contiguous<_Iter1> && _Iterator_is_contiguous<_Iter2>;
+
+	template <class _Iter>
+	constexpr bool _Iterator_is_volatile = is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
+
+	struct _Default_sentinel {}; // empty struct to serve as the end of a range
+
+	template <semiregular>
+	class move_sentinel;
+
+	template <class>
+	struct _Move_iterator_category {};
+
+	template <class _Iter>
+		requires requires { typename _Iter_cat_t<_Iter>; }
+	struct _Move_iterator_category<_Iter> {
+		using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
+			random_access_iterator_tag, _Iter_cat_t<_Iter>>;
+	};
+
+	template <class _Iter>
+	class move_iterator : public _Move_iterator_category<_Iter> {
+	private:
+		_Iter _Current{};
+
+	public:
+		using iterator_type = _Iter;
+		using value_type = _Iter_value_t<_Iter>;
+		using difference_type = _Iter_diff_t<_Iter>;
+		using pointer = _Iter;
+
+	private:
+		static constexpr auto _Get_iter_concept() {
+			if constexpr (random_access_iterator<_Iter>) {
+				return random_access_iterator_tag{};
+			}
+			else if constexpr (bidirectional_iterator<_Iter>) {
+				return bidirectional_iterator_tag{};
+			}
+			else if constexpr (forward_iterator<_Iter>) {
+				return forward_iterator_tag{};
+			}
+			else {
+				return input_iterator_tag{};
+			}
+		}
+
+	public:
+		using iterator_concept = decltype(_Get_iter_concept());
+
+		using reference = iter_rvalue_reference_t<_Iter>;
+
+		constexpr move_iterator() = default;
+
+		constexpr explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) : _Current(std::move(_Right)) {}
+
+		template <class _Other> requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
+		constexpr move_iterator(const move_iterator<_Other>& _Right) noexcept(is_nothrow_constructible_v<_Iter, const _Other&>) : _Current(_Right.base()) {}
+
+		template <class _Other> requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>&& assignable_from<_Iter&, const _Other&>
+		constexpr move_iterator& operator=(const move_iterator<_Other>& _Right) noexcept(is_nothrow_assignable_v<_Iter&, const _Other&>)
+		{
+			_Current = _Right.base();
+			return *this;
+		}
+
+		[[nodiscard]] constexpr const iterator_type& base() const& noexcept
+		{
+			return _Current;
+		}
+		[[nodiscard]] constexpr iterator_type base() && noexcept(is_nothrow_move_constructible_v<_Iter>)
+		{
+			return std::move(_Current);
+		}
+
+		/*[[nodiscard]] constexpr reference operator*() const noexcept(noexcept(ranges::iter_move(_Current))
+		{
+			return ranges::iter_move(_Current);
+		}*/
+
+		constexpr move_iterator& operator++() noexcept(noexcept(++_Current))
+		{
+			++_Current;
+			return *this;
+		}
+
+		constexpr auto operator++(int) noexcept(is_nothrow_copy_constructible_v<_Iter> && noexcept(++_Current))
+		{
+			if constexpr (forward_iterator<_Iter>) {
+				move_iterator _Tmp = *this;
+				++_Current;
+				return _Tmp;
+			}
+			else {
+				++_Current;
+			}
+		}
+
+		constexpr move_iterator& operator--() noexcept(noexcept(--_Current))
+		{
+			--_Current;
+			return *this;
+		}
+
+		constexpr move_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Iter> && noexcept(--_Current))
+		{
+			move_iterator _Tmp = *this;
+			--_Current;
+			return _Tmp;
+		}
+
+		template <class _Iter2 = _Iter>
+		[[nodiscard]] auto operator==(_Default_sentinel _Sentinel) const noexcept -> decltype(std::declval<const _Iter2&>() == _Sentinel) {
+			return _Current == _Sentinel;
+		}
+
+		template <class _Iter2 = _Iter>
+		[[nodiscard]] auto operator!=(_Default_sentinel _Sentinel) const noexcept -> decltype(std::declval<const _Iter2&>() != _Sentinel) {
+			return _Current != _Sentinel;
+		}
+
+		[[nodiscard]] constexpr move_iterator operator+(const difference_type _Off) const noexcept(noexcept(move_iterator(_Current + _Off)))
+		{
+			return move_iterator(_Current + _Off);
+		}
+
+		constexpr move_iterator& operator+=(const difference_type _Off) noexcept(noexcept(_Current += _Off))
+		{
+			_Current += _Off;
+			return *this;
+		}
+
+		[[nodiscard]] constexpr move_iterator operator-(const difference_type _Off) const noexcept(noexcept(move_iterator(_Current - _Off)))
+		{
+			return move_iterator(_Current - _Off);
+		}
+
+		constexpr move_iterator& operator-=(const difference_type _Off) noexcept(noexcept(_Current -= _Off))
+		{
+			_Current -= _Off;
+			return *this;
+		}
+
+		/*[[nodiscard]] constexpr reference operator[](const difference_type _Off) const noexcept(noexcept(ranges::iter_move(_Current + _Off)))
+		{
+			return ranges::iter_move(_Current + _Off);
+		}*/
+
+		template <sentinel_for<_Iter> _Sent>
+		[[nodiscard]] friend constexpr bool
+			operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) noexcept(
+				noexcept(std::_Fake_copy_init<bool>(_Left._Current == _Right._Get_last()))) {
+			return _Left._Current == _Right._Get_last();
+		}
+
+		template <sized_sentinel_for<_Iter> _Sent>
+		[[nodiscard]] friend constexpr difference_type operator-(const move_sentinel<_Sent>& _Left,
+			const move_iterator& _Right) noexcept(noexcept(_Left._Get_last() - _Right._Current)) {
+			return _Left._Get_last() - _Right._Current;
+		}
+
+		template <sized_sentinel_for<_Iter> _Sent>
+		[[nodiscard]] friend constexpr difference_type operator-(const move_iterator& _Left,
+			const move_sentinel<_Sent>& _Right) noexcept(noexcept(_Left._Current - _Right._Get_last())) {
+			return _Left._Current - _Right._Get_last();
+		}
+
+		/*[[nodiscard]] friend constexpr reference iter_move(const move_iterator& _It) noexcept(
+			noexcept(ranges::iter_move(_It._Current))) {
+			return ranges::iter_move(_It._Current);
+		}
+
+		template <indirectly_swappable<_Iter> _Iter2>
+		friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+			noexcept(ranges::iter_swap(_Left._Current, _Right.base()))) {
+			ranges::iter_swap(_Left._Current, _Right.base());
+		}*/
+
+		/*template <class _Iter2, enable_if_t<_Range_verifiable_v<_Iter, _Iter2>, int> = 0>
+		friend constexpr void _Verify_range(const move_iterator& _First, const move_iterator<_Iter2>& _Last) noexcept {
+			_Verify_range(_First._Current, _Last._Get_current());
+		}
+
+		template <sentinel_for<_Iter> _Sent>
+			requires _Range_verifiable_v<_Iter, _Sent>
+		friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) noexcept {
+			_Verify_range(_First._Current, _Last._Get_last());
+		}*/
+
+		using _Prevent_inheriting_unwrap = move_iterator;
+
+		/*template <class _Iter2 = iterator_type, enable_if_t<_Offset_verifiable_v<_Iter2>, int> = 0>
+		constexpr void _Verify_offset(const difference_type _Off) const noexcept {
+			_Current._Verify_offset(_Off);
+		}
+
+		template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
+		[[nodiscard]] constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& noexcept(
+			noexcept(static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(_Current._Unwrapped()))) {
+			return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(_Current._Unwrapped());
+		}
+		template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
+		[[nodiscard]] constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && noexcept(
+			noexcept(static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(std::move(_Current)._Unwrapped()))) {
+			return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(std::move(_Current)._Unwrapped());
+		}*/
+
+		/*static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_type>;*/
+
+		/*template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, const _Src&>, int> = 0>
+		constexpr void _Seek_to(const move_iterator<_Src>& _It) noexcept(noexcept(_Current._Seek_to(_It._Get_current()))) {
+			_Current._Seek_to(_It._Get_current());
+		}
+		template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, _Src>, int> = 0>
+		constexpr void _Seek_to(move_iterator<_Src>&& _It) noexcept(
+			noexcept(_Current._Seek_to(std::move(_It)._Get_current()))) {
+			_Current._Seek_to(std::move(_It)._Get_current());
+		}*/
+
+		[[nodiscard]] constexpr const iterator_type& _Get_current() const& noexcept {
+			return _Current;
+		}
+		[[nodiscard]] constexpr iterator_type&& _Get_current() && noexcept {
+			return std::move(_Current);
+		}
+	};
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr bool
+		operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+			noexcept(std::_Fake_copy_init<bool>(_Left.base() == _Right.base())))
+		requires requires {
+			{ _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
+	}
+	{
+		return _Left.base() == _Right.base();
+	}
+
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr bool
+		operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+			noexcept(std::_Fake_copy_init<bool>(_Left.base() < _Right.base())))
+		requires requires {
+			{ _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
+	}
+	{
+		return _Left.base() < _Right.base();
+	}
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr bool operator>(const move_iterator<_Iter1>& _Left,
+		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left))
+		requires requires { _Right < _Left; }
+	{
+		return _Right < _Left;
+	}
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr bool operator<=(const move_iterator<_Iter1>& _Left,
+		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left))
+		requires requires { _Right < _Left; }
+	{
+		return !(_Right < _Left);
+	}
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr bool operator>=(const move_iterator<_Iter1>& _Left,
+		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left < _Right))
+		requires requires { _Left < _Right; }
+	{
+		return !(_Left < _Right);
+	}
+
+	template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
+	[[nodiscard]] constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(const move_iterator<_Iter1>& _Left,
+		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() <=> _Right.base())) {
+		return _Left.base() <=> _Right.base();
+	}
+
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr auto operator-(const move_iterator<_Iter1>& _Left,
+		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() - _Right.base()))
+		-> decltype(_Left.base() - _Right.base()) {
+		return _Left.base() - _Right.base();
+	}
+
+	template <class _Iter>
+	[[nodiscard]] constexpr move_iterator<_Iter>
+		operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) noexcept(
+			noexcept(move_iterator<_Iter>(_Right.base() + _Off)))
+		requires requires {
+			{ _Right.base() + _Off } -> same_as<_Iter>;
+	}
+	{
+		return move_iterator<_Iter>(_Right.base() + _Off);
+	}
+
+	template <class _Iter>
+	[[nodiscard]] constexpr move_iterator<_Iter> make_move_iterator(_Iter _It) noexcept(
+		is_nothrow_move_constructible_v<_Iter>) {
+		return move_iterator<_Iter>(std::move(_It));
+	}
+
+	template <class _SourceIt, class _DestIt, bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> && !_Iterator_is_volatile<_SourceIt> && !_Iterator_is_volatile<_DestIt>>
+	struct _Iter_move_cat : _Trivial_cat<_Iter_value_t<_SourceIt>, _Iter_value_t<_DestIt>, remove_reference_t<_Iter_ref_t<_SourceIt>>&&, _Iter_ref_t<_DestIt>> {};
+
+	template <class _SourceIt, class _DestIt>
+	struct _Iter_move_cat<_SourceIt, _DestIt, false> : _False_trivial_cat {};
+
+	template <class _SourceIt, class _DestIt>
+	struct _Iter_move_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
+
+	template <class _SourceIt, class _DestIt,
+		bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> && !_Iterator_is_volatile<_SourceIt> && !_Iterator_is_volatile<_DestIt>>
+		struct _Iter_copy_cat : _Trivial_cat<_Iter_value_t<_SourceIt>, _Iter_value_t<_DestIt>, _Iter_ref_t<_SourceIt>, _Iter_ref_t<_DestIt>> {};
+
+	template <class _SourceIt, class _DestIt>
+	struct _Iter_copy_cat<_SourceIt, _DestIt, false> : _False_trivial_cat {};
+
+	template <class _SourceIt, class _DestIt>
+	struct _Iter_copy_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
+
+	template <class _InIt, class _Sent, class _OutIt>
+	using _Sent_copy_cat = conditional_t<is_same_v<_Sent, _InIt> || sized_sentinel_for<_Sent, _InIt>, _Iter_copy_cat<_InIt, _OutIt>, _False_trivial_cat>;
+
+	template <class _CtgIt, class _OutCtgIt>
+	_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+		auto _FirstPtr = _To_address(_First);
+		auto _LastPtr = _To_address(_Last);
+		auto _DestPtr = _To_address(_Dest);
+		const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
+		const char* const _Last_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
+		char* const _Dest_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
+		const auto _Count = static_cast<size_t>(_Last_ch - _First_ch);
+		::memmove(_Dest_ch, _First_ch, _Count);
+		if constexpr (is_pointer_v<_OutCtgIt>) {
+			return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count);
+		}
+		else {
+			return _Dest + (_LastPtr - _FirstPtr);
+		}
+	}
+
+	template <class _CtgIt, class _OutCtgIt>
+	_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
+		const auto _Result = _Copy_memmove(_First, _First + _Count, _Dest);
+		if constexpr (is_pointer_v<_OutCtgIt>) {
+			return _Result;
+		}
+		else { // _Result is unused so the compiler can optimize it away
+			return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_Count);
+		}
+	}
+
+	template <class _It, bool _RequiresMutable = false>
+	constexpr bool _Is_vb_iterator = false;
+
+	template <class _VbIt, class _OutIt>
+	constexpr _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest);
+
+	template <class _VbIt>
+	[[nodiscard]] constexpr _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, _VbIt _Last, bool _Val) noexcept;
+
+	template <class _VbIt>
+	constexpr void _Fill_vbool(_VbIt _First, _VbIt _Last, bool _Val) noexcept;
+
+	template <class _VbIt>
+	[[nodiscard]] constexpr _VbIt _Find_vbool(_VbIt _First, _VbIt _Last, bool _Val) noexcept;
+
+	template <class _InIt, class _SizeTy, class _OutIt>
+	constexpr _OutIt _Copy_n_unchecked4(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
+		if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
+			if (!is_constant_evaluated())
+			{
+				return _Copy_memmove_n(_First, static_cast<size_t>(_Count), _Dest);
+			}
+		}
+		for (; _Count != 0; ++_Dest, (void) ++_First, --_Count) {
+			*_Dest = *_First;
+		}
+
+		return _Dest;
+	}
+
+	struct _Distance_unknown {
+		constexpr _Distance_unknown operator-() const noexcept {
+			return {};
+		}
+	};
+
+	template <class _Checked, class _Iter>
+	[[nodiscard]] constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
+		// tries to get the distance between _First and _Last if they are random-access iterators
+		if constexpr (_Is_ranges_random_iter_v<_Iter>) {
+			return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
+		}
+		else {
+			return _Distance_unknown{};
+		}
+	}
+
+	template <class _InIt, class _Sent, class _OutIt>
+	constexpr _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
+		// copy [_First, _Last) to [_Dest, ...)
+		// note: _Copy_unchecked has callers other than the copy family
+		if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
+			return _Copy_vbool(_First, _Last, _Dest);
+		}
+		else {
+			if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
+				if (!is_constant_evaluated())
+				{
+					if constexpr (!is_same_v<_InIt, _Sent>) {
+						return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
+					}
+					else
+					{
+						return _Copy_memmove(_First, _Last, _Dest);
+					}
+				}
+			}
+
+			for (; _First != _Last; ++_Dest, (void) ++_First) {
+				*_Dest = *_First;
+			}
+
+			return _Dest;
+		}
+	}
+
+	template <class _InIt, class _OutIt>
+	constexpr _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest)
+	{
+		return _Copy_unchecked(_First, _Last, _Dest);
+	}
+
+	template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+	_FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept
+	{
+		return copy(_First, _Last, _Dest);
+	}
 }

@@ -104,7 +104,6 @@ export namespace ACPI
 							mcv.valueSet = true;
 							currentTimerIRQLine = j;
 							indexCurrentTimer = i;
-							console::printf("%x %x\n", mcv.intRouteCapability, mcv.intRoute);
 							writeTimerN(i, mcv);
 							return;
 						}

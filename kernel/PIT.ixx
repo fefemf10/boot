@@ -1,9 +1,7 @@
 ﻿export module PIT;
 import types;
-import cpuio;
 import intrinsic0;
 import intrinsic1;
-import console;
 export namespace PIT
 {
 	volatile f64 timeSinceBoot{ 0.0 };

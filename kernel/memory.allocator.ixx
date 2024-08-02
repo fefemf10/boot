@@ -86,10 +86,11 @@ export namespace memory::allocator
 	{
 		const u64 align = reinterpret_cast<const u64>(address) >> BLOCKSIZE;
 		u64 countUnsets = 0;
-		for (size_t i = 0; i < countBlocks; i++)
+		for (u64 i = 0; i < countBlocks; i++)
+		{
 			countUnsets += testBlock(align + i);
-		for (size_t i = 0; i < countBlocks; i++)
 			unsetBlock(align + i);
+		}
 		usedBlocks -= countUnsets;
 		unusedBlocks += countUnsets;
 	}
@@ -97,10 +98,11 @@ export namespace memory::allocator
 	{
 		const u64 align = reinterpret_cast<const u64>(address) >> BLOCKSIZE;
 		u64 countSets = 0;
-		for (size_t i = 0; i < countBlocks; i++)
+		for (u64 i = 0; i < countBlocks; i++)
+		{
 			countSets += !testBlock(align + i);
-		for (size_t i = 0; i < countBlocks; i++)
 			setBlock(align + i);
+		}
 		usedBlocks += countSets;
 		unusedBlocks -= countSets;
 	}
@@ -127,11 +129,12 @@ export namespace memory::allocator
 	void reserveBlocks(const void* address, const u64 countBlocks)
 	{
 		const u64 startBlock = reinterpret_cast<u64>(address) >> BLOCKSIZE;
-		u64 countSets = 0;
-		for (size_t i = 0; i < countBlocks; i++)
-			countSets += !testBlock(startBlock + i);
+		u64 countSets{};
 		for (u64 i = 0; i < countBlocks; ++i)
+		{
+			countSets += !testBlock(startBlock + i);
 			setBlock(startBlock + i);
+		}
 		reservedBlocks += countSets;
 		unusedBlocks -= countSets;
 	}
@@ -139,10 +142,11 @@ export namespace memory::allocator
 	{
 		const u64 startBlock = reinterpret_cast<u64>(address) >> BLOCKSIZE;
 		u64 countUnsets = 0;
-		for (size_t i = 0; i < countBlocks; i++)
-			countUnsets += testBlock(startBlock + i);
 		for (u64 i = 0; i < countBlocks; ++i)
+		{
+			countUnsets += testBlock(startBlock + i);
 			unsetBlock(startBlock + i);
+		}
 		reservedBlocks -= countUnsets;
 		unusedBlocks += countUnsets;
 	}

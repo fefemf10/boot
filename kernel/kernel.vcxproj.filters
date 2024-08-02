@@ -37,6 +37,12 @@
     <Filter Include="Исходные файлы\intrinsic">
       <UniqueIdentifier>{7b9854e1-a525-4ed1-ae7c-455ee790b4b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\hash">
+      <UniqueIdentifier>{f9851a39-44d2-4341-a688-509288a1fecf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Timers">
+      <UniqueIdentifier>{f84bccd7-3860-4dae-8618-93e112395124}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Исходные файлы\disk">
       <UniqueIdentifier>{504dea58-6663-4e0a-85f6-a46d0196defd}</UniqueIdentifier>
     </Filter>
@@ -100,18 +106,6 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="string.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="hash.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="hash-crc.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="hash-sha.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="PIT.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="disk.sata.ixx">
@@ -384,9 +378,6 @@
     <ClCompile Include="sl.spinlock.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="APICTimer.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="LAPIC.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -405,14 +396,32 @@
     <ClCompile Include="HPET.ixx">
       <Filter>Исходные файлы\ACPI</Filter>
     </ClCompile>
-    <ClCompile Include="RTC.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="IRQ.Number.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="hash-sha.ixx">
+      <Filter>Исходные файлы\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="hash.ixx">
+      <Filter>Исходные файлы\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="hash-crc.ixx">
+      <Filter>Исходные файлы\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="PIT.ixx">
+      <Filter>Исходные файлы\Timers</Filter>
+    </ClCompile>
     <ClCompile Include="HPETTimer.ixx">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Исходные файлы\Timers</Filter>
+    </ClCompile>
+    <ClCompile Include="RTC.ixx">
+      <Filter>Исходные файлы\Timers</Filter>
+    </ClCompile>
+    <ClCompile Include="APICTimer.ixx">
+      <Filter>Исходные файлы\Timers</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.list.ixx">
+      <Filter>Исходные файлы\std</Filter>
     </ClCompile>
     <ClCompile Include="fs.FAT32.structures.ixx">
       <Filter>Исходные файлы\disk\fs\FAT32</Filter>

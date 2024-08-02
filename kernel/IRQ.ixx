@@ -13,6 +13,7 @@ import sl.string_view;
 import RTC;
 import IRQ.Number;
 import HPETTimer;
+import HPET;
 export namespace IRQ
 {
 	extern "C" void irqHandler(const cpuio::regs& regs)
@@ -23,6 +24,7 @@ export namespace IRQ
 		{
 		case 0:
 			PIT::tick();
+
 			break;
 		case 1:
 			status = __inbyte(keyboard::KEYBOARD_PORT::STATUS_PORT);
@@ -73,5 +75,13 @@ export namespace IRQ
 		keyboardInterrupt.destination = APIC::lapics[0].id;
 		keyboardInterrupt.mask = 0;
 		APIC::ioapics[0].writeREDTBL(1, keyboardInterrupt);
+		APIC::IOAPIC::REDTBLEntry hpetInterrupt{};
+		hpetInterrupt.vector = IRQ::Number::HPET;
+		hpetInterrupt.deliveryMode = APIC::IOAPIC::DeliveryMode::EDGE;
+		hpetInterrupt.destinationMode = APIC::IOAPIC::DesctinationMode::PHYSICAL;
+		hpetInterrupt.pinPolarity = 0;
+		hpetInterrupt.destination = APIC::lapics[0].id;
+		hpetInterrupt.mask = 0;
+		APIC::ioapics[0].writeREDTBL(ACPI::currentTimerIRQLine, hpetInterrupt);
 	}
 }

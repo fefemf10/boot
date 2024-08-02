@@ -650,6 +650,30 @@ export namespace std
 	template <class From, class To>
 	using is_nothrow_convertible = _Is_nothrow_convertible<From, To>;
 
+	template <class _Ty1, class _Ty2>
+	struct is_layout_compatible : bool_constant<__is_layout_compatible(_Ty1, _Ty2)> {};
+
+	template <class _Ty1, class _Ty2>
+	constexpr bool is_layout_compatible_v = __is_layout_compatible(_Ty1, _Ty2);
+
+	template <class _Base, class _Derived>
+	struct is_pointer_interconvertible_base_of : bool_constant<__is_pointer_interconvertible_base_of(_Base, _Derived)> {};
+
+	template <class _Base, class _Derived>
+	constexpr bool is_pointer_interconvertible_base_of_v = __is_pointer_interconvertible_base_of(_Base, _Derived);
+
+	template <class _ClassTy, class _MemberTy>
+	[[nodiscard]] constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::* _Pm) noexcept
+	{
+		return __is_pointer_interconvertible_with_class(_ClassTy, _Pm);
+	}
+
+	template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class _MemberTy2>
+	[[nodiscard]] constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::* _Pm1, _MemberTy2 _ClassTy2::* _Pm2) noexcept
+	{
+		return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
+	}
+
 	template <class Type, template <class...> class Template>
 	inline constexpr bool _Is_specialization_v = false;
 	template <template <class...> class Template, class... Types>
@@ -679,6 +703,9 @@ export namespace std
 	{
 		return move(arg);
 	}
+
+	template <class _Ty>
+	[[nodiscard]] _Ty _Fake_copy_init(_Ty) noexcept;
 
 	template <class T>
 	class reference_wrapper;
