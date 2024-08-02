@@ -11,12 +11,15 @@ export namespace std
 		using size_type = size_t;
 		using difference_type = ptrdiff_t;
 		using propagate_on_container_move_assignment = true_type;
-		constexpr allocator() noexcept = default;
-		/*template <class U>
-		constexpr allocator(const allocator<U>& other) noexcept;*/
+		constexpr allocator() noexcept {}
+		constexpr allocator(const allocator&) noexcept = default;
+		template <class U>
+		constexpr allocator(const allocator<U>& other) noexcept {}
 		constexpr ~allocator() = default;
+		constexpr allocator& operator=(const allocator&) = default;
 		[[nodiscard]] constexpr __declspec(allocator) T* allocate(size_t n) const
 		{
+			static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
 			return new T[n];
 		}
 		constexpr void deallocate(T* p, size_t n) const

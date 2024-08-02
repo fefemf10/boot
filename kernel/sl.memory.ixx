@@ -319,7 +319,7 @@ namespace std
 
 		template <class _Objty, class... _Types>
 		static constexpr void construct(T&, _Objty* const _Ptr, _Types&&... _Args) {
-			std::construct_at(_Ptr, _STD forward<_Types>(_Args)...);
+			std::construct_at(_Ptr, std::forward<_Types>(_Args)...);
 		}
 
 		template <class _Uty>
