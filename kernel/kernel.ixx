@@ -27,19 +27,12 @@ import IRQ.Number;
 import IDT;
 import PIT;
 import intrinsic;
-import sl.math;
-import sl.memory;
-import sl.atomic;
-import sl.spinlock;
 import APICTimer;
-import sl.string_view;
-import sl.print;
 import HPET;
 import RTC;
 import FADT;
 import IOAPIC;
 import HPETTimer;
-import sl.vector;
 
 class A
 {
@@ -83,8 +76,8 @@ public:
 	console::color = console::CYAN;
 	console::printf("%llx\n", bootInfo.memoryMapEntries[1].address);
 	console::printf("%llx\n", &mainCRTStartup);
-	console::putfeatures(cpuio::features);
-	console::printf("%llx %llx %llx %llx %lli MiB\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks, memory::sizeRAM / 1024 / 1024);
+	//console::putfeatures(cpuio::features);
+	//console::printf("%llx %llx %llx %llx %lli MiB\n", memory::allocator::maxBlocks, memory::allocator::reservedBlocks, memory::allocator::usedBlocks, memory::allocator::unusedBlocks, memory::sizeRAM / 1024 / 1024);
 	ACPI::initialize(bootInfo.RSDP);
 	if (ACPI::madt->flags)
 		PIC::deinitialize();
@@ -103,50 +96,8 @@ public:
 	RTC::read();
 	IRQ::initialize();
 	_enable();
-	std::vector<A> b{A(5), A(8)};
-	b.reserve(15);
-	b.emplace_back(1);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(2);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(3);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(4);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(5);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(6);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(7);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(8);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(9);
-	console::printf("\n%lli\n", b.capacity());
-	b.emplace_back(10);
-	console::printf("\n%lli\n", b.capacity());
-	console::printf("\n%i ", b[1].a);
-	b.clear();
-	b.push_back(A(1));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(2));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(3));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(4));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(5));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(6));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(7));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(8));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(9));
-	console::printf("\n%lli\n", b.capacity());
-	b.push_back(A(10));
-	console::printf("\n%lli\n", b.capacity());
+	//__debugbreak();
+
 	//console::printf("HPET frequency: %.2f MHz tick = %f ns\n", 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 1000000, 1.0 / (1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod) * 1000000000);
 	
 	/*console::printf("%llu\n", ACPI::hpet->readTimerComparatorN(ACPI::indexCurrentTimer));

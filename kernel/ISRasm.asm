@@ -1,6 +1,8 @@
 format MS64 COFF
 section '.text$mn' code readable executable
 extrn isrHandler
+public isrHandlers as '?isrHandlers@IDT@@3PAP6AXXZA'
+
 macro pushall
 {
 	push r15
@@ -39,38 +41,39 @@ macro popall
 	pop r14
 	pop r15
 }
-public isr0
-public isr1
-public isr2
-public isr3
-public isr4
-public isr5
-public isr6
-public isr7
-public isr8
-public isr9
-public isr10
-public isr11
-public isr12
-public isr13
-public isr14
-public isr15
-public isr16
-public isr17
-public isr18
-public isr19
-public isr20
-public isr21
-public isr22
-public isr23
-public isr24
-public isr25
-public isr26
-public isr27
-public isr28
-public isr29
-public isr30
-public isr31
+isrHandlers:
+	dq isr0
+	dq isr1
+	dq isr2
+	dq isr3
+	dq isr4
+	dq isr5
+	dq isr6
+	dq isr7
+	dq isr8
+	dq isr9
+	dq isr10
+	dq isr11
+	dq isr12
+	dq isr13
+	dq isr14
+	dq isr15
+	dq isr16
+	dq isr17
+	dq isr18
+	dq isr19
+	dq isr20
+	dq isr21
+	dq isr22
+	dq isr23
+	dq isr24
+	dq isr25
+	dq isr26
+	dq isr27
+	dq isr28
+	dq isr29
+	dq isr30
+	dq isr31
 isr0:
 	pushq 0
 	pushq 0

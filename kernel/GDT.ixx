@@ -117,6 +117,4 @@ export namespace GDT
 		u16 size;
 		u64 offset;
 	} constinit gdtDescriptor{ sizeof(GDT) - 1, reinterpret_cast<u64>(&DefaultGDT) };
-
-	void loadGDT(void* gdtDesciptor);
 }
