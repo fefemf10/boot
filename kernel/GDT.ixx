@@ -101,7 +101,7 @@ export namespace GDT
 		GDTEntry userData;
 	};
 
-	_declspec(align(0x1000)) GDT DefaultGDT =
+	constinit _declspec(align(0x1000)) GDT DefaultGDT =
 	{
 		{0, 0, 0, 0x00, 0x00, 0},
 		{0, 0, 0, 0x9A, 0xA0, 0},
@@ -116,5 +116,7 @@ export namespace GDT
 	{
 		u16 size;
 		u64 offset;
-	} gdtDescriptor{ sizeof(GDT) - 1, reinterpret_cast<u64>(&DefaultGDT) };
+	} constinit gdtDescriptor{ sizeof(GDT) - 1, reinterpret_cast<u64>(&DefaultGDT) };
+
+	void loadGDT(void* gdtDesciptor);
 }

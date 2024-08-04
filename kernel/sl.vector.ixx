@@ -114,7 +114,6 @@ export namespace std
 			// 1-arg -> value-construction, e.g. vector(5)
 			// 2-arg -> fill, e.g. vector(5, "meow")
 			// 3-arg -> sized range construction, e.g. vector{"Hello", "Fluffy", "World"}
-			console::printf("\n%llx %llx %llx\n", m_first, m_last, m_end);
 			if (count != 0) {
 				m_first = alloc.allocate(count);
 				m_last = m_first + count;
@@ -130,6 +129,7 @@ export namespace std
 		template <class... U>
 		constexpr T& emplace_one_at_back(U&&... value)
 		{
+			console::printf("\nl");
 			if (m_last != m_end)
 				return emplace_back_with_unused_capacity(std::forward<U>(value)...);
 			return *emplace_reallocate(m_last, std::forward<U>(value)...);

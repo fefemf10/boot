@@ -41,7 +41,7 @@ export namespace std
 			return *this;
 		}
 
-		constexpr basic_string_view(const const_pointer str) : m_data(str), m_size(traits_type::length(str)) {}
+		constexpr basic_string_view(const_pointer str) : m_data(str), m_size(traits_type::length(str)) {}
 
 		basic_string_view(nullptr_t) = delete;
 
@@ -293,15 +293,16 @@ export namespace std
 	{
 		return static_cast<_Get_comparison_category_t<Traits>>(left.compare(right) <=> 0);
 	}
-
-	using string_view = basic_string_view<char, unsigned char>;
-	using u8string_view = basic_string_view<char8_t, unsigned int>;
-	using u16string_view = basic_string_view<char16_t, unsigned short>;
-	using u32string_view = basic_string_view<char32_t, unsigned int>;
-
-	inline string_view operator"" _sv(const char* str, std::size_t len) noexcept { return string_view(str, len); }
-	inline u8string_view operator"" _sv(const char8_t* str, std::size_t len) noexcept { return u8string_view(str, len); }
-	inline u16string_view operator"" _sv(const char16_t* str, std::size_t len) noexcept { return u16string_view(str, len); }
-	inline u32string_view operator"" _sv(const char32_t* str, std::size_t len) noexcept { return u32string_view(str, len); }
-
+	export using string_view = std::basic_string_view<char, unsigned char>;
+	export using u8string_view = std::basic_string_view<char8_t, unsigned int>;
+	export using u16string_view = std::basic_string_view<char16_t, unsigned short>;
+	export using u32string_view = std::basic_string_view<char32_t, unsigned int>;
+	inline namespace literals {
+		inline namespace string_view_literals {
+			export [[nodiscard]] constexpr inline string_view operator""sv(const char* str, std::size_t len) noexcept { return string_view(str, len); }
+			export [[nodiscard]] constexpr inline u8string_view operator""sv(const char8_t* str, std::size_t len) noexcept { return u8string_view(str, len); }
+			export [[nodiscard]] constexpr inline u16string_view operator""sv(const char16_t* str, std::size_t len) noexcept { return u16string_view(str, len); }
+			export [[nodiscard]] constexpr inline u32string_view operator""sv(const char32_t* str, std::size_t len) noexcept { return u32string_view(str, len); }
+		}
+	}
 }

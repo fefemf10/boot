@@ -6,6 +6,7 @@ import types;
 import Framebuffer;
 import Font;
 import sl.math;
+import sl.bit;
 import sl.print;
 import sl.string_view;
 import intrinsic1;
@@ -244,9 +245,9 @@ export namespace console
 		if ((c & 0b11110000) == 0b11100000) return 3;
 		return 4;
 	}
-	void print(std::string_view str)
+	void print(const std::string_view str)
 	{
-		std::_Unicode_codepoint_iterator s(str.cbegin(), str.cend());
+		std::_Unicode_codepoint_iterator<char> s(str);
 		while (*s)
 		{
 			switch (*s)
@@ -266,7 +267,7 @@ export namespace console
 		out = outt;
 	}
 	
-	void puts(std::string_view str)
+	void puts(const std::string_view str)
 	{
 		if (out == OUT::FRAMEBUFFER)
 			print(str);
@@ -389,7 +390,7 @@ export namespace console
 
 		(printt(args), ...);
 	}
-	void printf(std::string_view fmt, ...)
+	void printf(const std::string_view fmt, ...)
 	{
 		va_list args;
 		va_start(args, fmt);
@@ -401,7 +402,7 @@ export namespace console
 		bool sign{};
 		bool number{};
 		bool fp{};
-		std::_Unicode_codepoint_iterator s(fmt.begin(), fmt.end());
+		std::_Unicode_codepoint_iterator<char> s(fmt);
 		while (*s)
 		{
 			switch (state)
@@ -587,7 +588,14 @@ export namespace console
 	{
 		for (size_t i = 1; i <= size; i++)
 		{
-			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
+			if constexpr (std::is_constant_evaluated())
+			{
+
+			}
+			else
+			{
+				printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
+			}
 		}
 		if (size % 16 != 0)
 			putc('\n');

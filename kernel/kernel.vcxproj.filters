@@ -81,9 +81,6 @@
     <ClCompile Include="teletype.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="GDT.ixx">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="keyboard.ixx">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -458,6 +455,9 @@
     </ClCompile>
     <ClCompile Include="sl.byte.ixx">
       <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="GDT.ixx">
+      <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -14,8 +14,8 @@ export namespace std
 		using iterator = const T*;
 		using const_iterator = const T*;
 
-		constexpr initializer_list() noexcept = default;
-		constexpr initializer_list(const T* first, const T* last) noexcept : first(first), last(last) {};
+		constexpr initializer_list() noexcept : first(nullptr), last(nullptr) {}
+		constexpr initializer_list(const T* first, const T* last) noexcept : first(first), last(last) {}
 		constexpr const T* begin() const noexcept
 		{
 			return first;
@@ -29,8 +29,8 @@ export namespace std
 			return static_cast<size_t>(last - first);
 		}
 	private:
-		const T* first{};
-		const T* last{};
+		const T* first;
+		const T* last;
 	};
 	template <class T>
 	[[nodiscard]] constexpr const T* begin(initializer_list<T> list) noexcept

@@ -220,7 +220,7 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesStack, stackAddress);
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesKernel, kernelAddress);
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesBootInfo, bootInfoAddress);
-
+	BS->setMem(stackAddress, stackSize, 0);
 	file->setPosition(file, 0);
 	sizeForRead = pe.optionalHeader.sizeOfHeaders;
 	file->read(file, &sizeForRead, kernelAddress);
