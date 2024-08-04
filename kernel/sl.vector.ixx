@@ -3,11 +3,12 @@ import sl.allocator;
 import sl.typetraits;
 import sl.numeric_limits;
 import sl.memory;
-import sl.iterator;
-import sl.typetraits;
-import sl.concepts;
-import sl.type;
 import sl.utility;
+import sl.iterator;
+import sl.type;
+import sl.initializer_list;
+import serial;
+import console;
 
 export namespace std
 {
@@ -28,16 +29,15 @@ export namespace std
 		using const_iterator = const_linear_iterator<vector<T>>;
 		//using reverse_iterator = reverse_iterator<iterator>;
 		//using const_reverse_iterator = reverse_iterator<const_iterator>;
-		constexpr vector() noexcept(noexcept(Allocator())) {}
-		constexpr explicit vector(const Allocator& alloc) noexcept {}
-		constexpr vector(const size_t count, const T& value, const Allocator& alloc = Allocator()) : m_first(alloc.allocate(count)), m_last(m_first + count), m_end(m_first + count)
+		constexpr vector() noexcept(is_nothrow_default_constructible_v<Allocator>) {}
+		constexpr explicit vector(const Allocator& alloc) noexcept : alloc(alloc) {}
+		constexpr vector(const size_t count, const T& value, const Allocator& alloc = Allocator()) : alloc(alloc)
 		{
-			for (size_t i = 0; i < count; ++i)
-				m_first[i] = value;
+			construct_n(count, value);
 		}
-		constexpr explicit vector(const size_t count, const Allocator& alloc = Allocator()) : m_first(alloc.allocate(count)), m_last(m_first), m_end(m_first + count)
+		constexpr explicit vector(const size_t count, const Allocator& alloc = Allocator()) : alloc(alloc)
 		{
-			
+			construct_n(count);
 		}
 		constexpr vector(const vector& other) : vector(other, Allocator())
 		{
@@ -48,101 +48,47 @@ export namespace std
 			for (size_t i = 0; i < other.size(); ++i)
 				m_first[i] = other.m_first[i];
 		}
+		constexpr vector(std::initializer_list<T> list, const Allocator& alloc = Allocator()) : alloc(alloc)
+		{
+			construct_n(list.size(), list.begin(), list.end());
+		}
 		constexpr vector(vector&& other) noexcept;
 		constexpr vector(vector&& other, const Allocator& alloc);
 		template <class... U>
-		constexpr T& emplace_back(U&&... value)
-		{
-			return emplace_one_at_back(std::forward(value)...);
-		}
-		constexpr void push_back(const T& value)
-		{
-			emplace_one_at_back(value);
-		}
-		[[nodiscard]] constexpr T* data() noexcept
-		{
-			return m_first;
-		}
-		[[nodiscard]] constexpr const T* data() const noexcept
-		{
-			return m_first;
-		}
-		[[nodiscard]] constexpr size_type size() const noexcept
-		{
-			return static_cast<size_type>(m_last - m_first);
-		}
-		[[nodiscard]] constexpr size_type capacity() const noexcept
-		{
-			return static_cast<size_type>(m_end - m_first);
-		}
-		[[nodiscard]] constexpr bool empty() const noexcept
-		{
-			return m_first == m_last;
-		}
-		[[nodiscard]] constexpr size_type max_size() const noexcept
-		{
-			return numeric_limits<size_type>::max();
-		}
+		constexpr decltype(auto) emplace_back(U&&... value) { return emplace_one_at_back(std::forward<U>(value)...);	}
+		constexpr void push_back(const T& value) { emplace_one_at_back(value);	}
+		constexpr void push_back(T&& value) { emplace_one_at_back(std::move(value));	}
+		[[nodiscard]] constexpr T* data() noexcept { return m_first;	}
+		[[nodiscard]] constexpr const T* data() const noexcept { return m_first;	}
+		[[nodiscard]] constexpr size_type size() const noexcept { return static_cast<size_type>(m_last - m_first);	}
+		[[nodiscard]] constexpr size_type capacity() const noexcept { return static_cast<size_type>(m_end - m_first);	}
+		[[nodiscard]] constexpr bool empty() const noexcept { return m_first == m_last;	}
+		[[nodiscard]] constexpr size_type max_size() const noexcept { return numeric_limits<size_type>::max();	}
 		constexpr void reserve(const size_type capacity)
 		{
 			if (capacity > static_cast<size_type>(m_end - m_first))
-			{ 
+			{
 				reallocateExactly(capacity);
 			}
 		}
 		[[nodiscard]] constexpr void clear() noexcept
 		{
-
+			_Destroy_range(m_first, m_last, alloc);
+			m_last = m_first;
 		}
-		[[nodiscard]] constexpr T& operator[](const size_type pos) noexcept
-		{
-			return m_first[pos];
-		}
-		[[nodiscard]] constexpr const T& operator[](const size_type pos) const noexcept
-		{
-			return m_first[pos];
-		}
-		[[nodiscard]] constexpr iterator begin() noexcept
-		{
-			return iterator(m_first, std::addressof(*this));
-		}
-		[[nodiscard]] constexpr const_iterator begin() const noexcept
-		{
-			return const_iterator(m_first, std::addressof(*this));
-		}
-		[[nodiscard]] constexpr const_iterator cbegin() const noexcept
-		{
-			return begin();
-		}
-		[[nodiscard]] constexpr iterator end() noexcept
-		{
-			return iterator(m_last, std::addressof(*this));
-		}
-		[[nodiscard]] constexpr const_iterator end() const noexcept
-		{
-			return const_iterator(m_last, std::addressof(*this));
-		}
-		[[nodiscard]] constexpr const_iterator cend() const noexcept
-		{
-			return end();
-		}
-		[[nodiscard]] constexpr T& front(const size_t pos) noexcept
-		{
-			return *m_first;
-		}
-		[[nodiscard]] constexpr const T& front(const size_t pos) const noexcept
-		{
-			return *m_first;
-		}
-		[[nodiscard]] constexpr T& back(const size_t pos) noexcept
-		{
-			return *(m_last - 1);
-		}
-		[[nodiscard]] constexpr const T& back(const size_t pos) const noexcept
-		{
-			return *(m_last - 1);
-		}
-	private:
+		[[nodiscard]] constexpr T& operator[](const size_type pos) noexcept { return m_first[pos];	}
+		[[nodiscard]] constexpr const T& operator[](const size_type pos) const noexcept { return m_first[pos];	}
+		[[nodiscard]] constexpr iterator begin() noexcept { return iterator(m_first, std::addressof(*this));	}
+		[[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator(m_first, std::addressof(*this));	}
+		[[nodiscard]] constexpr const_iterator cbegin() const noexcept { return begin();	}
+		[[nodiscard]] constexpr iterator end() noexcept { return iterator(m_last, std::addressof(*this));	}
+		[[nodiscard]] constexpr const_iterator end() const noexcept { return const_iterator(m_last, std::addressof(*this));	}
+		[[nodiscard]] constexpr const_iterator cend() const noexcept { return end();	}
+		[[nodiscard]] constexpr T& front(const size_t pos) noexcept { return *m_first;	}
+		[[nodiscard]] constexpr const T& front(const size_t pos) const noexcept { return *m_first;	}
+		[[nodiscard]] constexpr T& back(const size_t pos) noexcept { return *(m_last - 1);	}
+		[[nodiscard]] constexpr const T& back(const size_t pos) const noexcept { return *(m_last - 1);	}
+	public:
 		constexpr size_t calculateGrow(const size_type newSize) const noexcept
 		{
 			if (capacity() > max_size() >> 1)
@@ -156,10 +102,30 @@ export namespace std
 			size_type newSize = size();
 			for (size_t i = 0; i < newSize; i++)
 				newVector[i] = m_first[i];
-			alloc.deallocate(m_first, this->capacity());
+			if (m_first)
+				alloc.deallocate(m_first, this->capacity());
 			m_first = newVector;
 			m_last = m_first + newSize;
 			m_end = m_first + capacity;
+		}
+		template <class... U>
+		constexpr void construct_n(const size_type count, U&&... values) {
+			// Dispatches between the three sized constructions.
+			// 1-arg -> value-construction, e.g. vector(5)
+			// 2-arg -> fill, e.g. vector(5, "meow")
+			// 3-arg -> sized range construction, e.g. vector{"Hello", "Fluffy", "World"}
+			console::printf("\n%llx %llx %llx\n", m_first, m_last, m_end);
+			if (count != 0) {
+				m_first = alloc.allocate(count);
+				m_last = m_first + count;
+				m_end = m_first + count;
+				if constexpr (sizeof...(values) == 0) 
+					m_last = std::_Uninitialized_value_construct_n(m_first, count, alloc);
+				else if constexpr (sizeof...(values) == 1)
+					m_last = std::_Uninitialized_fill_n(m_first, count, values..., alloc);
+				else if constexpr (sizeof...(values) == 2)
+					m_last = std::_Uninitialized_copy(std::forward<U>(values)..., m_first, alloc);
+			}
 		}
 		template <class... U>
 		constexpr T& emplace_one_at_back(U&&... value)
@@ -174,10 +140,22 @@ export namespace std
 			if constexpr (conjunction_v<is_nothrow_constructible<T, U...>, _Uses_default_construct<Allocator, T*, U...>>)
 				_Construct_in_place(*m_last, std::forward<U>(value)...);
 			else
-				allocator_traits<Allocator>::construct(alloc, _Unfancy(m_last), std::forward<U>(value)...);
+				allocator_traits<Allocator>::construct(alloc, m_last, std::forward<U>(value)...);
 			T& result = *m_last;
 			++m_last;
 			return result;
+		}
+		constexpr void _Change_array(const pointer _Newvec, const size_type _Newsize, const size_type _Newcapacity)
+		{
+			if (m_first)
+			{
+				_Destroy_range(m_first, m_last, alloc);
+				alloc.deallocate(m_first, static_cast<size_type>(m_end - m_first));
+			}
+
+			m_first = _Newvec;
+			m_last = _Newvec + _Newsize;
+			m_end = _Newvec + _Newcapacity;
 		}
 		template <class... U>
 		constexpr pointer emplace_reallocate(const pointer _Whereptr, U&&... value)
@@ -186,34 +164,29 @@ export namespace std
 
 			const size_type newsize = size() + 1;
 			const size_type newcapacity = calculateGrow(newsize);
-
+			
 			const pointer newvec = alloc.allocate(newcapacity);
 			const pointer _Constructed_last = newvec + _Whereoff + 1;
 			pointer _Constructed_first = _Constructed_last;
 
-			allocator_traits<Allocator>::construct(alloc, _Unfancy(newvec + _Whereoff), std::forward<U>(value)...);
+			allocator_traits<Allocator>::construct(alloc, newvec + _Whereoff, std::forward<U>(value)...);
 			_Constructed_first = newvec + _Whereoff;
 
-			//if (_Whereptr == m_last)
-			//{ // at back, provide strong guarantee
-			//	if constexpr (is_nothrow_move_constructible_v<T> || !is_copy_constructible_v<T>) {
-			//		_Uninitialized_move(_Myfirst, _Mylast, newvec, _Al);
-			//	}
-			//	else {
-			//		_Uninitialized_copy(_Myfirst, _Mylast, newvec, _Al);
-			//	}
-			//}
-			//else { // provide basic guarantee
-			//	_Uninitialized_move(_Myfirst, _Whereptr, newvec, _Al);
-			//	_Constructed_first = newvec;
-			//	_Uninitialized_move(_Whereptr, _Mylast, newvec + _Whereoff + 1, _Al);
-			//}
-			//	_Destroy_range(_Constructed_first, _Constructed_last, _Al);
-			//_Al.deallocate(newvec, newcapacity);
-			//_RERAISE;
-			//_CATCH_END
-
-			//	_Change_array(newvec, newsize, newcapacity);
+			if (_Whereptr == m_last)
+			{
+				if constexpr (is_nothrow_move_constructible_v<T> || !is_copy_constructible_v<T>) {
+					_Uninitialized_move(m_first, m_last, newvec, alloc);
+				}
+				else {
+					_Uninitialized_copy(m_first, m_last, newvec, alloc);
+				}
+			}
+			else { // provide basic guarantee
+				_Uninitialized_move(m_first, _Whereptr, newvec, alloc);
+				_Constructed_first = newvec;
+				_Uninitialized_move(_Whereptr, m_last, newvec + _Whereoff + 1, alloc);
+			}
+			_Change_array(newvec, newsize, newcapacity);
 			return newvec + _Whereoff;
 		}
 		T* m_first{};

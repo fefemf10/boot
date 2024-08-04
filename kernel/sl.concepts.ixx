@@ -53,8 +53,8 @@ export namespace std
 	template <class T1, class T2>
 	concept assignable_from = is_lvalue_reference_v<T1>
 		&& common_reference_with<const remove_reference_t<T1>&, const remove_reference_t<T2>&>
-		&& requires(T1 _Left, T2&& _Right) {
-			{ _Left = static_cast<T2&&>(_Right) } -> same_as<T1>;
+		&& requires(T1 left, T2&& right) {
+			{ left = static_cast<T2&&>(right) } -> same_as<T1>;
 	};
 
 	template <class T>

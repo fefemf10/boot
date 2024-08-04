@@ -6,8 +6,6 @@ import types;
 import Framebuffer;
 import Font;
 import sl.math;
-import sl.concepts;
-import sl.typetraits;
 import sl.print;
 import sl.string_view;
 import intrinsic1;
@@ -605,6 +603,15 @@ export namespace console
 		printf("R12: %016llx\tR13: %016llx\n", regs.r12, regs.r13);
 		printf("R14: %016llx\tR15: %016llx\n", regs.r14, regs.r15);
 		printf("INC: %016llx\tERC: %016llx\n", regs.interruptCode, regs.errorCode);
+		/*printf("RAX: %016llx\tASCII: %08cRBX: %016llx\tASCII: %08c\n", regs.rax, regs.rax, regs.rbx, regs.rbx);
+		printf("RCX: %016llx\tASCII: %08cRDX: %016llx\tASCII: %08c\n", regs.rcx, regs.rcx, regs.rdx, regs.rdx);
+		printf("RSI: %016llx\tASCII: %08cRDI: %016llx\tASCII: %08c\n", regs.rsi, regs.rsi, regs.rdi, regs.rdi);
+		printf("RSP: %016llx\tASCII: %08cRBP: %016llx\tASCII: %08c\n", regs.rsp, regs.rsp, regs.rbp, regs.rbp);
+		printf("R8:  %016llx\tASCII: %08cR9:  %016llx\tASCII: %08c\n", regs.r8, regs.r8, regs.r9, regs.r9);
+		printf("R10: %016llx\tASCII: %08cR11: %016llx\tASCII: %08c\n", regs.r10, regs.r10, regs.r11, regs.r11);
+		printf("R12: %016llx\tASCII: %08cR13: %016llx\tASCII: %08c\n", regs.r12, regs.r12, regs.r13, regs.r13);
+		printf("R14: %016llx\tASCII: %08cR15: %016llx\tASCII: %08c\n", regs.r14, regs.r14, regs.r15, regs.r15);
+		printf("INC: %016llx\tASCII: %08cERC: %016llx\tASCII: %08c\n", regs.interruptCode, regs.interruptCode, regs.errorCode, regs.errorCode);*/
 		printf("RIP: %016llx\n", regs.rip);
 		printf("CS: %016llx\n", regs.cs);
 		printf("SS: %016llx\n", regs.ss);

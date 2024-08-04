@@ -10,7 +10,7 @@ export namespace disk
 	public:
 		void addPhysicalRAMDisk(PhysicalRAMDisk physicalRAMDisk)
 		{
-			physicalRAMDisks
+
 		}
 		VirtualRAMDisk& getVirtualDisk(u64 index)
 		{

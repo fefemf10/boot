@@ -5,6 +5,8 @@ import sl.type;
 import sl.concepts;
 import sl.compare;
 import sl.typetraits;
+import sl.iterator_core;
+import serial;
 namespace std
 {
 	template <class T>
@@ -211,8 +213,8 @@ export namespace std
 
 	struct identity {
 		template <class T>
-		[[nodiscard]] constexpr T&& operator()(T&& _Left) const noexcept {
-			return forward<T>(_Left);
+		[[nodiscard]] constexpr T&& operator()(T&& left) const noexcept {
+			return forward<T>(left);
 		}
 
 		using is_transparent = int;
@@ -259,82 +261,85 @@ export namespace std
 			return const_cast<void*>(static_cast<const volatile void*>(std::addressof(*_It)));
 	}
 
-	template <class _Ty, class... _Types, class = void_t<decltype(::new(std::declval<void*>()) _Ty(std::declval<_Types>()...))>>
-	constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(noexcept(::new(_Voidify_iter(_Location)) _Ty(std::forward<_Types>(_Args)...)))
+	export template <class T, class... _Types, class = void_t<decltype(::new(std::declval<void*>()) T(std::declval<_Types>()...))>>
+	constexpr T* construct_at(T* const _Location, _Types&&... _Args) noexcept(noexcept(::new(_Voidify_iter(_Location)) T(std::forward<_Types>(_Args)...)))
 	{
-		[[msvc::constexpr]] return ::new (_Voidify_iter(_Location)) _Ty(std::forward<_Types>(_Args)...);
+		[[msvc::constexpr]] return ::new (_Voidify_iter(_Location)) T(std::forward<_Types>(_Args)...);
 	}
-	template <class _Ty, class... _Types>
-	constexpr void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
-		is_nothrow_constructible_v<_Ty, _Types...>) {
+	export template <class T, class... _Types>
+	constexpr void _Construct_in_place(T& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<T, _Types...>) {
 		if (std::is_constant_evaluated()) {
 			std::construct_at(std::addressof(_Obj), std::forward<_Types>(_Args)...);
 		}
+		else
+		{
+			::new (static_cast<void*>(std::addressof(_Obj))) T(std::forward<_Types>(_Args)...);
+		}
 	}
 
-	template <class _Ty>
-	concept _Can_difference = requires(const _Ty & __a, const _Ty & __b) {
+	template <class T>
+	concept _Can_difference = requires(const T & __a, const T & __b) {
 		{ __a - __b } -> integral;
 	};
 
-	template <class _Ty>
-		requires (!_Has_member_difference_type<_Ty>&& _Can_difference<_Ty>)
-	struct incrementable_traits<_Ty> {
-		using difference_type = make_signed_t<decltype(declval<_Ty>() - declval<_Ty>())>;
+	template <class T>
+		requires (!_Has_member_difference_type<T>&& _Can_difference<T>)
+	struct incrementable_traits<T> {
+		using difference_type = make_signed_t<decltype(declval<T>() - declval<T>())>;
 	};
 
-	template <class _Ty>
-	concept _Is_from_primary = _Same_impl<typename _Ty::_From_primary, _Ty>;
+	template <class T>
+	concept _Is_from_primary = _Same_impl<typename T::_From_primary, T>;
 
 	template <class>
 	struct iterator_traits;
 
-	template <class _Ty>
-	using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
-		incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
+	template <class T>
+	using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<T>>>,
+		incrementable_traits<remove_cvref_t<T>>, iterator_traits<remove_cvref_t<T>>>::difference_type;
 
 	template <class>
 	struct _Cond_value_type {};
 
-	template <class _Ty>
-		requires is_object_v<_Ty>
-	struct _Cond_value_type<_Ty> {
-		using value_type = remove_cv_t<_Ty>;
+	template <class T>
+		requires is_object_v<T>
+	struct _Cond_value_type<T> {
+		using value_type = remove_cv_t<T>;
 	};
 
 	template <class>
 	struct indirectly_readable_traits {};
 
-	template <class _Ty>
-	struct indirectly_readable_traits<_Ty*> : _Cond_value_type<_Ty> {};
+	template <class T>
+	struct indirectly_readable_traits<T*> : _Cond_value_type<T> {};
 
-	template <class _Ty>
-		requires is_array_v<_Ty>
-	struct indirectly_readable_traits<_Ty> {
-		using value_type = remove_cv_t<remove_extent_t<_Ty>>;
+	template <class T>
+		requires is_array_v<T>
+	struct indirectly_readable_traits<T> {
+		using value_type = remove_cv_t<remove_extent_t<T>>;
 	};
 
-	template <class _Ty>
-	struct indirectly_readable_traits<const _Ty> : indirectly_readable_traits<_Ty> {};
+	template <class T>
+	struct indirectly_readable_traits<const T> : indirectly_readable_traits<T> {};
 
-	template <_Has_member_value_type _Ty>
-	struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
+	template <_Has_member_value_type T>
+	struct indirectly_readable_traits<T> : _Cond_value_type<typename T::value_type> {};
 
-	template <_Has_member_element_type _Ty>
-	struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
+	template <_Has_member_element_type T>
+	struct indirectly_readable_traits<T> : _Cond_value_type<typename T::element_type> {};
 
-	template <_Has_member_value_type _Ty>
-		requires _Has_member_element_type<_Ty>
-	struct indirectly_readable_traits<_Ty> {};
+	template <_Has_member_value_type T>
+		requires _Has_member_element_type<T>
+	struct indirectly_readable_traits<T> {};
 
-	template <_Has_member_value_type _Ty>
-		requires _Has_member_element_type<_Ty>
-	&& same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
-		struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
+	template <_Has_member_value_type T>
+		requires _Has_member_element_type<T>
+	&& same_as<remove_cv_t<typename T::value_type>, remove_cv_t<typename T::element_type>>
+		struct indirectly_readable_traits<T> : _Cond_value_type<typename T::value_type> {};
 
-	template <class _Ty>
-	using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
-		indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
+	template <class T>
+	using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<T>>>,
+		indirectly_readable_traits<remove_cvref_t<T>>, iterator_traits<remove_cvref_t<T>>>::value_type;
 
 	template <_Dereferenceable T>
 	using iter_reference_t = decltype(*declval<T&>());
@@ -436,8 +441,8 @@ export namespace std
 		using _Apply = decltype(declval<_It&>().operator->());
 	};
 
-	template <class _Ty>
-	concept _Has_member_arrow = requires(_Ty && __t) { static_cast<_Ty&&>(__t).operator->(); };
+	template <class T>
+	concept _Has_member_arrow = requires(T && __t) { static_cast<T&&>(__t).operator->(); };
 
 	template <bool _Has_member_typedef>
 	struct _Iter_traits_reference {
@@ -537,40 +542,40 @@ export namespace std
 		using reference = typename _Iter_traits_reference<_Has_member_reference<_It>>::template _Apply<_It>;
 	};
 
-	template <class _Ty>
-	struct iterator_traits : _Iterator_traits_base<_Ty> {
+	template <class T>
+	struct iterator_traits : _Iterator_traits_base<T> {
 		using _From_primary = iterator_traits;
 	};
 
-	template <class _Ty>
-		requires is_object_v<_Ty>
-	struct iterator_traits<_Ty*> {
+	template <class T>
+		requires is_object_v<T>
+	struct iterator_traits<T*> {
 		using iterator_concept = contiguous_iterator_tag;
 		using iterator_category = random_access_iterator_tag;
-		using value_type = remove_cv_t<_Ty>;
+		using value_type = remove_cv_t<T>;
 		using difference_type = ptrdiff_t;
-		using pointer = _Ty*;
-		using reference = _Ty&;
+		using pointer = T*;
+		using reference = T&;
 	};
 
-	template <class _Ty>
+	template <class T>
 	inline constexpr bool _Integer_class = requires {
-		typename _Ty::_Signed_type;
-		typename _Ty::_Unsigned_type;
+		typename T::_Signed_type;
+		typename T::_Unsigned_type;
 	};
 
-	template <class _Ty>
-	concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>> || _Integer_class<_Ty>;
+	template <class T>
+	concept _Integer_like = _Is_nonbool_integral<remove_cv_t<T>> || _Integer_class<T>;
 
-	template <class _Ty>
-	concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
+	template <class T>
+	concept _Signed_integer_like = _Integer_like<T> && static_cast<T>(-1) < static_cast<T>(0);
 
-	template <class _Ty>
-	concept weakly_incrementable = movable<_Ty>
-		&& requires(_Ty __i) {
-		typename iter_difference_t<_Ty>;
-			requires _Signed_integer_like<iter_difference_t<_Ty>>;
-		{ ++__i } -> same_as<_Ty&>;
+	template <class T>
+	concept weakly_incrementable = movable<T>
+		&& requires(T __i) {
+		typename iter_difference_t<T>;
+			requires _Signed_integer_like<iter_difference_t<T>>;
+		{ ++__i } -> same_as<T&>;
 		__i++;
 	};
 
@@ -597,18 +602,15 @@ export namespace std
 	};
 	// clang-format on
 
-	struct default_sentinel_t {};
-	inline constexpr default_sentinel_t default_sentinel{};
-
 	template <class T> using _Iter_ref_t = iter_reference_t<T>;
 	template <class T> using _Iter_value_t = iter_value_t<T>;
 	template <class T> using _Iter_diff_t = iter_difference_t<T>;
 	template <class... T> using _Common_diff_t = common_type_t<_Iter_diff_t<T>...>;
 	template <class T> using _Iter_cat_t = typename iterator_traits<T>::iterator_category;
 
-	template <class _Ty, class = void> inline constexpr bool _Is_iterator_v = false;
-	template <class _Ty> inline constexpr bool _Is_iterator_v<_Ty, void_t<_Iter_cat_t<_Ty>>> = true;
-	template <class _Ty> struct _Is_iterator : bool_constant<_Is_iterator_v<_Ty>> {};
+	template <class T, class = void> inline constexpr bool _Is_iterator_v = false;
+	template <class T> inline constexpr bool _Is_iterator_v<T, void_t<_Iter_cat_t<T>>> = true;
+	template <class T> struct _Is_iterator : bool_constant<_Is_iterator_v<T>> {};
 
 	template <class... _Types>
 	class tuple;
@@ -616,14 +618,14 @@ export namespace std
 	template <class _Ty1, class _Ty2>
 	struct pair;
 
-	template <class _Ty, size_t _Size>
+	template <class T, size_t _Size>
 	class array;
 
 	template <class _Tuple>
 	struct tuple_size;
 
-	template <class _Ty>
-	inline constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+	template <class T>
+	inline constexpr size_t tuple_size_v = tuple_size<T>::value;
 
 	template <size_t _Index, class _Tuple>
 	struct tuple_element;
@@ -646,17 +648,17 @@ export namespace std
 	template <size_t _Index, class... _Types>
 	[[nodiscard]] constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
 
-	template <size_t _Idx, class _Ty, size_t _Size>
-	[[nodiscard]] constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept;
+	template <size_t _Idx, class T, size_t _Size>
+	[[nodiscard]] constexpr T& get(array<T, _Size>& _Arr) noexcept;
 
-	template <size_t _Idx, class _Ty, size_t _Size>
-	[[nodiscard]] constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept;
+	template <size_t _Idx, class T, size_t _Size>
+	[[nodiscard]] constexpr const T& get(const array<T, _Size>& _Arr) noexcept;
 
-	template <size_t _Idx, class _Ty, size_t _Size>
-	[[nodiscard]] constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
+	template <size_t _Idx, class T, size_t _Size>
+	[[nodiscard]] constexpr T&& get(array<T, _Size>&& _Arr) noexcept;
 
-	template <size_t _Idx, class _Ty, size_t _Size>
-	[[nodiscard]] constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
+	template <size_t _Idx, class T, size_t _Size>
+	[[nodiscard]] constexpr const T&& get(const array<T, _Size>&& _Arr) noexcept;
 
 	template <class _Ty1, class _Ty2>
 	concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
@@ -664,21 +666,21 @@ export namespace std
 	template <class>
 	inline constexpr bool _Is_std_array_v = false;
 
-	template <class _Ty, size_t _Size>
-	inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
+	template <class T, size_t _Size>
+	inline constexpr bool _Is_std_array_v<array<T, _Size>> = true;
 
 	template <class>
 	inline constexpr bool _Is_subrange_v = false;
 
-	template <class _Ty>
+	template <class T>
 	inline constexpr bool _Tuple_like_impl =
-		_Is_specialization_v<_Ty, tuple> || _Is_specialization_v<_Ty, pair> || _Is_std_array_v<_Ty> || _Is_subrange_v<_Ty>;
+		_Is_specialization_v<T, tuple> || _Is_specialization_v<T, pair> || _Is_std_array_v<T> || _Is_subrange_v<T>;
 
-	template <class _Ty>
-	concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
+	template <class T>
+	concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<T>>;
 
-	template <class _Ty>
-	concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
+	template <class T>
+	concept _Pair_like = _Tuple_like<T> && tuple_size_v<remove_cvref_t<T>> == 2;
 
 
 	namespace ranges {
@@ -732,61 +734,61 @@ export namespace std
 		{
 			void iter_move();
 
-			template <class _Ty>
-			concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty && __t) {
-				iter_move(static_cast<_Ty&&>(__t));
+			template <class T>
+			concept _Has_ADL = _Has_class_or_enum_type<T> && requires(T && __t) {
+				iter_move(static_cast<T&&>(__t));
 			};
 
-			template <class _Ty>
-			concept _Can_deref = requires(_Ty && __t) {
-				*static_cast<_Ty&&>(__t);
+			template <class T>
+			concept _Can_deref = requires(T && __t) {
+				*static_cast<T&&>(__t);
 			};
 			
 			class _Cpo {
 			private:
 				enum class _St { _None, _Custom, _Fallback };
 
-				template <class _Ty>
+				template <class T>
 				[[nodiscard]] static consteval _Choice_t<_St> _Choose() noexcept {
-					if constexpr (_Has_ADL<_Ty>) {
-						return { _St::_Custom, noexcept(iter_move(declval<_Ty>())) }; // intentional ADL
+					if constexpr (_Has_ADL<T>) {
+						return { _St::_Custom, noexcept(iter_move(declval<T>())) }; // intentional ADL
 					}
-					else if constexpr (_Can_deref<_Ty>) {
-						return { _St::_Fallback, noexcept(*declval<_Ty>()) };
+					else if constexpr (_Can_deref<T>) {
+						return { _St::_Fallback, noexcept(*declval<T>()) };
 					}
 					else {
 						return { _St::_None };
 					}
 				}
 
-				template <class _Ty>
-				static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+				template <class T>
+				static constexpr _Choice_t<_St> _Choice = _Choose<T>();
 
 			public:
-				template <class _Ty>
-					requires (_Choice<_Ty>._Strategy != _St::_None)
-				[[nodiscard]] constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
-					constexpr _St _Strat = _Choice<_Ty>._Strategy;
+				template <class T>
+					requires (_Choice<T>._Strategy != _St::_None)
+				[[nodiscard]] constexpr decltype(auto) operator()(T&& _Val) const noexcept(_Choice<T>._No_throw) {
+					constexpr _St _Strat = _Choice<T>._Strategy;
 
 					if constexpr (_Strat == _St::_Custom)
 					{
-						return iter_move(static_cast<_Ty&&>(_Val));
+						return iter_move(static_cast<T&&>(_Val));
 					}
 					else if constexpr (_Strat == _St::_Fallback)
 					{
-						using _Ref = decltype(*static_cast<_Ty&&>(_Val));
+						using _Ref = decltype(*static_cast<T&&>(_Val));
 						if constexpr (is_lvalue_reference_v<_Ref>)
 						{
-							return move(*static_cast<_Ty&&>(_Val));
+							return move(*static_cast<T&&>(_Val));
 						}
 						else
 						{
-							return *static_cast<_Ty&&>(_Val);
+							return *static_cast<T&&>(_Val);
 						}
 					}
 					else
 					{
-						static_assert(_Always_false<_Ty>, "should be unreachable");
+						static_assert(_Always_false<T>, "should be unreachable");
 					}
 				}
 			};
@@ -798,11 +800,11 @@ export namespace std
 		}
 	}
 
-	template <class _Ty>
-		requires _Dereferenceable<_Ty>&& requires(_Ty& __t) {
+	template <class T>
+		requires _Dereferenceable<T>&& requires(T& __t) {
 			{ ranges::iter_move(__t) } -> _Can_reference;
 	}
-	using iter_rvalue_reference_t = decltype( ranges::iter_move(declval<_Ty&>()));
+	using iter_rvalue_reference_t = decltype( ranges::iter_move(declval<T&>()));
 
 	template <class _It>
 	concept _Indirectly_readable_impl =
@@ -819,61 +821,61 @@ export namespace std
 	template <class _It>
 		concept indirectly_readable = _Indirectly_readable_impl<remove_cvref_t<_It>>;
 
-	template <class _Ty>
+	template <class T>
 	struct _Indirect_value_impl {
-		using type = iter_value_t<_Ty>&;
+		using type = iter_value_t<T>&;
 	};
 
 	template <indirectly_readable _It>
 	using _Indirect_value_t = typename _Indirect_value_impl<_It>::type;
 
-	template <indirectly_readable _Ty>
-		using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indirect_value_t<_Ty>>;
+	template <indirectly_readable T>
+		using iter_common_reference_t = common_reference_t<iter_reference_t<T>, _Indirect_value_t<T>>;
 
-	template <class _It, class _Ty>
-		concept indirectly_writable = requires(_It && __i, _Ty && __t) {
-		*__i = static_cast<_Ty&&>(__t);
-		*static_cast<_It&&>(__i) = static_cast<_Ty&&>(__t);
-		const_cast<const iter_reference_t<_It>&&>(*__i) = static_cast<_Ty&&>(__t);
-		const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
+	template <class _It, class T>
+		concept indirectly_writable = requires(_It && __i, T && __t) {
+		*__i = static_cast<T&&>(__t);
+		*static_cast<_It&&>(__i) = static_cast<T&&>(__t);
+		const_cast<const iter_reference_t<_It>&&>(*__i) = static_cast<T&&>(__t);
+		const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<T&&>(__t);
 	};
 
 	template <bool _Is_integer_class>
 	struct _Make_unsigned_like_impl {
-		template <class _Ty>
-		using _Apply = typename _Ty::_Unsigned_type;
+		template <class T>
+		using _Apply = typename T::_Unsigned_type;
 	};
 	template <>
 	struct _Make_unsigned_like_impl<false> {
-		template <class _Ty>
-		using _Apply = make_unsigned_t<_Ty>;
+		template <class T>
+		using _Apply = make_unsigned_t<T>;
 	};
 
-	template <class _Ty>
-	using _Make_unsigned_like_t = typename _Make_unsigned_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
+	template <class T>
+	using _Make_unsigned_like_t = typename _Make_unsigned_like_impl<_Integer_class<T>>::template _Apply<T>;
 
-	template <_Integer_like _Ty>
-	[[nodiscard]] constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
-		return static_cast<_Make_unsigned_like_t<_Ty>>(_Value);
+	template <_Integer_like T>
+	[[nodiscard]] constexpr auto _To_unsigned_like(const T _Value) noexcept {
+		return static_cast<_Make_unsigned_like_t<T>>(_Value);
 	}
 
 	template <bool _Is_integer_class>
 	struct _Make_signed_like_impl {
-		template <class _Ty>
-		using _Apply = typename _Ty::_Signed_type;
+		template <class T>
+		using _Apply = typename T::_Signed_type;
 	};
 	template <>
 	struct _Make_signed_like_impl<false> {
-		template <class _Ty>
-		using _Apply = make_signed_t<_Ty>;
+		template <class T>
+		using _Apply = make_signed_t<T>;
 	};
 
-	template <class _Ty>
-	using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
+	template <class T>
+	using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<T>>::template _Apply<T>;
 
-	template <class _Ty>
-	concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
-		{ __t++ } -> same_as<_Ty>;
+	template <class T>
+	concept incrementable = regular<T> && weakly_incrementable<T> && requires(T __t) {
+		{ __t++ } -> same_as<T>;
 	};
 
 	template <bool _Iterator_category_present>
@@ -911,10 +913,10 @@ export namespace std
 		&& requires { typename _Iter_concept<_It>; }
 	&& derived_from<_Iter_concept<_It>, input_iterator_tag>;
 
-	template <class _It, class _Ty>
-	concept output_iterator = input_or_output_iterator<_It>// && indirectly_writable<_It, _Ty>
-		&& requires(_It __i, _Ty && __t) {
-		*__i++ = static_cast<_Ty&&>(__t);
+	template <class _It, class T>
+	concept output_iterator = input_or_output_iterator<_It>// && indirectly_writable<_It, T>
+		&& requires(_It __i, T && __t) {
+		*__i++ = static_cast<T&&>(__t);
 	};
 
 	template <class _It>
@@ -1082,15 +1084,15 @@ export namespace std
 
 		constexpr move_iterator() = default;
 
-		constexpr explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) : _Current(std::move(_Right)) {}
+		constexpr explicit move_iterator(_Iter right) noexcept(is_nothrow_move_constructible_v<_Iter>) : _Current(std::move(right)) {}
 
 		template <class _Other> requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
-		constexpr move_iterator(const move_iterator<_Other>& _Right) noexcept(is_nothrow_constructible_v<_Iter, const _Other&>) : _Current(_Right.base()) {}
+		constexpr move_iterator(const move_iterator<_Other>& right) noexcept(is_nothrow_constructible_v<_Iter, const _Other&>) : _Current(right.base()) {}
 
 		template <class _Other> requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>&& assignable_from<_Iter&, const _Other&>
-		constexpr move_iterator& operator=(const move_iterator<_Other>& _Right) noexcept(is_nothrow_assignable_v<_Iter&, const _Other&>)
+		constexpr move_iterator& operator=(const move_iterator<_Other>& right) noexcept(is_nothrow_assignable_v<_Iter&, const _Other&>)
 		{
-			_Current = _Right.base();
+			_Current = right.base();
 			return *this;
 		}
 
@@ -1178,21 +1180,21 @@ export namespace std
 
 		template <sentinel_for<_Iter> _Sent>
 		[[nodiscard]] friend constexpr bool
-			operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) noexcept(
-				noexcept(std::_Fake_copy_init<bool>(_Left._Current == _Right._Get_last()))) {
-			return _Left._Current == _Right._Get_last();
+			operator==(const move_iterator& left, const move_sentinel<_Sent>& right) noexcept(
+				noexcept(std::_Fake_copy_init<bool>(left._Current == right._Get_last()))) {
+			return left._Current == right._Get_last();
 		}
 
 		template <sized_sentinel_for<_Iter> _Sent>
-		[[nodiscard]] friend constexpr difference_type operator-(const move_sentinel<_Sent>& _Left,
-			const move_iterator& _Right) noexcept(noexcept(_Left._Get_last() - _Right._Current)) {
-			return _Left._Get_last() - _Right._Current;
+		[[nodiscard]] friend constexpr difference_type operator-(const move_sentinel<_Sent>& left,
+			const move_iterator& right) noexcept(noexcept(left._Get_last() - right._Current)) {
+			return left._Get_last() - right._Current;
 		}
 
 		template <sized_sentinel_for<_Iter> _Sent>
-		[[nodiscard]] friend constexpr difference_type operator-(const move_iterator& _Left,
-			const move_sentinel<_Sent>& _Right) noexcept(noexcept(_Left._Current - _Right._Get_last())) {
-			return _Left._Current - _Right._Get_last();
+		[[nodiscard]] friend constexpr difference_type operator-(const move_iterator& left,
+			const move_sentinel<_Sent>& right) noexcept(noexcept(left._Current - right._Get_last())) {
+			return left._Current - right._Get_last();
 		}
 
 		/*[[nodiscard]] friend constexpr reference iter_move(const move_iterator& _It) noexcept(
@@ -1201,9 +1203,9 @@ export namespace std
 		}
 
 		template <indirectly_swappable<_Iter> _Iter2>
-		friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-			noexcept(ranges::iter_swap(_Left._Current, _Right.base()))) {
-			ranges::iter_swap(_Left._Current, _Right.base());
+		friend constexpr void iter_swap(const move_iterator& left, const move_iterator<_Iter2>& right) noexcept(
+			noexcept(ranges::iter_swap(left._Current, right.base()))) {
+			ranges::iter_swap(left._Current, right.base());
 		}*/
 
 		/*template <class _Iter2, enable_if_t<_Range_verifiable_v<_Iter, _Iter2>, int> = 0>
@@ -1257,74 +1259,74 @@ export namespace std
 
 	template <class _Iter1, class _Iter2>
 	[[nodiscard]] constexpr bool
-		operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-			noexcept(std::_Fake_copy_init<bool>(_Left.base() == _Right.base())))
+		operator==(const move_iterator<_Iter1>& left, const move_iterator<_Iter2>& right) noexcept(
+			noexcept(std::_Fake_copy_init<bool>(left.base() == right.base())))
 		requires requires {
-			{ _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
+			{ left.base() == right.base() } -> _Implicitly_convertible_to<bool>;
 	}
 	{
-		return _Left.base() == _Right.base();
+		return left.base() == right.base();
 	}
 
 
 	template <class _Iter1, class _Iter2>
 	[[nodiscard]] constexpr bool
-		operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-			noexcept(std::_Fake_copy_init<bool>(_Left.base() < _Right.base())))
+		operator<(const move_iterator<_Iter1>& left, const move_iterator<_Iter2>& right) noexcept(
+			noexcept(std::_Fake_copy_init<bool>(left.base() < right.base())))
 		requires requires {
-			{ _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
+			{ left.base() < right.base() } -> _Implicitly_convertible_to<bool>;
 	}
 	{
-		return _Left.base() < _Right.base();
-	}
-
-	template <class _Iter1, class _Iter2>
-	[[nodiscard]] constexpr bool operator>(const move_iterator<_Iter1>& _Left,
-		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left))
-		requires requires { _Right < _Left; }
-	{
-		return _Right < _Left;
+		return left.base() < right.base();
 	}
 
 	template <class _Iter1, class _Iter2>
-	[[nodiscard]] constexpr bool operator<=(const move_iterator<_Iter1>& _Left,
-		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left))
-		requires requires { _Right < _Left; }
+	[[nodiscard]] constexpr bool operator>(const move_iterator<_Iter1>& left,
+		const move_iterator<_Iter2>& right) noexcept(noexcept(right < left))
+		requires requires { right < left; }
 	{
-		return !(_Right < _Left);
+		return right < left;
 	}
 
 	template <class _Iter1, class _Iter2>
-	[[nodiscard]] constexpr bool operator>=(const move_iterator<_Iter1>& _Left,
-		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left < _Right))
-		requires requires { _Left < _Right; }
+	[[nodiscard]] constexpr bool operator<=(const move_iterator<_Iter1>& left,
+		const move_iterator<_Iter2>& right) noexcept(noexcept(right < left))
+		requires requires { right < left; }
 	{
-		return !(_Left < _Right);
+		return !(right < left);
+	}
+
+	template <class _Iter1, class _Iter2>
+	[[nodiscard]] constexpr bool operator>=(const move_iterator<_Iter1>& left,
+		const move_iterator<_Iter2>& right) noexcept(noexcept(left < right))
+		requires requires { left < right; }
+	{
+		return !(left < right);
 	}
 
 	template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
-	[[nodiscard]] constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(const move_iterator<_Iter1>& _Left,
-		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() <=> _Right.base())) {
-		return _Left.base() <=> _Right.base();
+	[[nodiscard]] constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(const move_iterator<_Iter1>& left,
+		const move_iterator<_Iter2>& right) noexcept(noexcept(left.base() <=> right.base())) {
+		return left.base() <=> right.base();
 	}
 
 
 	template <class _Iter1, class _Iter2>
-	[[nodiscard]] constexpr auto operator-(const move_iterator<_Iter1>& _Left,
-		const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() - _Right.base()))
-		-> decltype(_Left.base() - _Right.base()) {
-		return _Left.base() - _Right.base();
+	[[nodiscard]] constexpr auto operator-(const move_iterator<_Iter1>& left,
+		const move_iterator<_Iter2>& right) noexcept(noexcept(left.base() - right.base()))
+		-> decltype(left.base() - right.base()) {
+		return left.base() - right.base();
 	}
 
 	template <class _Iter>
 	[[nodiscard]] constexpr move_iterator<_Iter>
-		operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) noexcept(
-			noexcept(move_iterator<_Iter>(_Right.base() + _Off)))
+		operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& right) noexcept(
+			noexcept(move_iterator<_Iter>(right.base() + _Off)))
 		requires requires {
-			{ _Right.base() + _Off } -> same_as<_Iter>;
+			{ right.base() + _Off } -> same_as<_Iter>;
 	}
 	{
-		return move_iterator<_Iter>(_Right.base() + _Off);
+		return move_iterator<_Iter>(right.base() + _Off);
 	}
 
 	template <class _Iter>

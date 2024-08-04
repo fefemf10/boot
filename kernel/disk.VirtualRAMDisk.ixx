@@ -1,7 +1,6 @@
 export module disk.VirtualRAMDisk;
 import types;
 import disk.PhysicalRAMDisk;
-#include <vector>
 export namespace disk
 {
 	class VirtualRAMDisk

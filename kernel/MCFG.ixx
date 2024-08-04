@@ -16,5 +16,5 @@ export namespace ACPI
 		SDT header;
 		u64 reserved;
 		DeviceConfig devices[1];
-	} *mcfg;
+	} *mcfg{};
 }

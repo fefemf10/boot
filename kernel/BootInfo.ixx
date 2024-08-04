@@ -21,7 +21,8 @@ export
 		u64 mapEntries;
 		u64 mapSize;
 		u64 descriptorSize;
-		MapEntry memoryMapEntries[5];
+		const static u64 numberOfMemoryMap = 5;
+		MapEntry memoryMapEntries[numberOfMemoryMap];
 		u64 rsv;
 		ACPI::RSDP& RSDP;
 		//stack kernel

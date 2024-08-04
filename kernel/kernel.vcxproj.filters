@@ -61,6 +61,9 @@
     <Filter Include="Исходные файлы\disk\layout">
       <UniqueIdentifier>{ca36d202-375a-4756-b0e0-e6438647e4ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\std\detail">
+      <UniqueIdentifier>{8cd62bdd-f050-4c39-af1c-1007f56814db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="disk.ixx">
@@ -449,6 +452,12 @@
     </ClCompile>
     <ClCompile Include="disk.Manager.ixx">
       <Filter>Исходные файлы\disk</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.iterator_core.ixx">
+      <Filter>Исходные файлы\std\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.byte.ixx">
+      <Filter>Исходные файлы\std</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

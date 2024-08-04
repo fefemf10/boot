@@ -17,8 +17,7 @@ export namespace memory
 		bool free;
 		void combineForward()
 		{
-			if (!next) return;
-			if (!next->free) return;
+			if (!next || !next->free) return;
 			if (next == lastHS) lastHS = this;
 			if (next->next != nullptr)
 				next->next->last = this;

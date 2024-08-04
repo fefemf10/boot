@@ -14,28 +14,28 @@ extern "C"
 
 extern "C++"
 {
-	template <typename _Ty>
+	template <typename T>
 	struct __vcrt_va_list_is_reference
 	{
 		enum : bool { __the_value = false };
 	};
 
-	template <typename _Ty>
-	struct __vcrt_va_list_is_reference<_Ty&>
+	template <typename T>
+	struct __vcrt_va_list_is_reference<T&>
 	{
 		enum : bool { __the_value = true };
 	};
 
-	template <typename _Ty>
-	struct __vcrt_va_list_is_reference<_Ty&&>
+	template <typename T>
+	struct __vcrt_va_list_is_reference<T&&>
 	{
 		enum : bool { __the_value = true };
 	};
 
-	template <typename _Ty>
+	template <typename T>
 	struct __vcrt_assert_va_start_is_not_reference
 	{
-		static_assert(!__vcrt_va_list_is_reference<_Ty>::__the_value,
+		static_assert(!__vcrt_va_list_is_reference<T>::__the_value,
 			"va_start argument must not have reference type and must not be parenthesized");
 	};
 }

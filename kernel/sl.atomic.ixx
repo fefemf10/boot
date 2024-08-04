@@ -218,8 +218,8 @@ export namespace std
 	}
 
 	template <class T>
-	T kill_dependency(T _Arg) noexcept { // "magic" template that kills dependency ordering when called
-		return _Arg;
+	T kill_dependency(T arg) noexcept { // "magic" template that kills dependency ordering when called
+		return arg;
 	}
 
 	inline void _Check_store_memory_order(const memory_order _Order) noexcept {

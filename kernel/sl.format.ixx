@@ -5,7 +5,7 @@ import sl.concepts;
 import sl.bit;
 export namespace std
 {
-	enum class _Fmt_align : uint8_t { _None, _Left, _Right, _Center };
+	enum class _Fmt_align : uint8_t { _None, left, right, _Center };
 
 	enum class _Fmt_sign : uint8_t { _None, _Plus, _Minus, _Space };
 
@@ -27,65 +27,65 @@ export namespace std
 	};
 	static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
-	[[nodiscard]] constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
-		return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Char_type;
+	[[nodiscard]] constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type T) {
+		return T > _Basic_format_arg_type::_None && T <= _Basic_format_arg_type::_Char_type;
 	}
-	[[nodiscard]] constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
-		return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
+	[[nodiscard]] constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type T) {
+		return T > _Basic_format_arg_type::_None && T <= _Basic_format_arg_type::_Long_double_type;
 	}
 
 	struct _Auto_id_tag {};
 
 	// clang-format off
-	template <class _Ty, class _CharT>
-	concept _Parse_arg_id_callbacks = requires(_Ty _At) {
+	template <class T, class _CharT>
+	concept _Parse_arg_id_callbacks = requires(T _At) {
 		{ _At._On_auto_id() } -> same_as<void>;
 		{ _At._On_manual_id(size_t{}) } -> same_as<void>;
 	};
 
-	template <class _Ty, class _CharT>
-	concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT * _First, const _CharT * _Last) {
+	template <class T, class _CharT>
+	concept _Parse_replacement_field_callbacks = requires(T _At, const _CharT * _First, const _CharT * _Last) {
 		{ _At._Parse_context };
 		{ _At._On_text(_First, _Last) } -> same_as<void>;
 		{ _At._On_replacement_field(size_t{}, static_cast<const _CharT*>(nullptr)) } -> same_as<void>;
 		{ _At._On_format_specs(size_t{}, _First, _Last) } -> same_as<const _CharT*>;
 	};
 
-	/*template <class _Ty, class _CharT>
-	concept _Parse_align_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
+	/*template <class T, class _CharT>
+	concept _Parse_align_callbacks = requires(T _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
 		{ _At._On_fill(_Sv) } -> same_as<void>;
 		{ _At._On_align(_Aln) } -> same_as<void>;
 	};*/
 
-	template <class _Ty, class _CharT>
-	concept _Parse_width_callbacks = requires(_Ty _At) {
+	template <class T, class _CharT>
+	concept _Parse_width_callbacks = requires(T _At) {
 		{ _At._On_width(int{}) } -> same_as<void>;
 	};
 
-	template <class _Ty, class _CharT>
-	concept _Parse_precision_callbacks = requires(_Ty _At) {
+	template <class T, class _CharT>
+	concept _Parse_precision_callbacks = requires(T _At) {
 		{ _At._On_precision(int{}) } -> same_as<void>;
 	};
 
-	template <class _Ty, class _CharT>
-	concept _Width_adapter_callbacks = requires(_Ty _At) {
+	template <class T, class _CharT>
+	concept _Width_adapter_callbacks = requires(T _At) {
 		{ _At._On_dynamic_width(_Auto_id_tag{}) } -> same_as<void>;
 		{ _At._On_dynamic_width(size_t{}) } -> same_as<void>;
 	};
 
-	template <class _Ty, class _CharT>
-	concept _Precision_adapter_callbacks = requires(_Ty _At) {
+	template <class T, class _CharT>
+	concept _Precision_adapter_callbacks = requires(T _At) {
 		{ _At._On_dynamic_precision(_Auto_id_tag{}) } -> same_as<void>;
 		{ _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
 	};
 
-	/*template <class _Ty, class _CharT>
-	concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-		&& _Parse_width_callbacks<_Ty, _CharT>
-		&& _Parse_precision_callbacks<_Ty, _CharT>
-		&& _Width_adapter_callbacks<_Ty, _CharT>
-		&& _Precision_adapter_callbacks<_Ty, _CharT>
-		&& requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln, _Fmt_sign _Sgn) {
+	/*template <class T, class _CharT>
+	concept _Parse_spec_callbacks = _Parse_align_callbacks<T, _CharT>
+		&& _Parse_width_callbacks<T, _CharT>
+		&& _Parse_precision_callbacks<T, _CharT>
+		&& _Width_adapter_callbacks<T, _CharT>
+		&& _Precision_adapter_callbacks<T, _CharT>
+		&& requires(T _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln, _Fmt_sign _Sgn) {
 			{ _At._On_sign(_Sgn) } -> same_as<void>;
 			{ _At._On_hash() } -> same_as<void>;
 			{ _At._On_zero() } -> same_as<void>;
@@ -210,24 +210,24 @@ export namespace std
 
 #pragma warning(push)
 #pragma warning(disable : 6386) // Buffer overrun while writing to '%s' ...
-		template <class _Ty>
+		template <class T>
 		void _Store_impl(
-			const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, const type_identity_t<_Ty>& _Val) noexcept {
+			const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, const type_identity_t<T>& _Val) noexcept {
 
 			const auto _Store_index = _Index_array[_Arg_index]._Index;
 
-			memcpy(_Storage + _Store_index, _STD addressof(_Val), sizeof(_Ty));
+			memcpy(_Storage + _Store_index, std::addressof(_Val), sizeof(T));
 			_Index_array[_Arg_index]._Type(_Arg_type);
 			if (_Arg_index + 1 < _Num_args) {
 				// Set the starting index of the next arg, as that is dynamic, must be called with increasing index
-				_Index_array[_Arg_index + 1] = _Format_arg_index{ _Store_index + sizeof(_Ty) };
+				_Index_array[_Arg_index + 1] = _Format_arg_index{ _Store_index + sizeof(T) };
 			}
 		}
 #pragma warning(pop)
 
-		template <class _Ty>
-		void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-			using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
+		template <class T>
+		void _Store(const size_t _Arg_index, T&& _Val) noexcept {
+			using _Erased_type = typename _Traits::template _Storage_type<T>;
 
 			_Basic_format_arg_type _Arg_type;
 			if constexpr (is_same_v<_Erased_type, bool>) {
@@ -352,9 +352,9 @@ export namespace std
 			[[nodiscard]] size_t _Estimate_required_capacity() const noexcept {
 				using _CharT = typename _Context::char_type;
 				size_t _Result = 0;
-				const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
+				const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy arg) noexcept {
 					if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
-						_Result += _Arg.size();
+						_Result += arg.size();
 					}
 					else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
 						_Result += 32; // estimate for length of null-terminated strings
@@ -370,10 +370,10 @@ export namespace std
 			}
 
 		private:
-			template <class _Ty>
+			template <class T>
 			[[nodiscard]] static auto _Get_value_from_memory(const unsigned char* const _Val) noexcept {
-				auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
-				return bit_cast<_Ty>(_Temp);
+				auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(T)]>(_Val);
+				return bit_cast<T>(_Temp);
 			}
 
 			size_t _Num_args = 0;

@@ -124,7 +124,8 @@ struct BootInfo
 	uint64_t mapEntries;
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
-	MapEntry memoryMapEntries[5];
+	const static uint64_t numberOfMemoryMap = 5;
+	MapEntry memoryMapEntries[numberOfMemoryMap];
 	uint64_t rsv;
 	void* ACPITable;
 };
@@ -225,7 +226,7 @@ void loadPE(efi::FileHandle file, PE::PE& pe)
 	file->read(file, &sizeForRead, kernelAddress);
 	for (size_t i = 0; i < pe.coffHeader.numberSection; i++)
 	{
-		sizeForRead = sections[i].virtualSize;
+		sizeForRead = sections[i].sizeRawData;
 		if (sections[i].sizeRawData == 0)
 		{
 			continue;
@@ -314,9 +315,9 @@ efi::Status efi_main(efi::Handle imageHandle, efi::SystemTable* systemTable)
 	ramDiskSize = info->fileSize;
 	BS->freePool(info);
 	readSize = ramDiskSize;
+	numberOfPagesRamDisk = countPages(ramDiskSize);
 	BS->allocatePages(efi::AllocateType::ALLOCATE_ADDRESS, efi::MemoryType::LOADER_CODE, numberOfPagesRamDisk, ramDiskAddress);
 	ramDiskFile->read(ramDiskFile, &readSize, ramDiskAddress);
-	numberOfPagesRamDisk = countPages(ramDiskSize);
 	efi::MemoryDescriptor* map{};
 	uint64_t mapSize{}, mapKey{};
 	uint64_t descriptorSize{};

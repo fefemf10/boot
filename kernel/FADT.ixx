@@ -61,5 +61,5 @@ export namespace ACPI
 		GAS sleepControlRegister;
 		GAS sleepStatusRegister;
 		u64 hypervisorVendorIdentity;
-	} *fadt;
+	} *fadt{};
 }

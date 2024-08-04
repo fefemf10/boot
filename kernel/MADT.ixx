@@ -98,5 +98,5 @@ export namespace ACPI
 		{
 			return (header.length - sizeof(SDT) - sizeof(lapic) - sizeof(flags)) / sizeof(Entry);
 		}
-	} *madt;
+	} *madt{};
 }

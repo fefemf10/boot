@@ -584,6 +584,17 @@ export namespace std
 	template <class T> inline constexpr size_t alignment_of_v = alignof(T);
 	template <class T>struct alignment_of : integral_constant<size_t, alignof(T)> {};
 
+	template <class T> constexpr size_t rank_v = 0;
+	template <class T, size_t N> constexpr size_t rank_v<T[N]> = rank_v<T> +1;
+	template <class T> constexpr size_t rank_v<T[]> = rank_v<T> +1;
+	template <class T> struct rank : integral_constant<size_t, rank_v<T>> {};
+
+	template <class T, unsigned int I = 0> constexpr size_t extent_v = 0;
+	template <class T, size_t N> constexpr size_t extent_v<T[N], 0> = N;
+	template <class T, unsigned int I, size_t N> constexpr size_t extent_v<T[N], I> = extent_v<T, I - 1>;
+	template <class T, unsigned int I> constexpr size_t extent_v<T[], I> = extent_v<T, I - 1>;
+	template <class T, unsigned int I = 0> struct extent : integral_constant<size_t, extent_v<T, I>> {};
+
 	template <class Base, class Derived> inline constexpr bool is_base_of_v = __is_base_of(Base, Derived);
 	template <class Base, class Derived> struct is_base_of : bool_constant<__is_base_of(Base, Derived)> {};
 
@@ -680,32 +691,32 @@ export namespace std
 	inline constexpr bool _Is_specialization_v<Template<Types...>, Template> = true;
 
 	template <class T>
-	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>& arg) noexcept
+	[[nodiscard]] [[msvc::intrinsic]] constexpr T&& forward(remove_reference_t<T>& arg) noexcept
 	{
 		return static_cast<T&&>(arg);
 	}
 
 	template <class T>
-	[[nodiscard]] constexpr T&& forward(remove_reference_t<T>&& arg) noexcept
+	[[nodiscard]] [[msvc::intrinsic]] constexpr T&& forward(remove_reference_t<T>&& arg) noexcept
 	{
 		static_assert(!is_lvalue_reference_v<T>, "bad forward call");
 		return static_cast<T&&>(arg);
 	}
 
 	template <class T>
-	[[nodiscard]] constexpr remove_reference_t<T>&& move(T&& arg) noexcept
+	[[nodiscard]] [[msvc::intrinsic]] constexpr remove_reference_t<T>&& move(T&& arg) noexcept
 	{
 		return static_cast<remove_reference_t<T>&&>(arg);
 	}
 
 	template <class T>
-	[[nodiscard]] constexpr conditional_t<!is_nothrow_move_constructible_v<T>&& is_copy_constructible_v<T>, const T&, T&&> move_if_noexcept(T& arg) noexcept
+	[[nodiscard]] [[msvc::intrinsic]] constexpr conditional_t<!is_nothrow_move_constructible_v<T>&& is_copy_constructible_v<T>, const T&, T&&> move_if_noexcept(T& arg) noexcept
 	{
 		return move(arg);
 	}
 
-	template <class _Ty>
-	[[nodiscard]] _Ty _Fake_copy_init(_Ty) noexcept;
+	template <class T>
+	[[nodiscard]] T _Fake_copy_init(T) noexcept;
 
 	template <class T>
 	class reference_wrapper;

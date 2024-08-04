@@ -61,7 +61,7 @@ export namespace memory
 		allocator::reserveBlocks(nullptr, 1);
 		//countPagesForInitAP check efi_main.cpp in boot project
 		allocator::setRegion((const void*)0x1000, 5);
-		for (size_t i = 0; i < 4; i++)
+		for (size_t i = 0; i < bootInfo.numberOfMemoryMap; i++)
 		{
 			allocator::setRegion(bootInfo.memoryMapEntries[i].address, bootInfo.memoryMapEntries[i].numberOfPages);
 		}
@@ -82,9 +82,17 @@ export
 	{
 		return memory::alloc(size);
 	}
+	void* operator new(size_t size, void* ptr)
+	{
+		return ptr;
+	}
 	void* operator new[](size_t size)
 	{
 		return memory::alloc(size);
+	}
+	void* operator new[](size_t size, void* ptr)
+	{
+		return ptr;
 	}
 	void operator delete(void* p)
 	{

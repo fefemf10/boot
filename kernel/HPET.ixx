@@ -2,7 +2,6 @@ export module HPET;
 import types;
 import SDT;
 import memory.PageTableManager;
-import console;
 export namespace ACPI
 {
 	bool timerNPeriodic[32]{};
@@ -172,6 +171,6 @@ export namespace ACPI
 		{
 			write(Registers::GCR, 0b01);
 		}
-	} *hpet;
+	} *hpet{};
 	
 }

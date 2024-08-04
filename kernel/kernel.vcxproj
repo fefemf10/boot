@@ -152,7 +152,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <Optimization>MaxSpeed</Optimization>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -160,7 +160,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ShowIncludes>false</ShowIncludes>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <DiagnosticsFormat>Column</DiagnosticsFormat>
@@ -475,6 +475,7 @@ fasm $(ProjectDir)apinit.asm</Command>
     <ClCompile Include="sl.allocator.ixx" />
     <ClCompile Include="sl.atomic.ixx" />
     <ClCompile Include="sl.bit.ixx" />
+    <ClCompile Include="sl.byte.ixx" />
     <ClCompile Include="sl.chartraits.ixx" />
     <ClCompile Include="sl.compare.ixx" />
     <ClCompile Include="sl.concepts.ixx" />
@@ -485,6 +486,7 @@ fasm $(ProjectDir)apinit.asm</Command>
     </ClCompile>
     <ClCompile Include="sl.initializer_list.ixx" />
     <ClCompile Include="sl.iterator.ixx" />
+    <ClCompile Include="sl.iterator_core.ixx" />
     <ClCompile Include="sl.ixx" />
     <ClCompile Include="sl.list.ixx" />
     <ClCompile Include="sl.math.ixx" />

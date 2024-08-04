@@ -2,13 +2,11 @@ export module sl.chartraits;
 import sl.compare;
 import sl.bit;
 import sl.utility;
-import sl.memory;
 import sl.algorithm;
 import sl.concepts;
 
 export namespace std
 {
-
 	template <std::character T1, std::integral T2>
 	struct char_traits
 	{
@@ -116,15 +114,15 @@ export namespace std
 	using _Traits_ptr_t = const typename _Traits::char_type*;
 
 	template <class _Traits>
-	constexpr bool _Traits_equal(const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size, const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept
+	constexpr bool _Traits_equal(const _Traits_ptr_t<_Traits> left, const size_t _Left_size, const _Traits_ptr_t<_Traits> right, const size_t _Right_size) noexcept
 	{
-		return _Left_size == _Right_size && _Traits::compare(_Left, _Right, _Left_size) == 0;
+		return _Left_size == _Right_size && _Traits::compare(left, right, _Left_size) == 0;
 	}
 
 	template <class _Traits>
-	constexpr int _Traits_compare(const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size, const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept
+	constexpr int _Traits_compare(const _Traits_ptr_t<_Traits> left, const size_t _Left_size, const _Traits_ptr_t<_Traits> right, const size_t _Right_size) noexcept
 	{
-		const int _Ans = _Traits::compare(_Left, _Right, min(_Left_size, _Right_size));
+		const int _Ans = _Traits::compare(left, right, min(_Left_size, _Right_size));
 
 		if (_Ans != 0) {
 			return _Ans;

@@ -244,8 +244,8 @@ export namespace std
     template <class... _Types>
     inline constexpr unsigned char _Classify_category =
         _Comparison_category{ (_Classify_category<_Types> | ... | _Comparison_category_strong) };
-    template <class _Ty>
-    inline constexpr unsigned char _Classify_category<_Ty> = _Comparison_category_none;
+    template <class T>
+    inline constexpr unsigned char _Classify_category<T> = _Comparison_category_none;
     template <>
     inline constexpr unsigned char _Classify_category<partial_ordering> = _Comparison_category_partial;
     template <>
@@ -265,12 +265,12 @@ export namespace std
         using type = common_comparison_category_t<_Types...>;
     };
 
-    template <class _Ty, class _Cat>
-    concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
+    template <class T, class _Cat>
+    concept _Compares_as = same_as<common_comparison_category_t<T, _Cat>, _Cat>;
 
-    template <class _Ty, class _Cat = partial_ordering>
-    concept three_way_comparable = _Half_equality_comparable<_Ty, _Ty> && _Half_ordered<_Ty, _Ty>
-        && requires(const remove_reference_t<_Ty>&__a, const remove_reference_t<_Ty>&__b) {
+    template <class T, class _Cat = partial_ordering>
+    concept three_way_comparable = _Half_equality_comparable<T, T> && _Half_ordered<T, T>
+        && requires(const remove_reference_t<T>&__a, const remove_reference_t<T>&__b) {
             { __a <=> __b } -> _Compares_as<_Cat>;
     };
 
@@ -300,9 +300,9 @@ export namespace std
     struct compare_three_way {
         template <class _Ty1, class _Ty2>
             requires three_way_comparable_with<_Ty1, _Ty2>
-        [[nodiscard]] constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(noexcept(forward<_Ty1>(_Left) <=> forward<_Ty2>(_Right))) /* strengthened */ {
-            return forward<_Ty1>(_Left) <=>  forward<_Ty2>(_Right);
+        [[nodiscard]] constexpr auto operator()(_Ty1&& left, _Ty2&& right) const
+            noexcept(noexcept(forward<_Ty1>(left) <=> forward<_Ty2>(right))) /* strengthened */ {
+            return forward<_Ty1>(left) <=>  forward<_Ty2>(right);
         }
 
         using is_transparent = int;
@@ -310,20 +310,20 @@ export namespace std
 
     struct _Synth_three_way {
         template <class _Ty1, class _Ty2>
-        [[nodiscard]] constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const
+        [[nodiscard]] constexpr auto operator()(const _Ty1& left, const _Ty2& right) const
             requires requires {
-                { _Left < _Right } -> _Boolean_testable;
-                { _Right < _Left } -> _Boolean_testable;
+                { left < right } -> _Boolean_testable;
+                { right < left } -> _Boolean_testable;
         }
         {
             if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
-                return _Left <=> _Right;
+                return left <=> right;
             }
             else {
-                if (_Left < _Right) {
+                if (left < right) {
                     return weak_ordering::less;
                 }
-                else if (_Right < _Left) {
+                else if (right < left) {
                     return weak_ordering::greater;
                 }
                 else {
@@ -343,13 +343,13 @@ export namespace std
         void strong_order(); // Block unqualified name lookup; see GH-1374.
 
         template <class _Ty1, class _Ty2>
-        concept _Has_ADL = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            static_cast<strong_ordering>(/* ADL */ strong_order(_Left, _Right));
+        concept _Has_ADL = requires(_Ty1 & left, _Ty2 & right) {
+            static_cast<strong_ordering>(/* ADL */ strong_order(left, right));
         };
 
         template <class _Ty1, class _Ty2>
-        concept _Can_compare_three_way = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            static_cast<strong_ordering>(compare_three_way{}(_Left, _Right));
+        concept _Can_compare_three_way = requires(_Ty1 & left, _Ty2 & right) {
+            static_cast<strong_ordering>(compare_three_way{}(left, right));
         };
 
         class _Cpo
@@ -385,12 +385,12 @@ export namespace std
             // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-            [[nodiscard]] constexpr strong_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
+            [[nodiscard]] constexpr strong_ordering operator()(_Ty1&& left, _Ty2&& right) const
                 noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
                 // clang-format on
                 constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
                 if constexpr (_Strat == _St::_Adl) {
-                    return static_cast<strong_ordering>(/* ADL */ strong_order(_Left, _Right));
+                    return static_cast<strong_ordering>(/* ADL */ strong_order(left, right));
                 }
                 else if constexpr (_Strat == _St::_Floating) {
                     using _Floating_type = decay_t<_Ty1>;
@@ -398,8 +398,8 @@ export namespace std
                     using _Uint_type = typename _Traits::_Uint_type;
                     using _Sint_type = make_signed_t<_Uint_type>;
 
-                    const auto _Left_uint = bit_cast<_Uint_type>(_Left);
-                    const auto _Right_uint = bit_cast<_Uint_type>(_Right);
+                    const auto _Left_uint = bit_cast<_Uint_type>(left);
+                    const auto _Right_uint = bit_cast<_Uint_type>(right);
 
                     // 1. Ultra-fast path: equal representations are equal.
                     if (_Left_uint == _Right_uint) {
@@ -429,7 +429,7 @@ export namespace std
                     return _Left_ones_complement <=> _Right_ones_complement;
                 }
                 else if constexpr (_Strat == _St::_Three) {
-                    return static_cast<strong_ordering>(compare_three_way{}(_Left, _Right));
+                    return static_cast<strong_ordering>(compare_three_way{}(left, right));
                 }
                 else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
@@ -446,13 +446,13 @@ export namespace std
         void weak_order(); // Block unqualified name lookup; see GH-1374.
 
         template <class _Ty1, class _Ty2>
-        concept _Has_ADL = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            static_cast<weak_ordering>(/* ADL */ weak_order(_Left, _Right));
+        concept _Has_ADL = requires(_Ty1 & left, _Ty2 & right) {
+            static_cast<weak_ordering>(/* ADL */ weak_order(left, right));
         };
 
         template <class _Ty1, class _Ty2>
-        concept _Can_compare_three_way = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
+        concept _Can_compare_three_way = requires(_Ty1 & left, _Ty2 & right) {
+            static_cast<weak_ordering>(compare_three_way{}(left, right));
         };
 
         // Throughput optimization: attempting to use strong_order will always select ADL strong_order here.
@@ -495,12 +495,12 @@ export namespace std
             // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-            [[nodiscard]] constexpr weak_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
+            [[nodiscard]] constexpr weak_ordering operator()(_Ty1&& left, _Ty2&& right) const
                 noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
                 // clang-format on
                 constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
                 if constexpr (_Strat == _St::_Adl) {
-                    return static_cast<weak_ordering>(/* ADL */ weak_order(_Left, _Right));
+                    return static_cast<weak_ordering>(/* ADL */ weak_order(left, right));
                 }
                 else if constexpr (_Strat == _St::_Floating) {
                     using _Floating_type = decay_t<_Ty1>;
@@ -508,8 +508,8 @@ export namespace std
                     using _Uint_type = typename _Traits::_Uint_type;
                     using _Sint_type = make_signed_t<_Uint_type>;
 
-                    auto _Left_uint = bit_cast<_Uint_type>(_Left);
-                    auto _Right_uint = bit_cast<_Uint_type>(_Right);
+                    auto _Left_uint = bit_cast<_Uint_type>(left);
+                    auto _Right_uint = bit_cast<_Uint_type>(right);
 
                     // 1. Ultra-fast path: equal representations are equivalent.
                     if (_Left_uint == _Right_uint) {
@@ -554,11 +554,11 @@ export namespace std
                     return static_cast<weak_ordering>(_Left_twos_complement <=> _Right_twos_complement);
                 }
                 else if constexpr (_Strat == _St::_Three) {
-                    return static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
+                    return static_cast<weak_ordering>(compare_three_way{}(left, right));
                 }
                 else if constexpr (_Strat == _St::_Strong) {
                     return static_cast<weak_ordering>(
-                        static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right)));
+                        static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(left, right)));
                 }
                 else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
@@ -575,13 +575,13 @@ export namespace std
         void partial_order(); // Block unqualified name lookup; see GH-1374.
 
         template <class _Ty1, class _Ty2>
-        concept _Has_ADL = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            static_cast<partial_ordering>(/* ADL */ partial_order(_Left, _Right));
+        concept _Has_ADL = requires(_Ty1 & left, _Ty2 & right) {
+            static_cast<partial_ordering>(/* ADL */ partial_order(left, right));
         };
 
         template <class _Ty1, class _Ty2>
-        concept _Can_compare_three_way = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            static_cast<partial_ordering>(compare_three_way{}(_Left, _Right));
+        concept _Can_compare_three_way = requires(_Ty1 & left, _Ty2 & right) {
+            static_cast<partial_ordering>(compare_three_way{}(left, right));
         };
 
         // Throughput optimization: attempting to use weak_order
@@ -628,23 +628,23 @@ export namespace std
             // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-            [[nodiscard]] constexpr partial_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
+            [[nodiscard]] constexpr partial_ordering operator()(_Ty1&& left, _Ty2&& right) const
                 noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
                 // clang-format on
                 constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
                 if constexpr (_Strat == _St::_Adl) {
-                    return static_cast<partial_ordering>(/* ADL */ partial_order(_Left, _Right));
+                    return static_cast<partial_ordering>(/* ADL */ partial_order(left, right));
                 }
                 else if constexpr (_Strat == _St::_Three) {
-                    return static_cast<partial_ordering>(compare_three_way{}(_Left, _Right));
+                    return static_cast<partial_ordering>(compare_three_way{}(left, right));
                 }
                 else if constexpr (_Strat == _St::_Weak) {
                     return static_cast<partial_ordering>(
-                        static_cast<weak_ordering>(/* ADL, throughput optimization */ weak_order(_Left, _Right)));
+                        static_cast<weak_ordering>(/* ADL, throughput optimization */ weak_order(left, right)));
                 }
                 else if constexpr (_Strat == _St::_Strong) {
                     return static_cast<partial_ordering>(
-                        static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right)));
+                        static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(left, right)));
                 }
                 else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
@@ -658,14 +658,14 @@ export namespace std
     }
 
     template <class _Ty1, class _Ty2>
-    concept _Can_fallback_eq_lt = requires(_Ty1 & _Left, _Ty2 & _Right) {
-        { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-        { _Left < _Right } -> _Implicitly_convertible_to<bool>;
+    concept _Can_fallback_eq_lt = requires(_Ty1 & left, _Ty2 & right) {
+        { left == right } -> _Implicitly_convertible_to<bool>;
+        { left < right } -> _Implicitly_convertible_to<bool>;
     };
 
     template <class _Ty1, class _Ty2>
-    concept _Can_strong_order = requires(_Ty1 & _Left, _Ty2 & _Right) {
-        strong_order(_Left, _Right);
+    concept _Can_strong_order = requires(_Ty1 & left, _Ty2 & right) {
+        strong_order(left, right);
     };
 
     namespace _Compare_strong_order_fallback {
@@ -699,16 +699,16 @@ export namespace std
             // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-            [[nodiscard]] constexpr strong_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
+            [[nodiscard]] constexpr strong_ordering operator()(_Ty1&& left, _Ty2&& right) const
                 noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
                 // clang-format on
                 constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
                 if constexpr (_Strat == _St::_Strong) {
-                    return strong_order(_Left, _Right);
+                    return strong_order(left, right);
                 }
                 else if constexpr (_Strat == _St::_Fallback) {
-                    return _Left == _Right ? strong_ordering::equal
-                        : _Left < _Right ? strong_ordering::less
+                    return left == right ? strong_ordering::equal
+                        : left < right ? strong_ordering::less
                         : strong_ordering::greater;
                 }
                 else {
@@ -723,8 +723,8 @@ export namespace std
     }
 
     template <class _Ty1, class _Ty2>
-    concept _Can_weak_order = requires(_Ty1 & _Left, _Ty2 & _Right) {
-        weak_order(_Left, _Right);
+    concept _Can_weak_order = requires(_Ty1 & left, _Ty2 & right) {
+        weak_order(left, right);
     };
 
     namespace _Compare_weak_order_fallback {
@@ -758,16 +758,16 @@ export namespace std
             // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-            [[nodiscard]] constexpr weak_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
+            [[nodiscard]] constexpr weak_ordering operator()(_Ty1&& left, _Ty2&& right) const
                 noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
                 // clang-format on
                 constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
                 if constexpr (_Strat == _St::_Weak) {
-                    return weak_order(_Left, _Right);
+                    return weak_order(left, right);
                 }
                 else if constexpr (_Strat == _St::_Fallback) {
-                    return _Left == _Right ? weak_ordering::equivalent
-                        : _Left < _Right ? weak_ordering::less
+                    return left == right ? weak_ordering::equivalent
+                        : left < right ? weak_ordering::less
                         : weak_ordering::greater;
                 }
                 else {
@@ -782,16 +782,16 @@ export namespace std
     }
 
     template <class _Ty1, class _Ty2>
-    concept _Can_partial_order = requires(_Ty1 & _Left, _Ty2 & _Right) {
-        partial_order(_Left, _Right);
+    concept _Can_partial_order = requires(_Ty1 & left, _Ty2 & right) {
+        partial_order(left, right);
     };
 
     namespace _Compare_partial_order_fallback {
         template <class _Ty1, class _Ty2>
-        concept _Can_fallback_eq_lt_twice = requires(_Ty1 & _Left, _Ty2 & _Right) {
-            { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-            { _Left < _Right } -> _Implicitly_convertible_to<bool>;
-            { _Right < _Left } -> _Implicitly_convertible_to<bool>;
+        concept _Can_fallback_eq_lt_twice = requires(_Ty1 & left, _Ty2 & right) {
+            { left == right } -> _Implicitly_convertible_to<bool>;
+            { left < right } -> _Implicitly_convertible_to<bool>;
+            { right < left } -> _Implicitly_convertible_to<bool>;
         };
 
         class _Cpo {
@@ -825,17 +825,17 @@ export namespace std
             // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-            [[nodiscard]] constexpr partial_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
+            [[nodiscard]] constexpr partial_ordering operator()(_Ty1&& left, _Ty2&& right) const
                 noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
                 // clang-format on
                 constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
                 if constexpr (_Strat == _St::_Partial) {
-                    return partial_order(_Left, _Right);
+                    return partial_order(left, right);
                 }
                 else if constexpr (_Strat == _St::_Fallback) {
-                    return _Left == _Right ? partial_ordering::equivalent
-                        : _Left < _Right ? partial_ordering::less
-                        : _Right < _Left ? partial_ordering::greater
+                    return left == right ? partial_ordering::equivalent
+                        : left < right ? partial_ordering::less
+                        : right < left ? partial_ordering::greater
                         : partial_ordering::unordered;
                 }
                 else {

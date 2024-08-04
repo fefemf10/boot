@@ -1,9 +1,8 @@
 export module sl.print;
-import sl.typetraits;
 import sl.concepts;
-import sl.type;
-import sl.utility;
 import sl.string_view;
+import sl.type;
+import sl.iterator_core;
 export namespace std
 {
 	template <std::character T>
