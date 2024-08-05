@@ -521,6 +521,9 @@ namespace std
 		using rebind_traits = allocator_traits<rebind_alloc<U>>;
 	};
 
+	template <class _Alloc, class _Value_type>
+	using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
+
 	template <class Alloc>
 	class [[nodiscard]] _Uninitialized_backout_al
 	{

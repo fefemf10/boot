@@ -7,7 +7,7 @@ export namespace disk
 	{
 
 	public:
-		VirtualRAMDisk(disk::PhysicalRAMDisk& driver) : physicalRAMDisk(physicalRAMDisk) {}
+		VirtualRAMDisk(disk::PhysicalRAMDisk& physicalRAMDisk) : physicalRAMDisk(physicalRAMDisk) {}
 		void read(const u64 lba, const u32 sectorCount, void* buffer)
 		{
 			physicalRAMDisk.read(lba, sectorCount, buffer);

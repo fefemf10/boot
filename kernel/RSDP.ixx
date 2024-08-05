@@ -1,7 +1,6 @@
 export module RSDP;
 import types;
 import XSDT;
-import console;
 export namespace ACPI
 {
 #pragma pack(4)

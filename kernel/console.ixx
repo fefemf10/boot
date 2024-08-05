@@ -588,14 +588,7 @@ export namespace console
 	{
 		for (size_t i = 1; i <= size; i++)
 		{
-			if constexpr (std::is_constant_evaluated())
-			{
-
-			}
-			else
-			{
-				printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
-			}
+			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
 		}
 		if (size % 16 != 0)
 			putc('\n');

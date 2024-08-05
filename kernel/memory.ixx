@@ -8,7 +8,6 @@ import memory.Heap;
 import types;
 import cpuio;
 import BootInfo;
-import console;
 import intrinsic;
 
 export namespace memory

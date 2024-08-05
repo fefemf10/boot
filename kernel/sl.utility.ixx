@@ -6,7 +6,7 @@ import sl.concepts;
 import sl.compare;
 import sl.typetraits;
 import sl.iterator_core;
-import serial;
+import memory;
 namespace std
 {
 	template <class T>
@@ -253,27 +253,21 @@ export namespace std
 		return static_cast<underlying_type_t<T>>(value);
 	}
 
-	template <class _Iter>
-	[[nodiscard]] constexpr void* _Voidify_iter(_Iter _It) noexcept {
-		if constexpr (is_pointer_v<_Iter>)
-			return const_cast<void*>(static_cast<const volatile void*>(_It));
-		else
-			return const_cast<void*>(static_cast<const volatile void*>(std::addressof(*_It)));
+	export template <class T, class... Types>
+		requires requires(T* _Location, Types&&... Args) {
+		::new (static_cast<void*>(_Location)) T(std::forward<Types>(Args)...);
 	}
-
-	export template <class T, class... _Types, class = void_t<decltype(::new(std::declval<void*>()) T(std::declval<_Types>()...))>>
-	constexpr T* construct_at(T* const _Location, _Types&&... _Args) noexcept(noexcept(::new(_Voidify_iter(_Location)) T(std::forward<_Types>(_Args)...)))
-	{
-		[[msvc::constexpr]] return ::new (_Voidify_iter(_Location)) T(std::forward<_Types>(_Args)...);
+	constexpr T* construct_at(T* const _Location, Types&&... Args) noexcept(noexcept(::new(static_cast<void*>(_Location)) T(std::forward<Types>(Args)...))) {
+		[[msvc::constexpr]] return ::new (static_cast<void*>(_Location)) T(std::forward<Types>(Args)...);
 	}
-	export template <class T, class... _Types>
-	constexpr void _Construct_in_place(T& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<T, _Types...>) {
+	export template <class T, class... Types>
+	constexpr void _Construct_in_place(T& _Obj, Types&&... Args) noexcept(is_nothrow_constructible_v<T, Types...>) {
 		if (std::is_constant_evaluated()) {
-			std::construct_at(std::addressof(_Obj), std::forward<_Types>(_Args)...);
+			std::construct_at(std::addressof(_Obj), std::forward<Types>(Args)...);
 		}
 		else
 		{
-			::new (static_cast<void*>(std::addressof(_Obj))) T(std::forward<_Types>(_Args)...);
+			::new (static_cast<void*>(std::addressof(_Obj))) T(std::forward<Types>(Args)...);
 		}
 	}
 
@@ -612,7 +606,7 @@ export namespace std
 	template <class T> inline constexpr bool _Is_iterator_v<T, void_t<_Iter_cat_t<T>>> = true;
 	template <class T> struct _Is_iterator : bool_constant<_Is_iterator_v<T>> {};
 
-	template <class... _Types>
+	template <class... Types>
 	class tuple;
 
 	template <class _Ty1, class _Ty2>
@@ -633,20 +627,20 @@ export namespace std
 	template <size_t _Index, class _Tuple>
 	using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
 
-	/* TRANSITION, VSO-1538698 */ template <size_t _Index, class... _Types>
-	[[nodiscard]] constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+	/* TRANSITION, VSO-1538698 */ template <size_t _Index, class... Types>
+	[[nodiscard]] constexpr auto&& _Tuple_get(tuple<Types...>&& _Tuple) noexcept;
 
-	template <size_t _Index, class... _Types>
-	[[nodiscard]] constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
+	template <size_t _Index, class... Types>
+	[[nodiscard]] constexpr tuple_element_t<_Index, tuple<Types...>>& get(tuple<Types...>& _Tuple) noexcept;
 
-	template <size_t _Index, class... _Types>
-	[[nodiscard]] constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept;
+	template <size_t _Index, class... Types>
+	[[nodiscard]] constexpr const tuple_element_t<_Index, tuple<Types...>>& get(const tuple<Types...>& _Tuple) noexcept;
 
-	template <size_t _Index, class... _Types>
-	[[nodiscard]] constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept;
+	template <size_t _Index, class... Types>
+	[[nodiscard]] constexpr tuple_element_t<_Index, tuple<Types...>>&& get(tuple<Types...>&& _Tuple) noexcept;
 
-	template <size_t _Index, class... _Types>
-	[[nodiscard]] constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
+	template <size_t _Index, class... Types>
+	[[nodiscard]] constexpr const tuple_element_t<_Index, tuple<Types...>>&& get(const tuple<Types...>&& _Tuple) noexcept;
 
 	template <size_t _Idx, class T, size_t _Size>
 	[[nodiscard]] constexpr T& get(array<T, _Size>& _Arr) noexcept;

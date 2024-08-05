@@ -46,6 +46,14 @@ export namespace disk
 		{
 			driver.write(lba, sectorCount, buffer);
 		}
+		u8 getNumberOfPartition() const
+		{
+			return numberOfPartitions;
+		}
+		const layout::gpt::GPTPartitionEntry& getGPTEntry(const u64 index) const
+		{
+			return GPTEntries[index];
+		}
 	private:
 		const bool containsLBAInPartitions(const u64 lba) const
 		{

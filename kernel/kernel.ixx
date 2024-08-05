@@ -33,32 +33,14 @@ import RTC;
 import FADT;
 import IOAPIC;
 import HPETTimer;
-
-class A
-{
-public:
-	A()
-	{
-		console::printf("c%i ", a);
-	}
-	explicit A(int a) : a(a)
-	{
-		console::printf("c%i ", a);
-	}
-	~A()
-	{
-		console::printf("d%i ", a);
-	}
-	int a;
-	int b;
-	int c;
-	int d;
-};
+import disk.PhysicalRAMDisk;
+import sl.vector;
 
 [[noreturn]] void mainCRTStartup(BootInfo& bootInfo)
 {
-	cpuio::loadGDT(&GDT::gdtDescriptor);
 	_disable();
+	cpuio::loadGDT(&GDT::gdtDescriptor);
+	memory::initialize(bootInfo);
 	framebuffer = bootInfo.fb;
 	font = bootInfo.font;
 	fontSize = bootInfo.memoryMapEntries[3].sizeOfBytes;
@@ -67,7 +49,6 @@ public:
 	cpuio::getCPUFeatures(cpuio::features);
 	console::initialize();
 	serial::initialize();
-	memory::initialize(bootInfo);
 	// 0xFFFF * 2 = 512 unicode characther in font * 256 size font 16*16
 	console::unicode = (u16*)memory::allocator::allocBlocks(memory::allocator::countBlocks(0xFFFFu * 2));
 	memory::set(console::unicode, 0, memory::allocator::countBlocks(0xFFFFu * 2) * memory::PAGESIZE);
@@ -96,7 +77,8 @@ public:
 	RTC::read();
 	IRQ::initialize();
 	_enable();
-	//__debugbreak();
+	//std::vector<disk::PhysicalRAMDisk> p;
+	//disk::Manager m;
 
 	//console::printf("HPET frequency: %.2f MHz tick = %f ns\n", 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 1000000, 1.0 / (1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod) * 1000000000);
 	

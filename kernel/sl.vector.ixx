@@ -15,55 +15,64 @@ export namespace std
 	template <class T, class Allocator = allocator<T>>
 	class vector
 	{
+	private:
+		using Alty = _Rebind_alloc_t<Allocator, T>;
+		using Alty_traits = allocator_traits<Alty>;
 	public:
+		static_assert(is_object_v<T>, "The C++ Standard forbids containers of non-object types "
+			"because of [container.requirements].");
 		using value_type = T;
 		using allocator_type = Allocator;
-		using pointer = typename allocator_traits<Allocator>::pointer;
-		using const_pointer = typename allocator_traits<Allocator>::const_pointer;
+		using pointer = typename Alty_traits::pointer;
+		using const_pointer = typename Alty_traits::const_pointer;
 		using reference = T&;
 		using const_reference = const T&;
-		using size_type = typename allocator_traits<Allocator>::size_type;
-		using difference_type = typename allocator_traits<Allocator>::difference_type;
-	
+		using size_type = typename Alty_traits::size_type;
+		using difference_type = typename Alty_traits::difference_type;
+
 		using iterator = linear_iterator<vector<T>>;
 		using const_iterator = const_linear_iterator<vector<T>>;
 		//using reverse_iterator = reverse_iterator<iterator>;
 		//using const_reverse_iterator = reverse_iterator<const_iterator>;
-		constexpr vector() noexcept(is_nothrow_default_constructible_v<Allocator>) {}
-		constexpr explicit vector(const Allocator& alloc) noexcept : alloc(alloc) {}
-		constexpr vector(const size_t count, const T& value, const Allocator& alloc = Allocator()) : alloc(alloc)
+		constexpr vector() noexcept(is_nothrow_default_constructible_v<Alty>) {}
+		constexpr explicit vector(const Alty& alloc) noexcept : alloc(alloc) {}
+		constexpr vector(const size_t count, const T& value, const Alty& alloc = Alty()) : alloc(alloc)
 		{
 			construct_n(count, value);
 		}
-		constexpr explicit vector(const size_t count, const Allocator& alloc = Allocator()) : alloc(alloc)
+		constexpr explicit vector(const size_t count, const Alty& alloc = Alty()) : alloc(alloc)
 		{
 			construct_n(count);
 		}
-		constexpr vector(const vector& other) : vector(other, Allocator())
+		constexpr vector(const vector& other) : vector(other, Alty())
 		{
 		}
-		constexpr vector(const vector& other, const Allocator& alloc)
+		constexpr vector(const vector& other, const Alty& alloc)
 		{
 			m_first = alloc.allocate(other.capacity());
 			for (size_t i = 0; i < other.size(); ++i)
 				m_first[i] = other.m_first[i];
 		}
-		constexpr vector(std::initializer_list<T> list, const Allocator& alloc = Allocator()) : alloc(alloc)
+		constexpr vector(std::initializer_list<T> list, const Alty& alloc = Alty()) : alloc(alloc)
 		{
 			construct_n(list.size(), list.begin(), list.end());
 		}
 		constexpr vector(vector&& other) noexcept;
-		constexpr vector(vector&& other, const Allocator& alloc);
+		constexpr vector(vector&& other, const Alty& alloc);
 		template <class... U>
-		constexpr decltype(auto) emplace_back(U&&... value) { return emplace_one_at_back(std::forward<U>(value)...);	}
-		constexpr void push_back(const T& value) { emplace_one_at_back(value);	}
-		constexpr void push_back(T&& value) { emplace_one_at_back(std::move(value));	}
-		[[nodiscard]] constexpr T* data() noexcept { return m_first;	}
-		[[nodiscard]] constexpr const T* data() const noexcept { return m_first;	}
-		[[nodiscard]] constexpr size_type size() const noexcept { return static_cast<size_type>(m_last - m_first);	}
-		[[nodiscard]] constexpr size_type capacity() const noexcept { return static_cast<size_type>(m_end - m_first);	}
-		[[nodiscard]] constexpr bool empty() const noexcept { return m_first == m_last;	}
-		[[nodiscard]] constexpr size_type max_size() const noexcept { return numeric_limits<size_type>::max();	}
+		constexpr decltype(auto) emplace_back(U&&... value)
+		{
+			T& result = emplace_one_at_back(std::forward<U>(value)...);
+			return result;
+		}
+		constexpr void push_back(const T& value) { emplace_one_at_back(value); }
+		constexpr void push_back(T&& value) { emplace_one_at_back(std::move(value)); }
+		[[nodiscard]] constexpr T* data() noexcept { return m_first; }
+		[[nodiscard]] constexpr const T* data() const noexcept { return m_first; }
+		[[nodiscard]] constexpr size_type size() const noexcept { return static_cast<size_type>(m_last - m_first); }
+		[[nodiscard]] constexpr size_type capacity() const noexcept { return static_cast<size_type>(m_end - m_first); }
+		[[nodiscard]] constexpr bool empty() const noexcept { return m_first == m_last; }
+		[[nodiscard]] constexpr size_type max_size() const noexcept { return numeric_limits<size_type>::max(); }
 		constexpr void reserve(const size_type capacity)
 		{
 			if (capacity > static_cast<size_type>(m_end - m_first))
@@ -76,18 +85,18 @@ export namespace std
 			_Destroy_range(m_first, m_last, alloc);
 			m_last = m_first;
 		}
-		[[nodiscard]] constexpr T& operator[](const size_type pos) noexcept { return m_first[pos];	}
-		[[nodiscard]] constexpr const T& operator[](const size_type pos) const noexcept { return m_first[pos];	}
-		[[nodiscard]] constexpr iterator begin() noexcept { return iterator(m_first, std::addressof(*this));	}
-		[[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator(m_first, std::addressof(*this));	}
-		[[nodiscard]] constexpr const_iterator cbegin() const noexcept { return begin();	}
-		[[nodiscard]] constexpr iterator end() noexcept { return iterator(m_last, std::addressof(*this));	}
-		[[nodiscard]] constexpr const_iterator end() const noexcept { return const_iterator(m_last, std::addressof(*this));	}
-		[[nodiscard]] constexpr const_iterator cend() const noexcept { return end();	}
-		[[nodiscard]] constexpr T& front(const size_t pos) noexcept { return *m_first;	}
-		[[nodiscard]] constexpr const T& front(const size_t pos) const noexcept { return *m_first;	}
-		[[nodiscard]] constexpr T& back(const size_t pos) noexcept { return *(m_last - 1);	}
-		[[nodiscard]] constexpr const T& back(const size_t pos) const noexcept { return *(m_last - 1);	}
+		[[nodiscard]] constexpr T& operator[](const size_type pos) noexcept { return m_first[pos]; }
+		[[nodiscard]] constexpr const T& operator[](const size_type pos) const noexcept { return m_first[pos]; }
+		[[nodiscard]] constexpr iterator begin() noexcept { return iterator(m_first, std::addressof(*this)); }
+		[[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator(m_first, std::addressof(*this)); }
+		[[nodiscard]] constexpr const_iterator cbegin() const noexcept { return begin(); }
+		[[nodiscard]] constexpr iterator end() noexcept { return iterator(m_last, std::addressof(*this)); }
+		[[nodiscard]] constexpr const_iterator end() const noexcept { return const_iterator(m_last, std::addressof(*this)); }
+		[[nodiscard]] constexpr const_iterator cend() const noexcept { return end(); }
+		[[nodiscard]] constexpr T& front() noexcept { return *m_first; }
+		[[nodiscard]] constexpr const T& front() const noexcept { return *m_first; }
+		[[nodiscard]] constexpr T& back() noexcept { return *(m_last - 1); }
+		[[nodiscard]] constexpr const T& back() const noexcept { return *(m_last - 1); }
 	public:
 		constexpr size_t calculateGrow(const size_type newSize) const noexcept
 		{
@@ -118,7 +127,7 @@ export namespace std
 				m_first = alloc.allocate(count);
 				m_last = m_first + count;
 				m_end = m_first + count;
-				if constexpr (sizeof...(values) == 0) 
+				if constexpr (sizeof...(values) == 0)
 					m_last = std::_Uninitialized_value_construct_n(m_first, count, alloc);
 				else if constexpr (sizeof...(values) == 1)
 					m_last = std::_Uninitialized_fill_n(m_first, count, values..., alloc);
@@ -129,7 +138,6 @@ export namespace std
 		template <class... U>
 		constexpr T& emplace_one_at_back(U&&... value)
 		{
-			console::printf("\nl");
 			if (m_last != m_end)
 				return emplace_back_with_unused_capacity(std::forward<U>(value)...);
 			return *emplace_reallocate(m_last, std::forward<U>(value)...);
@@ -137,10 +145,10 @@ export namespace std
 		template <class... U>
 		constexpr T& emplace_back_with_unused_capacity(U&&... value)
 		{
-			if constexpr (conjunction_v<is_nothrow_constructible<T, U...>, _Uses_default_construct<Allocator, T*, U...>>)
+			if constexpr (conjunction_v<is_nothrow_constructible<T, U...>, _Uses_default_construct<Alty, T*, U...>>)
 				_Construct_in_place(*m_last, std::forward<U>(value)...);
 			else
-				allocator_traits<Allocator>::construct(alloc, m_last, std::forward<U>(value)...);
+				Alty_traits::construct(alloc, m_last, std::forward<U>(value)...);
 			T& result = *m_last;
 			++m_last;
 			return result;
@@ -164,12 +172,12 @@ export namespace std
 
 			const size_type newsize = size() + 1;
 			const size_type newcapacity = calculateGrow(newsize);
-			
-			const pointer newvec = alloc.allocate(newcapacity);
+
+			const pointer newvec = alloc.allocate_at_least(newcapacity).ptr;
 			const pointer _Constructed_last = newvec + _Whereoff + 1;
 			pointer _Constructed_first = _Constructed_last;
 
-			allocator_traits<Allocator>::construct(alloc, newvec + _Whereoff, std::forward<U>(value)...);
+			Alty_traits::construct(alloc, newvec + _Whereoff, std::forward<U>(value)...);
 			_Constructed_first = newvec + _Whereoff;
 
 			if (_Whereptr == m_last)
@@ -192,6 +200,6 @@ export namespace std
 		T* m_first{};
 		T* m_last{};
 		T* m_end{};
-		Allocator alloc;
+		Alty alloc;
 	};
 }

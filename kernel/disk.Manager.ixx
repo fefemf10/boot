@@ -1,4 +1,4 @@
-export module disk;
+export module disk.Manager;
 import disk.PhysicalRAMDisk;
 import disk.VirtualRAMDisk;
 import types;
@@ -10,6 +10,13 @@ export namespace disk
 	public:
 		void addPhysicalRAMDisk(PhysicalRAMDisk physicalRAMDisk)
 		{
+			physicalRAMDisks.emplace_back(physicalRAMDisk);
+			PhysicalRAMDisk& prd = physicalRAMDisks.back();
+			prd.loadRAMDisk();
+			/*for (size_t i = 0; i < prd.getNumberOfPartition(); i++)
+			{
+				virtualRAMDisks.emplace_back(VirtualRAMDisk(prd));
+			}*/
 
 		}
 		VirtualRAMDisk& getVirtualDisk(u64 index)
@@ -17,7 +24,6 @@ export namespace disk
 			return virtualRAMDisks[index];
 		}
 	private:
-		
 		std::vector<PhysicalRAMDisk> physicalRAMDisks;
 		std::vector<VirtualRAMDisk> virtualRAMDisks;
 	};
