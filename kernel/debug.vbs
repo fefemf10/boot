@@ -7,8 +7,8 @@ QEMU_EXE   = "qemu-system-x86_64"
 BOOT_DIR   = "..\boot\"
 IMAGE_DIR   = "..\image\"
 OVMF = "OVMF-pure-efi.fd"
-OVMFCODE   = "OVMF_CODE-pure-efi.fd"
-OVMFVARS   = "OVMF_VARS-pure-efi.fd"
+OVMFCODE   = "code.fd"
+OVMFVARS   = "vars.fd"
 
 If Not fso.FileExists(IMAGE_DIR & OVMFVARS) Then
   Call fso.CopyFile(BOOT_DIR & OVMFVARS, IMAGE_DIR & FW_FILE)

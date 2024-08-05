@@ -1,5 +1,4 @@
 export module sl;
-import sl.allocator;
 import sl.typetraits;
 import sl.numeric_limits;
 import sl.memory;

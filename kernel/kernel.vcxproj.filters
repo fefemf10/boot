@@ -279,9 +279,6 @@
     <ClCompile Include="sl.algorithm.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
-    <ClCompile Include="sl.allocator.ixx">
-      <Filter>Исходные файлы\std</Filter>
-    </ClCompile>
     <ClCompile Include="sl.bit.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>

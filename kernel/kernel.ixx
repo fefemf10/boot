@@ -38,9 +38,8 @@ import sl.vector;
 
 [[noreturn]] void mainCRTStartup(BootInfo& bootInfo)
 {
-	_disable();
 	cpuio::loadGDT(&GDT::gdtDescriptor);
-	memory::initialize(bootInfo);
+	_disable();
 	framebuffer = bootInfo.fb;
 	font = bootInfo.font;
 	fontSize = bootInfo.memoryMapEntries[3].sizeOfBytes;
@@ -50,6 +49,7 @@ import sl.vector;
 	console::initialize();
 	serial::initialize();
 	// 0xFFFF * 2 = 512 unicode characther in font * 256 size font 16*16
+	memory::initialize(bootInfo);
 	console::unicode = (u16*)memory::allocator::allocBlocks(memory::allocator::countBlocks(0xFFFFu * 2));
 	memory::set(console::unicode, 0, memory::allocator::countBlocks(0xFFFFu * 2) * memory::PAGESIZE);
 	console::unicodeInit();

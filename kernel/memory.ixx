@@ -75,13 +75,26 @@ export namespace memory
 		initializeHeap((void*)0x0000100000000000, 0x10);
 	}
 }
+export namespace std
+{
+	enum class align_val_t : size_t {};
+	struct nothrow_t
+	{
+		explicit nothrow_t() = default;
+	};
+	extern nothrow_t const nothrow;
+}
 export
 {
 	void* operator new(size_t size)
 	{
 		return memory::alloc(size);
 	}
-	void* operator new(size_t size, void* ptr)
+	void* operator new(size_t size, const ::std::nothrow_t&) noexcept
+	{
+		return memory::alloc(size);
+	}
+	inline void* operator new(size_t size, void* ptr)
 	{
 		return ptr;
 	}
@@ -89,23 +102,86 @@ export
 	{
 		return memory::alloc(size);
 	}
-	void* operator new[](size_t size, void* ptr)
+	void* operator new[](size_t size, const::std::nothrow_t&) noexcept
+	{
+		return memory::alloc(size);
+	}
+	inline void* operator new[](size_t size, void* ptr)
 	{
 		return ptr;
 	}
-	void operator delete(void* p)
+	void operator delete(void* p) noexcept
 	{
 		memory::free(p);
 	}
-	void operator delete(void* p, u64 size)
+	void operator delete(void* p, const::std::nothrow_t&) noexcept
 	{
 		memory::free(p);
 	}
-	void operator delete[](void* p)
+	void operator delete(void* p, u64 size) noexcept
 	{
 		memory::free(p);
 	}
-	void operator delete[](void* p, u64 size)
+	inline void operator delete(void*, void*) noexcept
+	{
+
+	}
+	void operator delete[](void* p) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p, const::std::nothrow_t&) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p, u64 size) noexcept
+	{
+		memory::free(p);
+	}
+	inline void operator delete[](void*, void*) noexcept
+	{
+
+	}
+
+
+
+	void* operator new(size_t size, ::std::align_val_t al)
+	{
+		return memory::alloc(size);
+	}
+	void* operator new(size_t size, ::std::align_val_t al, ::std::nothrow_t const&) noexcept
+	{
+		return memory::alloc(size);
+	}
+	void* operator new[](size_t size, ::std::align_val_t al)
+	{
+		return memory::alloc(size);
+	}
+	void* operator new[](size_t size, ::std::align_val_t al, const ::std::nothrow_t&) noexcept
+	{
+		return memory::alloc(size);
+	}
+	void operator delete(void* p, ::std::align_val_t al) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete(void* p, ::std::align_val_t al, const ::std::nothrow_t&) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete(void* p, u64 size, ::std::align_val_t al) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p, ::std::align_val_t al) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p, ::std::align_val_t al, const ::std::nothrow_t&) noexcept
+	{
+		memory::free(p);
+	}
+	void operator delete[](void* p, u64 size, ::std::align_val_t al) noexcept
 	{
 		memory::free(p);
 	}

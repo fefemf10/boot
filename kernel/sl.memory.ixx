@@ -1,14 +1,13 @@
 export module sl.memory;
 import sl.typetraits;
 import sl.concepts;
-import sl.allocator;
 import sl.type;
 import sl.bit;
 import sl.byte;
 import sl.utility;
 import sl.algorithm;
-import serial;
-namespace std
+import sl.numeric_limits;
+export namespace std
 {
 	template <class T>
 	struct _Get_first_parameter;
@@ -410,7 +409,7 @@ namespace std
 	};
 
 	export template <class T>
-		struct _Default_allocator_traits
+	struct _Default_allocator_traits
 	{
 		using allocator_type = T;
 		using value_type = typename T::value_type;
@@ -519,6 +518,68 @@ namespace std
 
 		template <class U>
 		using rebind_traits = allocator_traits<rebind_alloc<U>>;
+
+		[[nodiscard]] static constexpr __declspec(allocator) pointer allocate(T& alloc, const size_type _Count)
+		{
+			return alloc.allocate(_Count);
+		}
+
+		[[nodiscard]] static constexpr __declspec(allocator) pointer allocate(T& alloc, const size_type _Count, const const_void_pointer _Hint)
+		{
+			if constexpr (_Has_allocate_hint<T, size_type, const_void_pointer>::value)
+				return alloc.allocate(_Count, _Hint);
+			else
+				return alloc.allocate(_Count);
+		}
+
+		[[nodiscard]] static constexpr allocation_result<pointer, size_type> allocate_at_least(T& alloc, const size_type _Count) {
+			if constexpr (_Has_member_allocate_at_least<T, size_type>)
+				return alloc.allocate_at_least(_Count);
+			else
+				return { alloc.allocate(_Count), _Count };
+		}
+
+		static constexpr void deallocate(T& alloc, pointer ptr, size_type count)
+		{
+			alloc.deallocate(ptr, count);
+		}
+
+		template <class _Objty, class... _Types>
+		static constexpr void construct(T& alloc, _Objty* const _Ptr, _Types&&... _Args)
+		{
+			if constexpr (_Uses_default_construct<T, _Objty*, _Types...>::value)
+				std::construct_at(_Ptr, std::forward<_Types>(_Args)...);
+			else
+				alloc.construct(_Ptr, std::forward<_Types>(_Args)...);
+		}
+
+		template <class _Uty>
+		static constexpr void destroy(T& alloc, _Uty* _Ptr)
+		{
+			if constexpr (_Uses_default_destroy<T, _Uty*>::value) {
+				std::destroy_at(_Ptr);
+			}
+			else {
+				alloc.destroy(_Ptr);
+			}
+		}
+
+		[[nodiscard]] static constexpr size_type max_size(const T& alloc) noexcept
+		{
+			if constexpr (_Has_max_size<T>::value)
+				return alloc.max_size();
+			else
+				return (numeric_limits<size_type>::max)() / sizeof(value_type);
+		}
+
+		[[nodiscard]] static constexpr T select_on_container_copy_construction(const T& alloc) {
+			if constexpr (_Has_select_on_container_copy_construction<T>::value) {
+				return alloc.select_on_container_copy_construction();
+			}
+			else {
+				return alloc;
+			}
+		}
 	};
 
 	template <class _Alloc, class _Value_type>
@@ -805,7 +866,7 @@ export namespace std
 
 		return _Backout._Release();
 	}
-	template <class T>
+	export template <class T>
 	class allocator
 	{
 	public:
@@ -820,12 +881,15 @@ export namespace std
 		using size_type = size_t;
 		using difference_type = ptrdiff_t;
 		using propagate_on_container_move_assignment = true_type;
+
 		constexpr allocator() noexcept {}
+
 		constexpr allocator(const allocator&) noexcept = default;
 		template <class U>
 		constexpr allocator(const allocator<U>& other) noexcept {}
 		constexpr ~allocator() = default;
 		constexpr allocator& operator=(const allocator&) = default;
+
 		[[nodiscard]] constexpr __declspec(allocator) T* allocate(const size_t n) const
 		{
 			static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");

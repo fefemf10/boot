@@ -1,14 +1,11 @@
 export module sl.vector;
-import sl.allocator;
 import sl.typetraits;
 import sl.numeric_limits;
+import sl.iterator;
 import sl.memory;
 import sl.utility;
-import sl.iterator;
 import sl.type;
 import sl.initializer_list;
-import serial;
-import console;
 
 export namespace std
 {
@@ -16,8 +13,8 @@ export namespace std
 	class vector
 	{
 	private:
-		using Alty = _Rebind_alloc_t<Allocator, T>;
-		using Alty_traits = allocator_traits<Alty>;
+		using Alty = Allocator;
+		using Alty_traits = allocator_traits<Allocator>;
 	public:
 		static_assert(is_object_v<T>, "The C++ Standard forbids containers of non-object types "
 			"because of [container.requirements].");
