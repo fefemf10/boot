@@ -201,7 +201,7 @@ export namespace std
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 	inline constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // ^^^ !defined(_DEBUG) ^^^
-
+	inline constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
 	template <class _Traits>
 	__declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
 		// allocate _Bytes manually aligned to at least _Big_allocation_alignment
@@ -234,7 +234,7 @@ export namespace std
 		// Extra paranoia on aligned allocation/deallocation; ensure _Ptr_container is
 		// in range [_Min_back_shift, _Non_user_size]
 #ifdef _DEBUG
-		constexpr uintptr_t _Min_back_shift = 2 * sizeof(void*);
+		constexpr uint64_t _Min_back_shift = 2 * sizeof(void*);
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 		constexpr uint64_t _Min_back_shift = sizeof(void*);
 #endif // ^^^ !defined(_DEBUG) ^^^

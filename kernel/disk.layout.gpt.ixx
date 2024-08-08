@@ -27,6 +27,10 @@ export namespace disk::layout::gpt
 		{
 			return partitionTypeGUID[0] || partitionTypeGUID[1];
 		}
+		const u64 size() const
+		{
+			return endingLBA - startingLBA + 1;
+		}
 	};
 	struct GPT
 	{

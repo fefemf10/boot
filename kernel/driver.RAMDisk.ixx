@@ -6,7 +6,7 @@ export namespace driver
 	class RAMDisk
 	{
 	public:
-		RAMDisk(void* memory, u64 sectorCount) : memory(memory), sectorCount(sectorCount){}
+		RAMDisk(void* memory, u64 sectorCount) : memory(memory), sectorCount(sectorCount), sectorSize(512) {}
 		void read(const u64 lba, const u32 sectorCount, void* buffer)
 		{
 			if (lba + sectorCount > this->sectorCount || sectorCount <= 0)
@@ -30,6 +30,6 @@ export namespace driver
 	private:
 		void* memory;
 		u64 sectorCount;
-		u16 sectorSize = 512;
+		u16 sectorSize;
 	};
 }

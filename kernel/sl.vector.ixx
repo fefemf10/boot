@@ -176,7 +176,6 @@ export namespace std
 
 			Alty_traits::construct(alloc, newvec + _Whereoff, std::forward<U>(value)...);
 			_Constructed_first = newvec + _Whereoff;
-
 			if (_Whereptr == m_last)
 			{
 				if constexpr (is_nothrow_move_constructible_v<T> || !is_copy_constructible_v<T>) {

@@ -2,6 +2,7 @@ export module disk.PhysicalRAMDisk;
 import disk.layout.gpt;
 import driver.RAMDisk;
 import types;
+import memory.utils;
 export namespace disk
 {
 	class PhysicalRAMDisk
@@ -13,11 +14,16 @@ export namespace disk
 		}
 		void loadRAMDisk()
 		{
-			driver.read(1, 1, &GPT);
+			u8* buffer = new u8[driver.getSectorSize()];
+			driver.read(1, 1, buffer);
+			memory::copy(&GPT, buffer, sizeof(GPT));
+			delete[] buffer;
 			GPTEntries = new layout::gpt::GPTPartitionEntry[GPT.numberOfPartitionEntries]{};
 			int countPartitionEntryPerSector = driver.getSectorSize() / GPT.sizeOfPartitionEntry;
 			int countSectorsToReadAll = GPT.numberOfPartitionEntries / countPartitionEntryPerSector;
-			driver.read(GPT.partitionEntryLBA, countSectorsToReadAll, GPTEntries);
+			buffer = new u8[driver.getSectorSize() * countSectorsToReadAll];
+			driver.read(GPT.partitionEntryLBA, countSectorsToReadAll, buffer);
+			memory::copy(GPTEntries, buffer, GPT.numberOfPartitionEntries * sizeof(disk::layout::gpt::GPTPartitionEntry));
 			u8 i = 0;
 			for (; i < GPT.numberOfPartitionEntries; ++i)
 			{

@@ -8,9 +8,9 @@ export namespace disk
 	class Manager
 	{
 	public:
-		void addPhysicalRAMDisk(PhysicalRAMDisk physicalRAMDisk)
+		void addPhysicalRAMDisk(PhysicalRAMDisk physicalRAMDisk) noexcept
 		{
-			//physicalRAMDisks.emplace_back(physicalRAMDisk);
+			//physicalRAMDisks.emplace_back(PhysicalRAMDisk(nullptr, 64));
 			PhysicalRAMDisk& prd = physicalRAMDisks.back();
 			prd.loadRAMDisk();
 			/*for (size_t i = 0; i < prd.getNumberOfPartition(); i++)
