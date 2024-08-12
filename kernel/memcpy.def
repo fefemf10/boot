@@ -1,0 +1,10 @@
+EXPORTS
+	memcpy
+	memmove
+	memcmp
+	memset
+	?copy@memory@@YAXPEAXPEBX_K@Z::<!memory.utils>
+	?move@memory@@YAXPEAXPEBX_K@Z::<!memory.utils>
+	?cmp@memory@@YAHPEBX0_K@Z::<!memory.utils>
+	?set@memory@@YAXPEAXE_K@Z::<!memory.utils>
+	?memcmp@@YAHPEBX0_K@Z::<!sl.memory>

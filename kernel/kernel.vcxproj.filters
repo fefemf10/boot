@@ -511,5 +511,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.vbs" />
+    <None Include="memcpy.def">
+      <Filter>Исходные файлы</Filter>
+    </None>
   </ItemGroup>
 </Project>

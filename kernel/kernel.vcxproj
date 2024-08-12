@@ -94,14 +94,13 @@
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <Driver>
       </Driver>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <SectionAlignment>
       </SectionAlignment>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/nocoffgrpinfo %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
@@ -121,6 +120,7 @@
       <StackReserveSize>8192</StackReserveSize>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>memcpy.def</ModuleDefinitionFile>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
@@ -178,7 +178,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <SubSystem>Native</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <Driver>
       </Driver>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
@@ -186,7 +186,6 @@ fasm $(ProjectDir)apinit.asm</Command>
       </SectionAlignment>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalOptions>/nocoffgrpinfo %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -214,6 +213,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <StackCommitSize>8192</StackCommitSize>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>memcpy.def</ModuleDefinitionFile>
     </Link>
     <Lib>
       <SubSystem>Native</SubSystem>
@@ -635,6 +635,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <FileType>Document</FileType>
     </CopyFileToFolders>
     <None Include="debug.vbs" />
+    <None Include="memcpy.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
