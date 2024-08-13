@@ -152,7 +152,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <Optimization>MaxSpeed</Optimization>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)Asm\</AssemblerListingLocation>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -276,6 +276,8 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="fs.FAT.structures.ixx" />
+    <ClCompile Include="fs.FAT16.structures.ixx" />
     <ClCompile Include="fs.FAT32.structures.ixx" />
     <ClCompile Include="GAS.ixx" />
     <ClCompile Include="GDT.ixx">

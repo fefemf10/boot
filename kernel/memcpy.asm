@@ -1,11 +1,13 @@
 format MS64 COFF
 section '.text$mn' code readable executable align 16
-public memcpy as '?copy@memory@@YAXPEAXPEBX_K@Z::<!memory.utils>'
+public memcpy as '?copy@memory@@YAPEAXPEAXPEBX_K@Z::<!memory.utils>'
 public memcpy
-public memmove as '?move@memory@@YAXPEAXPEBX_K@Z::<!memory.utils>'
+public memmove as '?move@memory@@YAPEAXPEAXPEBX_K@Z::<!memory.utils>'
 public memmove
-;extrn __favor:dword
-__FAVOR_ENFSTRG equ 1
+;extrn __favor:byte
+;extrn __isa_available:dword
+__FAVOR_ENFSTRG equ 2
+__ISA_AVAILABLE_AVX equ 8
 memcpy_repmovs:
 	push rdi
     push rsi
@@ -150,13 +152,13 @@ memcpy:
         ret
 		
 	MoveAbove32:
-        cmp      rdx, rcx
-        jae      NoAVX
-
-        lea      r9, [rdx + r8]
+        lea r9, [rdx + r8]
+        cmp rcx, rdx
+        cmovbe r9, rcx
         cmp      rcx, r9
         jb       CopyDown
 
+        jmp      NoAVX
 	; SSE based implementation
 
 	align 16
@@ -168,8 +170,9 @@ memcpy:
 		KB equ 1024
 		FAST_STRING_SSE_THRESHOLD equ 2 * KB
 		cmp r8, FAST_STRING_SSE_THRESHOLD ; jbe 128 byte set
-		jmp MoveWithXMM
+		jbe MoveWithXMM
 		
+        ;test [__favor], __FAVOR_ENFSTRG
 		jmp memcpy_repmovs 
 		
 	MoveWithXMM:
@@ -219,30 +222,30 @@ memcpy:
 		and r9, -SSE_STEP_LEN
 		mov r11, r9
 		shr r11, SSE_LEN_BIT
-		mov r9, MoveSmallXmm
-		mov r11, [r9 + r11*8]
+		mov r10, MoveSmallXmm
+		mov r11, [r10 + r11*8]
 		jmp r11
 	Mov8XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 8]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 8], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 8]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 8], xmm1
 	Mov7XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 7]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 7], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 7]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 7], xmm1
 	Mov6XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 6]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 6], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 6]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 6], xmm1
 	Mov5XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 5]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 5], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 5]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 5], xmm1
 	Mov4XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 4]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 4], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 4]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 4], xmm1
 	Mov3XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 3]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 3], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 3]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 3], xmm1
 	Mov2XmmBlocks:
-		movdqu xmm1, [rdx + r8 - SSE_STEP_LEN * 2]
-		movdqu [rcx + r8 - SSE_STEP_LEN * 2], xmm1
+		movdqu xmm1, [rdx + r9 - SSE_STEP_LEN * 2]
+		movdqu [rcx + r9 - SSE_STEP_LEN * 2], xmm1
 	Mov1XmmBlocks:
 		movdqu [rcx + r8 - SSE_STEP_LEN * 1], xmm5
 	Mov0XmmBlocks:

@@ -1,6 +1,6 @@
 format MS64 COFF
 section '.text$mn' code readable executable align 16
-public memset as '?set@memory@@YAXPEAXE_K@Z::<!memory.utils>'
+public memset as '?set@memory@@YAPEAXPEAXE_K@Z::<!memory.utils>'
 public memset
 ;extrn __favor:dword
 __FAVOR_ENFSTRG equ 1
@@ -87,7 +87,7 @@ memset:
 	SetAbove15:
 		punpcklqdq xmm0, xmm0
 		cmp r8, 32
-		ja NoAVX
+		ja SetAbove32
 
 	; set blocks between 16 and 32 bytes in length
 
@@ -96,7 +96,8 @@ memset:
 		ret
 
 	; SSE based implementation
-
+	SetAbove32:
+		jmp NoAVX
 	align 16
 	NoAVX:
 		SSE_LEN_BIT equ 4
@@ -105,7 +106,7 @@ memset:
 		KB equ 1024
 		FAST_STRING_SSE_THRESHOLD equ 2 * KB
 		cmp r8, FAST_STRING_SSE_THRESHOLD ; jbe 128 byte set
-		jmp SetWithXMM
+		jbe SetWithXMM
 		
 	; set blocks between 16 and 32 bytes in length
 		jmp memset_repstos
@@ -143,23 +144,23 @@ memset:
 		and r9, -SSE_STEP_LEN
 		mov r11, r9
 		shr r11, SSE_LEN_BIT
-		mov r9, SetSmallXmm
-		mov r11, [r9 + r11*8]
+		mov r10, SetSmallXmm
+		mov r11, [r10 + r11*8]
 		jmp r11
 	Set8XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 8], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 8], xmm0
 	Set7XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 7], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 7], xmm0
 	Set6XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 6], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 6], xmm0
 	Set5XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 5], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 5], xmm0
 	Set4XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 4], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 4], xmm0
 	Set3XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 3], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 3], xmm0
 	Set2XmmBlocks:
-		movdqu [rcx + r8 - SSE_STEP_LEN * 2], xmm0
+		movdqu [rcx + r9 - SSE_STEP_LEN * 2], xmm0
 	Set1XmmBlocks:
 		movdqu [rcx + r8 - SSE_STEP_LEN * 1], xmm0
 	Set0XmmBlocks:

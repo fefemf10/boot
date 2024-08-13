@@ -84,21 +84,9 @@ import vcruntime;
 	_enable();
 	std::vector<disk::PhysicalRAMDisk> d;
 	std::vector<disk::VirtualRAMDisk> v;
-	//при emplace_back не копируется sectorSize
 	d.emplace_back(bootInfo.memoryMapEntries[4].address, bootInfo.memoryMapEntries[4].sizeOfBytes).loadRAMDisk();
-	v.emplace_back(d.back());
-	u8* buffer = new u8[512]{};
-	v.back().read(0, 1, buffer);
-	console::puthex(buffer, 512);
-
-	/*std::allocator<disk::PhysicalRAMDisk> a;
-	disk::PhysicalRAMDisk* b = a.allocate(1);
-	std::_Construct_in_place(*b, disk::PhysicalRAMDisk(0, 64));*/
-
-	//console::printf("%lli %i %llx\n", d[0].getNumberOfPartition(), d[0].getGPTEntry(0).startingLBA);
-	console::printf("%lli\n", d.size());
-	//std::vector<disk::PhysicalRAMDisk> p;
-	//disk::Manager m;
+	v.emplace_back(d.back(), 0);
+	v.back().loadFileSystem();
 
 	//console::printf("HPET frequency: %.2f MHz tick = %f ns\n", 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 1000000, 1.0 / (1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod) * 1000000000);
 	

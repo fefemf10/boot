@@ -591,7 +591,7 @@ export namespace console
 			printf((i % 16 == 0) ? "%02x\n" : "%02x ", reinterpret_cast<const u8*>(data)[i - 1]);
 		}
 		if (size % 16 != 0)
-			putc('\n');
+			print("\n");
 	}
 	void putregs(const cpuio::regs& regs)
 	{

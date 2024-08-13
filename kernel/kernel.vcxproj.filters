@@ -52,9 +52,6 @@
     <Filter Include="Исходные файлы\disk\fs\exFAT">
       <UniqueIdentifier>{1f52f8cf-d18c-4916-8de3-5d460eb1ccf2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Исходные файлы\disk\fs\FAT32">
-      <UniqueIdentifier>{025cc7f0-da2f-4ce9-bac6-5e059408ee9e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Исходные файлы\disk\vfs">
       <UniqueIdentifier>{8d1f0272-abb6-47cb-bc1b-d5d86937e2b9}</UniqueIdentifier>
     </Filter>
@@ -63,6 +60,15 @@
     </Filter>
     <Filter Include="Исходные файлы\std\detail">
       <UniqueIdentifier>{8cd62bdd-f050-4c39-af1c-1007f56814db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\disk\fs\FAT">
+      <UniqueIdentifier>{07eea01f-0d1d-49b8-9213-be6c92bb8683}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\disk\fs\FAT\FAT16">
+      <UniqueIdentifier>{ae710163-9c61-4cb6-8423-b07526af43db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\disk\fs\FAT\FAT32">
+      <UniqueIdentifier>{025cc7f0-da2f-4ce9-bac6-5e059408ee9e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -421,7 +427,7 @@
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
     <ClCompile Include="fs.FAT32.structures.ixx">
-      <Filter>Исходные файлы\disk\fs\FAT32</Filter>
+      <Filter>Исходные файлы\disk\fs\FAT\FAT32</Filter>
     </ClCompile>
     <ClCompile Include="disk.layout.mbr.ixx">
       <Filter>Исходные файлы\disk\layout</Filter>
@@ -458,6 +464,12 @@
     </ClCompile>
     <ClCompile Include="vcruntime.ixx">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="fs.FAT16.structures.ixx">
+      <Filter>Исходные файлы\disk\fs\FAT\FAT16</Filter>
+    </ClCompile>
+    <ClCompile Include="fs.FAT.structures.ixx">
+      <Filter>Исходные файлы\disk\fs\FAT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

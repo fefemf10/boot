@@ -56,6 +56,10 @@ export namespace disk
 		{
 			return numberOfPartitions;
 		}
+		u16 getSectorSize() const
+		{
+			return driver.getSectorSize();
+		}
 		const layout::gpt::GPTPartitionEntry& getGPTEntry(const u64 index) const
 		{
 			return GPTEntries[index];
