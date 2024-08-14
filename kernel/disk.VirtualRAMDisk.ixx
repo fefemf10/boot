@@ -4,6 +4,7 @@ import disk.PhysicalRAMDisk;
 import disk.layout.gpt;
 import fs.FAT.structures;
 import memory.utils;
+import sl.string_view;
 import console;
 export namespace disk
 {
@@ -28,18 +29,10 @@ export namespace disk
 		void loadFileSystem()
 		{
 			u8* buffer = new u8[physicalRAMDisk.getSectorSize()];
-			console::printf("%llx\n", &entry);
 			physicalRAMDisk.read(entry.startingLBA, 1, buffer);
-			console::puthex(&fatbs, 90);
-			console::puthex(buffer, 90);
-			memory::copy(&fatbs, buffer, 90);
-			console::printf("%llx\n", &entry);
-			console::puthex(&fatbs, 96);
-			console::puthex(buffer, 96);
-			i32 t = memory::cmp(&fatbs, buffer, 90);
-			console::printf("\n%i", t);
-			//readFAT16Entry(0);
-			//console::printf("%x ", );
+			memory::copy(&fatbs, buffer, sizeof(fatbs));
+			getFATDirectoryOfFile("a.txt");
+
 			/*console::printf("%x ", readFAT16Entry(1));
 			console::printf("%x ", readFAT16Entry(2));
 			console::printf("%x ", readFAT16Entry(3));
@@ -47,19 +40,57 @@ export namespace disk
 			delete[] buffer;
 		}
 	private:
-		
+		void getFATDirectoryOfFile(std::string_view path)
+		{
+			u8* buffer = new u8[fatbs.getRootDirSizeInSectors() * physicalRAMDisk.getSectorSize()];
+			physicalRAMDisk.read(entry.startingLBA + fatbs.getFirstRootDirSector(), fatbs.getRootDirSizeInSectors(), buffer);
+			char8_t* nameFile;
+			for (size_t i = 0; i < fatbs.rootEntryCount; i++)
+			{
+				u8* entry = buffer + i * sizeof(fs::FAT::FATDirectory);
+				if (entry[0] == 0)
+					break;
+				if (entry[0] == 0xE5)
+					continue;
+				if (entry[11] == 0x0F)
+				{
+					fs::FAT::LFN* lfn = reinterpret_cast<fs::FAT::LFN*>(entry);
+					if (lfn->longNameFlag == 0x01)
+						nameFile = new char8_t[13 * lfn->ord + 1]{};
+					memory::copy(nameFile + (lfn->ord - 1) * 13, lfn->name1, 10);
+					memory::copy(nameFile + (lfn->ord - 1) * 13 + 10, lfn->name2, 12);
+					memory::copy(nameFile + (lfn->ord - 1) * 13 + 22, lfn->name3, 4);
+				}
+				else
+				{
+					fs::FAT::FATDirectory* directory = reinterpret_cast<fs::FAT::FATDirectory*>(entry);
+					if (nameFile)
+					{
+						console::printf("%036c", nameFile);
+						delete[] nameFile;
+					}
+					else
+					{
+						console::printf("Name: %011c\tFileSize: %u", directory->name, directory->filesize);
+					}
+				}
+			}
+			delete[] buffer;
+		}
+		u32 getFirstSectorOfCluster(u32 n)
+		{
+			return fatbs.getFirstDataSector() + (n - 2) * fatbs.sectorsPerCluster;
+		}
 		u16 readFAT16Entry(u32 n)
 		{
-			/*console::printf("%i ", fatbs.getFirstFatSector());
 			u32 sector = fatbs.getFirstFatSector() + (n * 2 / fatbs.bytesPerSector);
 			u32 offset = (n * 2) % fatbs.bytesPerSector;
-			console::printf("%llx ", &entry);*/
-			//u16 result;
-			//u8* buffer = new u8[physicalRAMDisk.getSectorSize()];
-			////physicalRAMDisk.read(entry.startingLBA + sector, 1, buffer);
-			////result = *reinterpret_cast<u16*>(buffer + offset);
-			//delete[] buffer;
-			return 0;
+			u16 result;
+			u8* buffer = new u8[physicalRAMDisk.getSectorSize()];
+			physicalRAMDisk.read(entry.startingLBA + sector, 1, buffer);
+			result = *reinterpret_cast<u16*>(buffer + offset);
+			delete[] buffer;
+			return result;
 		}
 		u32 readFAT32Entry(u32 n)
 		{

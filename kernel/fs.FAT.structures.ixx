@@ -90,4 +90,38 @@ export namespace fs::FAT
 			}
 		}
 	};
+	struct FATDirectory
+	{
+		char8_t name[11];
+		u8 attribute;
+		u8 ntres;
+		u8 createTimeTenth;
+		u16 createTime;
+		u16 createDate;
+		u16 lastAccessDate;
+		u16 firstClusterHI;
+		u16 writeTime;
+		u16 writeDate;
+		u16 firstClusterLO;
+		u32 filesize;
+		u8 getChecksum() const
+		{
+			u8 sum{};
+			for (int i = 0; i < 11; ++i)
+				sum = (sum >> 1) + (sum << 7) + name[i];
+			return sum;
+		}
+	};
+	struct LFN
+	{
+		u8 ord : 6;
+		u8 longNameFlag : 2;
+		char8_t name1[10];
+		u8 attribute;
+		u8 type;
+		u8 checksum;
+		char8_t name2[12];
+		u16 firsuClusterLO;
+		char8_t name3[4];
+	};
 }

@@ -1,4 +1,4 @@
-export module sl;
+export module sl.string;
 import sl.typetraits;
 import sl.numeric_limits;
 import sl.memory;
