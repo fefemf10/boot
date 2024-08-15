@@ -39,6 +39,38 @@ namespace console
 
 export namespace console
 {
+	char* from_utf16(const char16_t code_point, char* dest) noexcept
+	{
+		switch ((code_point < 0x7FF) ? (code_point < 0x7F) ? 0 : 1 : 2)
+		{
+		case 0:
+		{
+			*dest++ = static_cast<u8>(code_point & 0xFF);
+			break;
+		}
+		case 1:
+		{
+			const auto trunc1 = code_point >> 6u;
+			const auto trunc2 = code_point % 64u;
+			*dest++ = 192u | (trunc1 & 0b111111);
+			*dest++ = 128u | (trunc2 & 0b111111);
+			break;
+		}
+		case 2:
+		{
+			const auto trunc1 = code_point >> 12u;
+			const auto trunc2 = code_point >> 6u;
+			const auto trunc3 = code_point % 64u;
+			*dest++ = 224u | (trunc1 & 0b1111);
+			*dest++ = 128u | (trunc2 & 0b111111);
+			*dest++ = 128u | (trunc3 & 0b111111);
+			break;
+		}
+		default:;
+		}
+
+		return dest;
+	}
 	enum Color
 	{
 		BLACK = 0x000C0C0C,

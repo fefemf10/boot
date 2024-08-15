@@ -44,7 +44,8 @@ export namespace disk
 		{
 			u8* buffer = new u8[fatbs.getRootDirSizeInSectors() * physicalRAMDisk.getSectorSize()];
 			physicalRAMDisk.read(entry.startingLBA + fatbs.getFirstRootDirSector(), fatbs.getRootDirSizeInSectors(), buffer);
-			char8_t* nameFile;
+			char16_t* nameFileUTF16;
+			char* nameFileUTF8;
 			for (size_t i = 0; i < fatbs.rootEntryCount; i++)
 			{
 				u8* entry = buffer + i * sizeof(fs::FAT::FATDirectory);
@@ -56,18 +57,24 @@ export namespace disk
 				{
 					fs::FAT::LFN* lfn = reinterpret_cast<fs::FAT::LFN*>(entry);
 					if (lfn->longNameFlag == 0x01)
-						nameFile = new char8_t[13 * lfn->ord + 1]{};
-					memory::copy(nameFile + (lfn->ord - 1) * 13, lfn->name1, 10);
-					memory::copy(nameFile + (lfn->ord - 1) * 13 + 10, lfn->name2, 12);
-					memory::copy(nameFile + (lfn->ord - 1) * 13 + 22, lfn->name3, 4);
+						nameFileUTF16 = new char16_t[13 * lfn->ord + 1] {};
+					memory::copy(nameFileUTF16 + (lfn->ord - 1) * 13, lfn->name1, sizeof(lfn->name1));
+					memory::copy(nameFileUTF16 + (lfn->ord - 1) * 13 + 5, lfn->name2, sizeof(lfn->name2));
+					memory::copy(nameFileUTF16 + (lfn->ord - 1) * 13 + 11, lfn->name3, sizeof(lfn->name3));
 				}
 				else
 				{
 					fs::FAT::FATDirectory* directory = reinterpret_cast<fs::FAT::FATDirectory*>(entry);
-					if (nameFile)
+					if (nameFileUTF16)
 					{
-						console::printf("%036c", nameFile);
-						delete[] nameFile;
+						for (size_t i = 0, j = 0; ; i++)
+						{
+							char* c = &nameFileUTF8[j];
+							char* d = &nameFileUTF8[j];
+							d = console::from_utf16(nameFileUTF16[i], c);
+						}
+						console::printf("%s", nameFileUTF8);
+						delete[] nameFileUTF16;
 					}
 					else
 					{

@@ -116,12 +116,12 @@ export namespace fs::FAT
 	{
 		u8 ord : 6;
 		u8 longNameFlag : 2;
-		char8_t name1[10];
+		char16_t name1[5];
 		u8 attribute;
 		u8 type;
 		u8 checksum;
-		char8_t name2[12];
+		char16_t name2[6];
 		u16 firsuClusterLO;
-		char8_t name3[4];
+		char16_t name3[2];
 	};
 }
