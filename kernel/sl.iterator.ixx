@@ -132,7 +132,7 @@ export namespace std
 		using reference = const value_type&;
 
 		constexpr const_linear_iterator() noexcept = default;
-		constexpr const_linear_iterator(typename T::pointer ptr, const T* container) noexcept : ptr(ptr), container(const_cast<T*>(container)) {}
+		constexpr const_linear_iterator(typename T::pointer ptr, size_t offset = 0) noexcept : ptr(ptr + offset) {}
 		[[nodiscard]] constexpr reference operator*() const noexcept
 		{
 			return *ptr;
@@ -165,7 +165,6 @@ export namespace std
 		}
 		constexpr const_linear_iterator& operator+=(const difference_type offset) noexcept
 		{
-			verify_offset(offset);
 			ptr += offset;
 			return *this;
 		}
@@ -177,7 +176,6 @@ export namespace std
 		}
 		constexpr const_linear_iterator& operator-=(const difference_type offset) noexcept
 		{
-			verify_offset(-offset);
 			ptr -= offset;
 			return *this;
 		}
@@ -199,21 +197,7 @@ export namespace std
 		{
 			return ptr <=> rhs.ptr;
 		}
-	protected:
-		constexpr void verify_offset(const difference_type offset) noexcept
-		{
-			static_assert(offset == 0 || ptr, "cannot seek value-initialized vector iterator");
-			if constexpr (offset < 0)
-			{
-				static_assert(offset >= container->first - ptr, "cannot seek vector iterator before begin");
-			}
-			if constexpr (offset > 0)
-			{
-				static_assert(offset <= container->last - ptr, "cannot seek vector iterator after end");
-			}
-		}
 		typename T::pointer ptr{};
-		const T* container;
 	};
 
 	template <class T>
@@ -227,7 +211,7 @@ export namespace std
 		using reference = value_type&;
 
 		constexpr linear_iterator() noexcept = default;
-		constexpr linear_iterator(typename T::pointer ptr, const T* container) noexcept : const_linear_iterator<T>(ptr, container) {}
+		constexpr linear_iterator(typename T::pointer ptr, size_t offset) noexcept : const_linear_iterator<T>(ptr, offset) {}
 		[[nodiscard]] constexpr reference operator*() const noexcept
 		{
 			return const_cast<reference>(base::operator*());

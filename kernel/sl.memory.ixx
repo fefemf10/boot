@@ -715,6 +715,86 @@ export namespace std
 		}
 	}
 
+	template <class _FwdIt, class _Ty>
+		constexpr void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
+		if constexpr (_Is_vb_iterator<_FwdIt, true>) {
+			std::_Fill_vbool(_First, _Last, _Val);
+		}
+		else {
+			auto _UFirst = _First;
+			const auto _ULast = _Last;
+			if (!std::is_constant_evaluated())
+			{
+				if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
+					std::_Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
+					return;
+				}
+				else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+					if (std::_Is_all_bits_zero(_Val)) {
+						std::_Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
+						return;
+					}
+				}
+			}
+
+			for (; _UFirst != _ULast; ++_UFirst) {
+				*_UFirst = _Val;
+			}
+		}
+	}
+
+	template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+		void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
+		// copy _Val through [_First, _Last)
+		// not parallelized as benchmarks show it isn't worth it
+		return std::fill(_First, _Last, _Val);
+	}
+
+	template <class _OutIt, class _Diff, class _Ty>
+		constexpr _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {
+		// copy _Val _Count times through [_Dest, ...)
+		_Algorithm_int_t<_Diff> _Count = _Count_raw;
+		if (0 < _Count) {
+			if constexpr (_Is_vb_iterator<_OutIt, true>) {
+				const auto _Last = _Dest + static_cast<typename _OutIt::difference_type>(_Count);
+				std::_Fill_vbool(_Dest, _Last, _Val);
+				return _Last;
+			}
+			else {
+				auto _UDest = _Dest;
+				if (!std::is_constant_evaluated())
+				{
+					if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
+						std::_Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
+						std::_Seek_wrapped(_Dest, _UDest + _Count);
+						return _Dest;
+					}
+					else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
+						if (std::_Is_all_bits_zero(_Val)) {
+							std::_Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
+							std::_Seek_wrapped(_Dest, _UDest + _Count);
+							return _Dest;
+						}
+					}
+				}
+
+				for (; 0 < _Count; --_Count, (void) ++_UDest) {
+					*_UDest = _Val;
+				}
+
+				std::_Seek_wrapped(_Dest, _UDest);
+			}
+		}
+		return _Dest;
+	}
+
+	template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+		_FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept /* terminates */ {
+		// copy _Val _Count times through [_Dest, ...)
+		// not parallelized as benchmarks show it isn't worth it
+		return std::fill_n(_Dest, _Count_raw, _Val);
+	}
+
 	template <class _Alloc>
 	constexpr _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
 		_Alloc_ptr_t<_Alloc> _First, _Alloc_size_t<_Alloc> _Count, const typename _Alloc::value_type& _Val, _Alloc& _Al) {
@@ -866,6 +946,34 @@ export namespace std
 
 		return _Backout._Release();
 	}
+
+	template <class _FwdIt1, class _FwdIt2>
+	constexpr _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+		// swap [_First1, _Last1) with [_First2, ...)
+
+#if _USE_STD_VECTOR_ALGORITHMS
+		using _Elem1 = remove_reference_t<_Iter_ref_t<_FwdIt1>>;
+		using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
+		if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1>
+			&& _Iterators_are_contiguous<_FwdIt1, _FwdIt2>) {
+#if _HAS_CXX20
+			if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+			{
+				::__std_swap_ranges_trivially_swappable_noalias(
+					_STD _To_address(_First1), _STD _To_address(_Last1), _STD _To_address(_First2));
+				return _First2 + (_Last1 - _First1);
+			}
+		}
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+		for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+			swap(*_First1, *_First2);
+		}
+
+		return _First2;
+	}
+
 	export template <class T>
 	class allocator
 	{
@@ -895,7 +1003,7 @@ export namespace std
 			static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
 			return static_cast<T*>(std::_Allocate<std::_New_alignof<T>>(std::_Get_size_of_n<sizeof(T)>(n)));
 		}
-		//_CONSTEXPR20 void deallocate(T* const _Ptr, const size_t _Count) {
+		//constexpr void deallocate(T* const _Ptr, const size_t _Count) {
 		//	_STL_ASSERT(_Ptr != nullptr || _Count == 0, "null pointer cannot point to a block of non-zero size");
 		//	// no overflow check on the following multiply; we assume _Allocate did that check
 		//	std::_Deallocate<_New_alignof<T>>(_Ptr, sizeof(T) * _Count);
@@ -914,8 +1022,4 @@ export namespace std
 	{
 		return lhs == rhs;
 	}
-}
-export
-{
-	[[nodiscard]] int memcmp(void const* buf1, void const* buf2, size_t size);
 }

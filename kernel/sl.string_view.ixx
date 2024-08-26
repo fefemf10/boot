@@ -9,7 +9,7 @@ import sl.compare;
 
 export namespace std
 {
-	template <class T, class int_type, class Traits = std::char_traits<T, int_type>>
+	template <class T, class int_type, class Traits = std::char_traits<T>>
 	class basic_string_view
 	{
 	public:
@@ -293,7 +293,7 @@ export namespace std
 	{
 		return static_cast<_Get_comparison_category_t<Traits>>(left.compare(right) <=> 0);
 	}
-	export using string_view = std::basic_string_view<char, unsigned char>;
+	export using string_view = std::basic_string_view<char, int>;
 	export using u8string_view = std::basic_string_view<char8_t, unsigned int>;
 	export using u16string_view = std::basic_string_view<char16_t, unsigned short>;
 	export using u32string_view = std::basic_string_view<char32_t, unsigned int>;

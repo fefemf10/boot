@@ -82,18 +82,18 @@ export namespace std
 			_Destroy_range(m_first, m_last, alloc);
 			m_last = m_first;
 		}
-		[[nodiscard]] constexpr T& operator[](const size_type pos) noexcept { return m_first[pos]; }
-		[[nodiscard]] constexpr const T& operator[](const size_type pos) const noexcept { return m_first[pos]; }
-		[[nodiscard]] constexpr iterator begin() noexcept { return iterator(m_first, std::addressof(*this)); }
-		[[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator(m_first, std::addressof(*this)); }
+		[[nodiscard]] constexpr reference operator[](const size_type pos) noexcept { return m_first[pos]; }
+		[[nodiscard]] constexpr const_reference operator[](const size_type pos) const noexcept { return m_first[pos]; }
+		[[nodiscard]] constexpr iterator begin() noexcept { return iterator(m_first); }
+		[[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator(m_first); }
 		[[nodiscard]] constexpr const_iterator cbegin() const noexcept { return begin(); }
-		[[nodiscard]] constexpr iterator end() noexcept { return iterator(m_last, std::addressof(*this)); }
-		[[nodiscard]] constexpr const_iterator end() const noexcept { return const_iterator(m_last, std::addressof(*this)); }
+		[[nodiscard]] constexpr iterator end() noexcept { return iterator(m_last); }
+		[[nodiscard]] constexpr const_iterator end() const noexcept { return const_iterator(m_last); }
 		[[nodiscard]] constexpr const_iterator cend() const noexcept { return end(); }
-		[[nodiscard]] constexpr T& front() noexcept { return *m_first; }
-		[[nodiscard]] constexpr const T& front() const noexcept { return *m_first; }
-		[[nodiscard]] constexpr T& back() noexcept { return *(m_last - 1); }
-		[[nodiscard]] constexpr const T& back() const noexcept { return *(m_last - 1); }
+		[[nodiscard]] constexpr reference front() noexcept { return *m_first; }
+		[[nodiscard]] constexpr const_reference front() const noexcept { return *m_first; }
+		[[nodiscard]] constexpr reference back() noexcept { return *(m_last - 1); }
+		[[nodiscard]] constexpr const_reference back() const noexcept { return *(m_last - 1); }
 	public:
 		constexpr size_t calculateGrow(const size_type newSize) const noexcept
 		{

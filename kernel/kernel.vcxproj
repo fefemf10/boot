@@ -160,7 +160,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ShowIncludes>true</ShowIncludes>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <DiagnosticsFormat>Column</DiagnosticsFormat>
@@ -477,11 +477,13 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="sl.algorithm.ixx" />
+    <ClCompile Include="sl.array.ixx" />
     <ClCompile Include="sl.atomic.ixx" />
     <ClCompile Include="sl.bit.ixx" />
     <ClCompile Include="sl.byte.ixx" />
     <ClCompile Include="sl.chartraits.ixx" />
     <ClCompile Include="sl.compare.ixx" />
+    <ClCompile Include="sl.compat.ixx" />
     <ClCompile Include="sl.concepts.ixx" />
     <ClCompile Include="sl.Flags.ixx" />
     <ClCompile Include="sl.format.ixx">

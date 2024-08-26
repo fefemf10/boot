@@ -74,7 +74,7 @@ export namespace std
 
 	template <class... Traits> inline constexpr bool disjunction_v = disjunction<Traits...>::value;
 
-	template <class T, class... Types> inline constexpr bool Is_any_of_v = disjunction_v<is_same<T, Types>...>;
+	template <class T, class... Types> constexpr bool Is_any_of_v = (is_same_v<T, Types> || ...);
 
 	template <class T> inline constexpr bool is_integral_v = Is_any_of_v<remove_cv_t<T>, bool, char, signed char, unsigned char, char8_t, char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>;
 	template <class T> struct is_integral : bool_constant<is_integral_v<T>> {};

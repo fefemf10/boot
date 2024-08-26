@@ -1,6 +1,7 @@
 export module sl.atomic;
 import sl.typetraits;
 import sl.concepts;
+import sl.compat;
 import sl.memory;
 import sl.type;
 import intrinsic;

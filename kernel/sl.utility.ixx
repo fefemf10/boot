@@ -138,13 +138,18 @@ namespace std
 		using difference_type = typename T::difference_type;
 	};
 
-	//template <class T>
-	//concept _Destructible_object = is_object_v<T> && destructible<T>;
+	
+
+	template <class T>
+	concept _Destructible_object = is_object_v<T> && destructible<T>;
 }
 export namespace std
 {
 	template <class T>
 	constexpr T* addressof(T& value) noexcept;
+
+	template <class _Ty>
+	using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 
 	template <class T>
 	struct pointer_traits {
@@ -605,6 +610,22 @@ export namespace std
 	template <class T, class = void> inline constexpr bool _Is_iterator_v = false;
 	template <class T> inline constexpr bool _Is_iterator_v<T, void_t<_Iter_cat_t<T>>> = true;
 	template <class T> struct _Is_iterator : bool_constant<_Is_iterator_v<T>> {};
+
+	template <class _Iter, class _UIter, class = void>
+	constexpr bool _Wrapped_seekable_v = false;
+
+	template <class _Iter, class _UIter>
+	constexpr bool _Wrapped_seekable_v<_Iter, _UIter, void_t<decltype(std::declval<_Iter&>()._Seek_to(std::declval<_UIter>()))>> = true;
+
+	template <class _Iter, class _UIter>
+	constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
+		if constexpr (_Wrapped_seekable_v<_Iter, _UIter>) {
+			_It._Seek_to(std::forward<_UIter>(_UIt));
+		}
+		else {
+			_It = std::forward<_UIter>(_UIt);
+		}
+	}
 
 	template <class... Types>
 	class tuple;
@@ -1466,5 +1487,79 @@ export namespace std
 	_FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept
 	{
 		return copy(_First, _Last, _Dest);
+	}
+
+	template <class _InIt, class _Diff>
+	constexpr void advance(_InIt& _Where, _Diff _Off)
+	{
+		if constexpr (_Is_ranges_random_iter_v<_InIt>) {
+			_Where += _Off;
+		}
+		else {
+			if constexpr (is_signed_v<_Diff> && !_Is_ranges_bidi_iter_v<_InIt>) {
+				static_assert(_Off >= 0, "negative advance of non-bidirectional iterator");
+			}
+
+			decltype(auto) _UWhere = std::move(_Where);
+			constexpr bool _Need_rewrap = !is_reference_v<decltype(std::move(_Where))>;
+
+			if constexpr (is_signed_v<_Diff> && _Is_ranges_bidi_iter_v<_InIt>) {
+				for (; _Off < 0; ++_Off) {
+					--_UWhere;
+				}
+			}
+
+			for (; 0 < _Off; --_Off) {
+				++_UWhere;
+			}
+
+			if constexpr (_Need_rewrap) {
+				std::_Seek_wrapped(_Where, std::move(_UWhere));
+			}
+		}
+	}
+
+	template <class _InIt>
+	[[nodiscard]] constexpr _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last)
+	{
+		if constexpr (_Is_ranges_random_iter_v<_InIt>)
+			return _Last - _First;
+		else
+		{
+			auto _UFirst = _First;
+			const auto _ULast = _Last;
+			_Iter_diff_t<_InIt> _Off = 0;
+			for (; _UFirst != _ULast; ++_UFirst)
+				++_Off;
+			return _Off;
+		}
+	}
+
+	template <class _InIt>
+	constexpr _InIt _Next_iter(_InIt _First)
+	{
+		return ++_First;
+	}
+
+	template <class _InIt>
+	[[nodiscard]] constexpr _InIt next(_InIt _First, typename iterator_traits<_InIt>::difference_type _Off = 1)
+	{
+		static_assert(_Is_ranges_input_iter_v<_InIt>, "next requires input iterator");
+		std::advance(_First, _Off);
+		return _First;
+	}
+
+	template <class _BidIt>
+	constexpr _BidIt _Prev_iter(_BidIt _First)
+	{
+		return --_First;
+	}
+
+	template <class _BidIt>
+	[[nodiscard]] constexpr _BidIt prev(_BidIt _First, typename iterator_traits<_BidIt>::difference_type _Off = 1)
+	{
+		static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
+		std::advance(_First, -_Off);
+		return _First;
 	}
 }
