@@ -6,7 +6,7 @@ import sl.concepts;
 import sl.compare;
 import sl.typetraits;
 import sl.iterator_core;
-import memory;
+import sl.neww;
 namespace std
 {
 	template <class T>
@@ -148,8 +148,8 @@ export namespace std
 	template <class T>
 	constexpr T* addressof(T& value) noexcept;
 
-	template <class _Ty>
-	using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
+	template <class T>
+	using _Algorithm_int_t = conditional_t<is_integral_v<T>, T, ptrdiff_t>;
 
 	template <class T>
 	struct pointer_traits {
@@ -275,7 +275,10 @@ export namespace std
 			::new (static_cast<void*>(std::addressof(_Obj))) T(std::forward<Types>(Args)...);
 		}
 	}
-
+	template <class T>
+	void _Default_construct_in_place(T& _Obj) noexcept(is_nothrow_default_constructible_v<T>) {
+		::new (static_cast<void*>(std::addressof(_Obj))) T;
+	}
 	template <class T>
 	concept _Can_difference = requires(const T & __a, const T & __b) {
 		{ __a - __b } -> integral;
@@ -607,9 +610,16 @@ export namespace std
 	template <class... T> using _Common_diff_t = common_type_t<_Iter_diff_t<T>...>;
 	template <class T> using _Iter_cat_t = typename iterator_traits<T>::iterator_category;
 
-	template <class T, class = void> inline constexpr bool _Is_iterator_v = false;
-	template <class T> inline constexpr bool _Is_iterator_v<T, void_t<_Iter_cat_t<T>>> = true;
-	template <class T> struct _Is_iterator : bool_constant<_Is_iterator_v<T>> {};
+	template <class T> concept _Iterator_for_container = requires { typename _Iter_cat_t<T>; };
+	template <class T> constexpr bool _Is_iterator_v = _Iterator_for_container<T>;
+	template <class T> struct _Is_iterator : bool_constant<_Iterator_for_container<T>> {};
+
+	template <class T>
+	concept _Allocator_for_container = requires(T & _Alloc) {
+		typename T::value_type;
+		_Alloc.deallocate(_Alloc.allocate(size_t{ 1 }), size_t{ 1 });
+	};
+	template <class T> struct _Is_allocator : bool_constant<_Allocator_for_container<T>> {};
 
 	template <class _Iter, class _UIter, class = void>
 	constexpr bool _Wrapped_seekable_v = false;

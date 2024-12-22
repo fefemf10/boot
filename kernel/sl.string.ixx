@@ -10,6 +10,9 @@ import sl.chartraits;
 import sl.concepts;
 import sl.type;
 import sl.typetraits;
+import sl.compare;
+import sl.string_view;
+export import sl.neww;
 export namespace std
 {
 	enum class ConstructStrategy : uint8_t { FromChar, FromPtr, FromString };
@@ -52,6 +55,11 @@ export namespace std
 		static constexpr bool _Can_memcpy_val = _Is_specialization_v<Traits, char_traits>&& is_trivial_v<pointer>;
 		template <class _Iter>
 		using _Is_elem_cptr = bool_constant<Is_any_of_v<_Iter, const T* const, T* const, const T*, T*>>;
+
+		template <class _StringViewIsh>
+		using _Is_string_view_ish =
+			enable_if_t<conjunction_v<is_convertible<const _StringViewIsh&, basic_string_view<T, Traits>>,
+			negation<is_convertible<const _StringViewIsh&, const T*>>>, int>;
 
 		constexpr basic_string() noexcept(is_nothrow_default_constructible_v<Alty>) { construct_empty(); }
 		constexpr explicit basic_string(const Allocator& alloc) noexcept : alloc(alloc) { construct_empty(); }
@@ -109,9 +117,31 @@ export namespace std
 					constructFromIter(std::move(_UFirst), std::move(_ULast));
 			}
 		}
+		template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
+		constexpr explicit basic_string(const _StringViewIsh& _Right, const Allocator& _Al = Allocator())
+			: basic_string(Allocator()) {
+			const basic_string_view<T, Traits> _As_view = _Right;
+			construct<ConstructStrategy::FromPtr>(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
+		}
+
+		template <class _Ty, enable_if_t<is_convertible_v<const _Ty&, basic_string_view<T, Traits>>, int> = 0>
+		constexpr basic_string(
+			const _Ty& _Right, const size_type _Roff, const size_type _Count, const Allocator& _Al = Allocator())
+			: basic_string(Allocator()) { // construct from _Right [_Roff, _Roff + _Count) using _Al
+			const basic_string_view<T, Traits> _As_view = _Right;
+			const auto _As_sub_view = _As_view.substr(_Roff, _Count);
+			construct<ConstructStrategy::FromPtr>(_As_sub_view.data(), _Convert_size<size_type>(_As_sub_view.size()));
+		}
 		constexpr basic_string(basic_string&& right) noexcept : alloc(right.alloc)
 		{
 			takeContents(right);
+		}
+		[[nodiscard]] constexpr const T* c_str() const noexcept
+		{
+			T* result = m_data.buffer;
+			if (isLargeString())
+				result = m_data.ptr;
+			return result;
 		}
 		[[nodiscard]] constexpr T* data() noexcept
 		{
@@ -154,6 +184,14 @@ export namespace std
 		[[nodiscard]] constexpr const T& operator[](const size_t pos) const noexcept
 		{
 			return data()[pos];
+		}
+		[[nodiscard]] constexpr bool operator==(const const_iterator& rhs) const noexcept
+		{
+			return data() == rhs.data();
+		}
+		[[nodiscard]] constexpr strong_ordering operator<=>(const const_iterator& rhs) const noexcept
+		{
+			return data() <=> rhs.data();
 		}
 		[[nodiscard]] constexpr iterator begin() noexcept
 		{
@@ -248,6 +286,37 @@ export namespace std
 		constexpr ~basic_string() noexcept
 		{
 			_Tidy_deallocate();
+		}
+		constexpr operator basic_string_view<T, Traits>() const noexcept
+		{
+			return basic_string_view<T, Traits>{data(), m_size};
+		}
+		constexpr void push_back(const T _Ch)
+		{
+			const size_type _Old_size = m_size;
+			if (_Old_size < m_capacity) {
+				m_size = _Old_size + 1;
+				T* const _Ptr = data();
+				Traits::assign(_Ptr[_Old_size], _Ch);
+				Traits::assign(_Ptr[_Old_size + 1], T());
+				return;
+			}
+
+			_Reallocate_grow_by(
+				1,
+				[](T* const _New_ptr, const T* const _Old_ptr, const size_type _Old_size, const T _Ch)
+				{
+					Traits::copy(_New_ptr, _Old_ptr, _Old_size);
+					Traits::assign(_New_ptr[_Old_size], _Ch);
+					Traits::assign(_New_ptr[_Old_size + 1], T());
+				},
+				_Ch);
+		}
+
+		constexpr void pop_back() noexcept
+		{
+			const size_type _Old_size = m_size;
+			_Eos(_Old_size - 1);
 		}
 		constexpr basic_string& operator=(const basic_string& right) {
 			if (this == std::addressof(right))
@@ -427,7 +496,6 @@ export namespace std
 			else {
 				basic_string _Right(_UFirst, _ULast, Allocator());
 				if (m_capacity < _Right.m_capacity) {
-					_Mypair._Myval2._Orphan_all();
 					_Swap_data(_Right);
 					return *this;
 				}
@@ -446,7 +514,7 @@ export namespace std
 			++capacity; // Take null terminator into consideration
 			pointer ptr = nullptr;
 			if constexpr (_Policy == AllocationPolicy::AtLeast)
-				ptr = alloc.allocate_at_least(capacity);
+				ptr = alloc.allocate_at_least(capacity).ptr;
 			else
 				ptr = alloc.allocate(capacity);
 			// Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
@@ -571,7 +639,7 @@ export namespace std
 		{
 			if (std::is_constant_evaluated())
 				for (size_t i = 0; i < SSOBufferSize; i++)
-					m_data.buffer = value_type();
+					m_data.buffer[i] = value_type();
 		}
 		[[nodiscard]] constexpr size_type clampSuffixSize(const size_type offset, const size_type size) const noexcept
 		{
@@ -649,6 +717,84 @@ export namespace std
 				construct<ConstructStrategy::FromPtr>(_Right_ptr + offset, _Result_size);
 			}
 		}
+
+		[[nodiscard]] constexpr basic_string substr(const size_type _Off = 0, const size_type _Count = npos)&& {
+			// return [_Off, _Off + _Count) as new string, potentially moving, default-constructing its allocator
+			return basic_string{ std::move(*this), _Off, _Count };
+		}
+public:
+		constexpr bool _Equal(const basic_string& _Right) const noexcept {
+			// compare [0, size()) with _Right for equality
+			return _Traits_equal<Traits>(data(), m_size, _Right.data(), _Right.m_size);
+		}
+
+		constexpr bool _Equal(const T* const _Ptr) const noexcept {
+			// compare [0, size()) with _Ptr for equality
+			return _Traits_equal<Traits>(data(), m_size, _Ptr, Traits::length(_Ptr));
+		}
+private:
+		template <class _Fty, class... _ArgTys>
+		constexpr basic_string& _Reallocate_for(const size_type _New_size, _Fty _Fn, _ArgTys... _Args) {
+			// reallocate to store exactly _New_size elements, new buffer prepared by
+			// _Fn(_New_ptr, _New_size, _Args...)
+			if (_New_size > max_size()) {
+				//_Xlen_string(); // result too long
+			}
+
+			const size_type _Old_capacity = m_capacity;
+			size_type _New_capacity = calculateGrow(_New_size);
+			const pointer _New_ptr = AllocateForCapacity(alloc, _New_capacity); // throws
+
+			m_size = _New_size;
+			m_capacity = _New_capacity;
+			_Fn(_New_ptr, _New_size, _Args...);
+			if (_Old_capacity > SSOCapacity) {
+				DeallocateForCapacity(alloc, m_data.ptr, _Old_capacity);
+				m_data.ptr = _New_ptr;
+			}
+			else {
+				_Construct_in_place(m_data.ptr, _New_ptr);
+			}
+			return *this;
+		}
+
+		template <class _Fty, class... _ArgTys>
+		constexpr basic_string& _Reallocate_grow_by(const size_type _Size_increase, _Fty _Fn, _ArgTys... _Args) {
+			// reallocate to increase size by _Size_increase elements, new buffer prepared by
+			// _Fn(_New_ptr, _Old_ptr, _Old_size, _Args...)
+			const size_type _Old_size = m_size;
+			if (max_size() - _Old_size < _Size_increase) {
+				//_Xlen_string(); // result too long
+			}
+
+			const size_type _New_size = _Old_size + _Size_increase;
+			const size_type _Old_capacity = m_capacity;
+			size_type _New_capacity = calculateGrow(_New_size);
+			const pointer _New_ptr = AllocateForCapacity(alloc, _New_capacity);
+
+			m_size = _New_size;
+			m_capacity = _New_capacity;
+			if (_Old_capacity > SSOCapacity) {
+				const pointer _Old_ptr = m_data.ptr;
+				_Fn(_New_ptr, _Old_ptr, _Old_size, _Args...);
+				DeallocateForCapacity(alloc, _Old_ptr, _Old_capacity);
+				m_data.ptr = _New_ptr;
+			}
+			else {
+				_Fn(_New_ptr, m_data.buffer, _Old_size, _Args...);
+				_Construct_in_place(m_data.ptr, _New_ptr);
+			}
+			return *this;
+		}
+
+		constexpr void _Become_small() noexcept {
+			const pointer _Ptr = data();
+			m_data._Switch_to_buf();
+			Traits::copy(m_data.buffer, _Ptr, m_size + 1);
+			DeallocateForCapacity(alloc, _Ptr, m_capacity);
+			m_capacity = SSOCapacity;
+		}
+
 		constexpr void _Eos(const size_type newSize) noexcept
 		{
 			m_size = newSize;
@@ -683,4 +829,80 @@ export namespace std
 		Allocator alloc{};
 	};
 	using string = basic_string<char>;
+
+	template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
+		enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+	basic_string(
+		_Iter, _Iter, _Alloc = Allocator()) -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
+
+	template <class T, class Traits, class _Alloc = allocator<T>,enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+	explicit basic_string(basic_string_view<T, Traits>, const _Alloc & = Allocator())->basic_string<T, Traits, _Alloc>;
+
+	template <class T, class Traits, class _Alloc = allocator<T>, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+	basic_string(basic_string_view<T, Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>, const _Alloc & = Allocator()) -> basic_string<T, Traits, _Alloc>;
+
+	template <class T, class Traits, class _Alloc>
+		[[nodiscard]] constexpr basic_string<T, Traits, _Alloc> operator+(
+			const T* const _Left, basic_string<T, Traits, _Alloc>&& _Right) {
+		return std::move(_Right.insert(0, _Left));
+	}
+
+	template <class T, class Traits, class _Alloc>
+		[[nodiscard]] constexpr basic_string<T, Traits, _Alloc> operator+(
+			const T _Left, basic_string<T, Traits, _Alloc>&& _Right) {
+		return std::move(_Right.insert(0, 1, _Left));
+	}
+
+	template <class T, class Traits, class _Alloc>
+		[[nodiscard]] constexpr basic_string<T, Traits, _Alloc> operator+(
+			basic_string<T, Traits, _Alloc>&& _Left, const T* const _Right) {
+		return std::move(_Left.append(_Right));
+	}
+
+	template <class T, class Traits, class _Alloc>
+		[[nodiscard]] constexpr basic_string<T, Traits, _Alloc> operator+(
+			basic_string<T, Traits, _Alloc>&& _Left, const T _Right) {
+		_Left.push_back(_Right);
+		return std::move(_Left);
+	}
+
+	template <class T, class Traits, class _Alloc>
+		[[nodiscard]] constexpr bool operator==(
+			const basic_string<T, Traits, _Alloc>& _Left, const basic_string<T, Traits, _Alloc>& _Right) noexcept {
+		return _Left._Equal(_Right);
+	}
+
+	template <class T, class Traits, class _Alloc>
+		[[nodiscard]] constexpr bool operator==(
+			const basic_string<T, Traits, _Alloc>& _Left, const T* const _Right) noexcept /* strengthened */ {
+		return _Left._Equal(_Right);
+	}
+
+	template <class Traits, class = void>
+	struct _Get_comparison_category {
+		using type = weak_ordering;
+	};
+
+	template <class Traits>
+	struct _Get_comparison_category<Traits, void_t<typename Traits::comparison_category>> {
+		using type = Traits::comparison_category;
+
+		static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
+			"N4971 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
+	};
+
+	template <class Traits>
+	using _Get_comparison_category_t = _Get_comparison_category<Traits>::type;
+
+	template <class T, class Traits, class _Alloc>
+	[[nodiscard]] constexpr _Get_comparison_category_t<Traits> operator<=>(
+			const basic_string<T, Traits, _Alloc>& _Left, const basic_string<T, Traits, _Alloc>& _Right) noexcept {
+		return static_cast<_Get_comparison_category_t<Traits>>(_Left.compare(_Right) <=> 0);
+	}
+
+	template <class T, class Traits, class _Alloc>
+	[[nodiscard]] constexpr _Get_comparison_category_t<Traits> operator<=>(
+			const basic_string<T, Traits, _Alloc>& _Left, const T* const _Right) noexcept /* strengthened */ {
+		return static_cast<_Get_comparison_category_t<Traits>>(_Left.compare(_Right) <=> 0);
+	}
 }

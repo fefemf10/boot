@@ -90,18 +90,38 @@ export namespace fs::FAT
 			}
 		}
 	};
+	union FATDate
+	{
+		u16 date;
+		struct
+		{
+			u16 day : 5;
+			u16 month : 4;
+			u16 year : 7;
+		};
+	};
+	union FATTime
+	{
+		u16 time;
+		struct
+		{
+			u16 seconds : 5;
+			u16 minutes : 6;
+			u16 hours : 5;
+		};
+	};
 	struct FATDirectory
 	{
 		char8_t name[11];
 		u8 attribute;
 		u8 ntres;
 		u8 createTimeTenth;
-		u16 createTime;
-		u16 createDate;
-		u16 lastAccessDate;
+		FATTime createTime;
+		FATDate createDate;
+		FATDate lastAccessDate;
 		u16 firstClusterHI;
-		u16 writeTime;
-		u16 writeDate;
+		FATTime writeTime;
+		FATDate writeDate;
 		u16 firstClusterLO;
 		u32 filesize;
 		u8 getChecksum() const
@@ -111,6 +131,15 @@ export namespace fs::FAT
 				sum = (sum >> 1) + (sum << 7) + name[i];
 			return sum;
 		}
+		bool isDirectory() const
+		{
+			return attribute & 0x10;
+		}
+		bool isFile() const
+		{
+			return !(attribute & 0x10);
+		}
+		
 	};
 	struct LFN
 	{

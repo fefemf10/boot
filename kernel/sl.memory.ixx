@@ -341,6 +341,9 @@ export namespace std
 	using _Uses_default_destroy = disjunction<_Is_default_allocator<Alloc>, _Has_no_alloc_destroy<Alloc, _Ptr>>;
 
 	template <class Alloc>
+	using _Guide_size_type_t = typename allocator_traits<conditional_t<_Is_allocator<Alloc>::value, Alloc, allocator<int>>>::size_type;
+
+	template <class Alloc>
 	using _Alloc_ptr_t = typename allocator_traits<Alloc>::pointer;
 
 	template <class Alloc>

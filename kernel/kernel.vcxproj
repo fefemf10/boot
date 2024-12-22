@@ -140,7 +140,7 @@ fasm $(ProjectDir)apinit.asm</Command>
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -276,6 +276,7 @@ fasm $(ProjectDir)apinit.asm</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="fs.FAT.print.ixx" />
     <ClCompile Include="fs.FAT.structures.ixx" />
     <ClCompile Include="fs.FAT16.structures.ixx" />
     <ClCompile Include="fs.FAT32.structures.ixx" />
@@ -481,7 +482,9 @@ fasm $(ProjectDir)apinit.asm</Command>
     <ClCompile Include="sl.atomic.ixx" />
     <ClCompile Include="sl.bit.ixx" />
     <ClCompile Include="sl.byte.ixx" />
+    <ClCompile Include="sl.cctype.ixx" />
     <ClCompile Include="sl.chartraits.ixx" />
+    <ClCompile Include="sl.chrono.ixx" />
     <ClCompile Include="sl.compare.ixx" />
     <ClCompile Include="sl.compat.ixx" />
     <ClCompile Include="sl.concepts.ixx" />
@@ -500,6 +503,7 @@ fasm $(ProjectDir)apinit.asm</Command>
     </ClCompile>
     <ClCompile Include="sl.math.ixx" />
     <ClCompile Include="sl.memory.ixx" />
+    <ClCompile Include="sl.new.ixx" />
     <ClCompile Include="sl.numbers.ixx" />
     <ClCompile Include="sl.numeric_limits.ixx" />
     <ClCompile Include="sl.pair.ixx" />

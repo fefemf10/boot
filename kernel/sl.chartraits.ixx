@@ -101,7 +101,43 @@ namespace std
 	};
 
 
+	template <character T1, integral T2>
+	struct narrow_char_traits : public internal_char_traits<T1, T2>
+	{
+	public:
+		using char_type = T1;
+		using int_type = T2;
+		using comparison_category = strong_ordering;
+		[[nodiscard]] static constexpr int compare(const char_type* dst, const char_type* src, size_t size) noexcept
+		{
+			return __builtin_memcmp(dst, src, size);
+		}
+		[[nodiscard]] static constexpr size_t length(const char_type* src) noexcept
+		{
+			return __builtin_strlen(src);
+		}
+		[[nodiscard]] static constexpr const char_type* find(const char_type* src, size_t size, const char_type& c) noexcept
+		{
+			return __builtin_char_memchr(src, c, size);
+		}
+		static constexpr char_type* assign(const char_type* src, size_t size, const char_type c) noexcept
+		{
+			return static_cast<char_type*>(::memset(src, c, size));
+		}
+		static constexpr void assign(char_type& lhs, const char_type& rhs) noexcept
+		{
+			lhs = rhs;
+		}
+	};
+}
 
+export namespace std
+{
+	template <character T> struct char_traits : public internal_char_traits<T, int> {};
+	template <> struct char_traits<char> : narrow_char_traits<char, int> {};
+	template <> struct char_traits<char8_t> : internal_char_traits<char8_t, unsigned int> {};
+	template <> struct char_traits<char16_t> : internal_char_traits<char16_t, unsigned short> {};
+	template <> struct char_traits<char32_t> : internal_char_traits<char32_t, unsigned int> {};
 	template <class _Traits>
 	using _Traits_ch_t = typename _Traits::char_type;
 
@@ -225,38 +261,4 @@ namespace std
 
 		return static_cast<size_t>(-1);
 	}
-
-	template <character T1, integral T2>
-	struct narrow_char_traits : public internal_char_traits<T1, T2>
-	{
-	public:
-		using char_type = T1;
-		using int_type = T2;
-		using comparison_category = strong_ordering;
-		[[nodiscard]] static constexpr int compare(const char_type* dst, const char_type* src, size_t size) noexcept
-		{
-			return __builtin_memcmp(dst, src, size);
-		}
-		[[nodiscard]] static constexpr size_t length(const char_type* src) noexcept
-		{
-			return __builtin_strlen(src);
-		}
-		[[nodiscard]] static constexpr const char_type* find(const char_type* src, size_t size, const char_type& c) noexcept
-		{
-			return __builtin_char_memchr(src, c, size);
-		}
-		static constexpr char_type* assign(const char_type* src, size_t size, const char_type c) noexcept
-		{
-			return static_cast<char_type*>(::memset(src, c, size));
-		}
-	};
-}
-
-export namespace std
-{
-	template <character T> struct char_traits : public internal_char_traits<T, int> {};
-	template <> struct char_traits<char> : narrow_char_traits<char, int> {};
-	template <> struct char_traits<char8_t> : internal_char_traits<char8_t, unsigned int> {};
-	template <> struct char_traits<char16_t> : internal_char_traits<char16_t, unsigned short> {};
-	template <> struct char_traits<char32_t> : internal_char_traits<char32_t, unsigned int> {};
 }

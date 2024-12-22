@@ -477,6 +477,18 @@
     <ClCompile Include="sl.array.ixx">
       <Filter>Исходные файлы\std</Filter>
     </ClCompile>
+    <ClCompile Include="sl.new.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.chrono.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
+    <ClCompile Include="fs.FAT.print.ixx">
+      <Filter>Исходные файлы\disk\fs\FAT</Filter>
+    </ClCompile>
+    <ClCompile Include="sl.cctype.ixx">
+      <Filter>Исходные файлы\std</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FASM Include="bootloader.asm">

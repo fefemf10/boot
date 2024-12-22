@@ -5,35 +5,7 @@ import sl.math;
 
 export namespace std
 {
-	enum class endian
-	{
-		little = 0,
-		big = 1,
-		native = little
-	};
-
 	[[nodiscard]] constexpr bool is_constant_evaluated() noexcept { return __builtin_is_constant_evaluated(); }
-
-	template <class To, class From, enable_if_t<conjunction_v<bool_constant<sizeof(To) == sizeof(From)>, is_trivially_copyable<To>, is_trivially_copyable<From>>, int> = 0>
-	[[nodiscard]] constexpr To bit_cast(const From& value) noexcept { return __builtin_bit_cast(To, value); }
-
-	
-	template <class T>
-	[[nodiscard]] constexpr T byteswap(const T value) noexcept
-	{
-		if constexpr (sizeof(T) == 1) {
-			return value;
-		}
-		else if constexpr (sizeof(T) == 2) {
-			return static_cast<T>(_Byteswap_ushort(static_cast<unsigned short>(value)));
-		}
-		else if constexpr (sizeof(T) == 4) {
-			return static_cast<T>(_Byteswap_ulong(static_cast<unsigned int>(value)));
-		}
-		else if constexpr (sizeof(T) == 8) {
-			return static_cast<T>(_Byteswap_uint64(static_cast<unsigned long long>(value)));
-		}
-	}
 }
 
 namespace std
@@ -67,6 +39,37 @@ namespace std
 		}
 		else {
 			return std::byteswap(value);
+		}
+	}
+}
+
+export namespace std
+{
+	enum class endian
+	{
+		little = 0,
+		big = 1,
+		native = little
+	};
+
+	template <class To, class From, enable_if_t<conjunction_v<bool_constant<sizeof(To) == sizeof(From)>, is_trivially_copyable<To>, is_trivially_copyable<From>>, int> = 0>
+	[[nodiscard]] constexpr To bit_cast(const From& value) noexcept { return __builtin_bit_cast(To, value); }
+
+	
+	template <class T>
+	[[nodiscard]] constexpr T byteswap(const T value) noexcept
+	{
+		if constexpr (sizeof(T) == 1) {
+			return value;
+		}
+		else if constexpr (sizeof(T) == 2) {
+			return static_cast<T>(_Byteswap_ushort(static_cast<unsigned short>(value)));
+		}
+		else if constexpr (sizeof(T) == 4) {
+			return static_cast<T>(_Byteswap_ulong(static_cast<unsigned int>(value)));
+		}
+		else if constexpr (sizeof(T) == 8) {
+			return static_cast<T>(_Byteswap_uint64(static_cast<unsigned long long>(value)));
 		}
 	}
 }

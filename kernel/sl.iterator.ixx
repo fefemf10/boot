@@ -211,7 +211,7 @@ export namespace std
 		using reference = value_type&;
 
 		constexpr linear_iterator() noexcept = default;
-		constexpr linear_iterator(typename T::pointer ptr, size_t offset) noexcept : const_linear_iterator<T>(ptr, offset) {}
+		constexpr linear_iterator(typename T::pointer ptr, size_t offset = 0) noexcept : const_linear_iterator<T>(ptr, offset) {}
 		[[nodiscard]] constexpr reference operator*() const noexcept
 		{
 			return const_cast<reference>(base::operator*());

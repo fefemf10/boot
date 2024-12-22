@@ -9,7 +9,7 @@ import sl.compare;
 
 export namespace std
 {
-	template <class T, class int_type, class Traits = std::char_traits<T>>
+	template <class T, class Traits = std::char_traits<T>>
 	class basic_string_view
 	{
 	public:
@@ -261,7 +261,7 @@ export namespace std
 	};
 
 	template <class T, class Traits>
-	[[nodiscard]] constexpr bool operator==(const basic_string_view<T, Traits> lhs, const basic_string_view<T, Traits> rhs) noexcept
+	[[nodiscard]] constexpr bool operator==(const basic_string_view<T, Traits> lhs, const type_identity_t<basic_string_view<T, Traits>> rhs) noexcept
 	{
 		return lhs._Equal(rhs);
 	}
@@ -279,24 +279,19 @@ export namespace std
 			"N4950 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
 	};
 
-	template <class T>
-	using _Get_comparison_category_t = typename _Get_comparison_category<T>::type;
+	template <class Traits>
+	using _Get_comparison_category_t = typename _Get_comparison_category<Traits>::type;
 
 	template <class T, class Traits>
-	[[nodiscard]] constexpr _Get_comparison_category_t<Traits> operator<=>(const basic_string_view<T, Traits> left, const basic_string_view<T, Traits> right) noexcept
+	[[nodiscard]] constexpr _Get_comparison_category_t<Traits> operator<=>(const basic_string_view<T, Traits> left, const type_identity_t<basic_string_view<T, Traits>> right) noexcept
 	{
 		return static_cast<_Get_comparison_category_t<Traits>>(left.compare(right) <=> 0);
 	}
 
-	template <class T, class Traits, int = 2>
-	[[nodiscard]] constexpr _Get_comparison_category_t<Traits> operator<=>(const basic_string_view<T, Traits> left, const _Identity_t<basic_string_view<T, Traits>> right) noexcept
-	{
-		return static_cast<_Get_comparison_category_t<Traits>>(left.compare(right) <=> 0);
-	}
-	export using string_view = std::basic_string_view<char, int>;
-	export using u8string_view = std::basic_string_view<char8_t, unsigned int>;
-	export using u16string_view = std::basic_string_view<char16_t, unsigned short>;
-	export using u32string_view = std::basic_string_view<char32_t, unsigned int>;
+	export using string_view = std::basic_string_view<char>;
+	export using u8string_view = std::basic_string_view<char8_t>;
+	export using u16string_view = std::basic_string_view<char16_t>;
+	export using u32string_view = std::basic_string_view<char32_t>;
 	inline namespace literals {
 		inline namespace string_view_literals {
 			export [[nodiscard]] constexpr inline string_view operator""sv(const char* str, std::size_t len) noexcept { return string_view(str, len); }

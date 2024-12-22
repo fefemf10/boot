@@ -39,6 +39,8 @@ import sl.memory;
 import sl.utility;
 import disk.VirtualRAMDisk;
 import vcruntime;
+import sl.string;
+import sl.neww;
 
 [[noreturn]] void mainCRTStartup(BootInfo& bootInfo)
 {
@@ -87,7 +89,6 @@ import vcruntime;
 	d.emplace_back(bootInfo.memoryMapEntries[4].address, bootInfo.memoryMapEntries[4].sizeOfBytes).loadRAMDisk();
 	v.emplace_back(d.back(), 0);
 	v.back().loadFileSystem();
-
 	//console::printf("HPET frequency: %.2f MHz tick = %f ns\n", 1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod / 1000000, 1.0 / (1000000000000000.0 / ACPI::hpet->getGCID().counterClkPeriod) * 1000000000);
 	
 	/*console::printf("%llu\n", ACPI::hpet->readTimerComparatorN(ACPI::indexCurrentTimer));

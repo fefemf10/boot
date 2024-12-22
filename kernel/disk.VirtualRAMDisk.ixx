@@ -2,9 +2,13 @@ export module disk.VirtualRAMDisk;
 import types;
 import disk.PhysicalRAMDisk;
 import disk.layout.gpt;
+import fs.FAT.print;
 import fs.FAT.structures;
 import memory.utils;
 import sl.string_view;
+import sl.string;
+import sl.cctype;
+import sl.algorithm;
 import console;
 export namespace disk
 {
@@ -31,45 +35,49 @@ export namespace disk
 			u8* buffer = new u8[physicalRAMDisk.getSectorSize()];
 			physicalRAMDisk.read(entry.startingLBA, 1, buffer);
 			memory::copy(&fatbs, buffer, sizeof(fatbs));
-			getFATDirectoryOfFile("a.txt");
-
-			/*console::printf("%x ", readFAT16Entry(1));
+			console::printf("%x\n", getFATDirectoryOfFile("a.txt"));
+			console::printf("%x ", readFAT16Entry(1));
 			console::printf("%x ", readFAT16Entry(2));
 			console::printf("%x ", readFAT16Entry(3));
-			console::printf("%x ", readFAT16Entry(4));*/
+			console::printf("%x ", readFAT16Entry(4));
 			delete[] buffer;
 		}
 	private:
-		void getFATDirectoryOfFile(std::string_view path)
+		u32 getFATDirectoryOfFile(std::string_view path)
 		{
 			u8* buffer = new u8[fatbs.getRootDirSizeInSectors() * physicalRAMDisk.getSectorSize()];
 			physicalRAMDisk.read(entry.startingLBA + fatbs.getFirstRootDirSector(), fatbs.getRootDirSizeInSectors(), buffer);
 			char16_t* nameFileUTF16;
 			char* nameFileUTF8;
+			u32 sector = 0;
 			for (size_t i = 0; i < fatbs.rootEntryCount; i++)
 			{
 				u8* entry = buffer + i * sizeof(fs::FAT::FATDirectory);
+				//end
 				if (entry[0] == 0)
 					break;
+				//skip
 				if (entry[0] == 0xE5)
 					continue;
+				//LongFileName
 				if (entry[11] == 0x0F)
 				{
-					const fs::FAT::LFN* lfn = reinterpret_cast<const fs::FAT::LFN*>(entry);
-					if (lfn->longNameFlag == 0x01)
+					const fs::FAT::LFN& lfn = *reinterpret_cast<const fs::FAT::LFN*>(entry);
+					if (lfn.longNameFlag == 0x01)
 					{
-						nameFileUTF16 = new char16_t[13 * lfn->ord + 1] {};
-						nameFileUTF8 = new char[(13 * lfn->ord + 1) * 3] {};
+						nameFileUTF16 = new char16_t[13 * lfn.ord + 1] {};
+						nameFileUTF8 = new char[(13 * lfn.ord + 1) * 3] {};
 					}
-					memory::copy(nameFileUTF16 + (lfn->ord - 1) * 13, lfn->name1, sizeof(lfn->name1));
-					memory::copy(nameFileUTF16 + (lfn->ord - 1) * 13 + 5, lfn->name2, sizeof(lfn->name2));
-					memory::copy(nameFileUTF16 + (lfn->ord - 1) * 13 + 11, lfn->name3, sizeof(lfn->name3));
+					memory::copy(nameFileUTF16 + (lfn.ord - 1) * 13, lfn.name1, sizeof(lfn.name1));
+					memory::copy(nameFileUTF16 + (lfn.ord - 1) * 13 + 5, lfn.name2, sizeof(lfn.name2));
+					memory::copy(nameFileUTF16 + (lfn.ord - 1) * 13 + 11, lfn.name3, sizeof(lfn.name3));
 				}
 				else
 				{
+					std::string filename;
 					if (entry[0] == 0x05)
 						entry[0] = 0xE5;
-					const fs::FAT::FATDirectory* directory = reinterpret_cast<const fs::FAT::FATDirectory*>(entry);
+					const fs::FAT::FATDirectory& directory = *reinterpret_cast<const fs::FAT::FATDirectory*>(entry);
 					if (nameFileUTF16)
 					{
 						char* c = nameFileUTF8;
@@ -80,7 +88,7 @@ export namespace disk
 								break;
 							c = console::from_utf16(nameFileUTF16[i], c);
 						}
-						console::printf("Name: %s\n", nameFileUTF8);
+						filename = nameFileUTF8;
 						delete[] nameFileUTF8;
 						delete[] nameFileUTF16;
 						nameFileUTF8 = nullptr;
@@ -88,13 +96,35 @@ export namespace disk
 					}
 					else
 					{
-						console::printf("Name: %08c.%03c\n", directory->name, directory->name+8);
+						size_t i = 0;
+						for (;; i++)
+							if (directory.name[i] == ' ' || directory.name[i] == 0)
+								break;
+						filename.append(reinterpret_cast<const char*>(directory.name), i);
+						filename.push_back('.');
+						filename.append(reinterpret_cast<const char*>(directory.name+8), 3);
+						sector = directory.firstClusterHI << 16 | directory.firstClusterLO;
 					}
-					if ((directory->attribute & 0x10) != 0x10)
-						console::printf("FileSize: %u\n", directory->filesize);
+					if (directory.isFile())
+					{
+						console::printf("%s %s\n", filename.data(), path.data());
+						std::transform(filename.begin(), filename.end(), filename.begin(), std::tolower);
+						console::printf("FileName: %s\n", filename.data());
+						console::printf("FileSize: %u\n", directory.filesize);
+						console::printf("Create Date: "); fs::FAT::print(directory.createDate);
+						console::printf("\tCreate Time: "); fs::FAT::print(directory.createTime); console::print("\n");
+						console::printf("Write Date: "); fs::FAT::print(directory.writeDate);
+						console::printf("\tWrite Time: "); fs::FAT::print(directory.writeTime); console::print("\n");
+						if (filename == path)
+						{
+							delete[] buffer;
+							return sector;
+						}
+					}
 				}
 			}
 			delete[] buffer;
+			return sector;
 		}
 		u32 getFirstSectorOfCluster(u32 n)
 		{

@@ -634,6 +634,14 @@ export namespace std
 		using type = T;
 	};
 
+	template <class T>
+	struct type_identity
+	{
+		using type = T;
+	};
+	template <class T>
+	using type_identity_t = type_identity<T>::type;
+
 	template <class To>
 	void _Implicitly_convert_to(To) noexcept;
 
